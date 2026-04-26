@@ -7,17 +7,19 @@
  * Poradie middleware je zámerné, NEMENIŤ bez rozmýšľania:
  *
  *   1. trust proxy            — aby req.ip bol správny za reverse proxy
- *   2. compression            — čo najskôr, aby sa všetko stláčalo
- *   3. helmet                 — security headers na response
- *   4. body-parser            — parse JSON/forms PRED routes
- *   5. cookie-parser          — PRED session a CSRF
- *   6. session                — PRED CSRF (CSRF id berie zo session)
- *   7. morgan                 — logging requestov
- *   8. static (uploads, public)
- *   9. track-visit            — PO session, pred routes (chytí všetky GETs)
- *   10. routes                — naša aplikácia
- *   11. 404 handler           — chytí čo neprešlo cez routes
- *   12. error handler         — finálne, 4 args!
+ *   2. view engine            — EJS s 2 directories (frontend + admin)
+ *   3. compression            — čo najskôr, aby sa všetko stláčalo
+ *   4. helmet                 — security headers na response
+ *   5. body-parser            — parse JSON/forms PRED routes
+ *   6. cookie-parser          — PRED session a CSRF
+ *   7. session                — PRED CSRF (CSRF id berie zo session)
+ *   8. morgan                 — logging requestov
+ *   9. static (admin, uploads, public)
+ *   10. locals injection      — appName, currentPath, user pre views
+ *   11. track-visit           — PO session, pred routes (chytí všetky GETs)
+ *   12. routes                — naša aplikácia
+ *   13. 404 handler           — chytí čo neprešlo cez routes
+ *   14. error handler         — finálne, 4 args!
  */
 
 'use strict';
@@ -26,7 +28,6 @@ const express = require('express');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
-const path = require('path');
 
 const config = require('../../config');
 const log = require('./logger');
@@ -42,7 +43,7 @@ function createApp() {
   const app = express();
 
   // ---------------------------------------------------------------------------
-  // 1. Trust proxy (ak sme za reverse proxy v produkcii)
+  // 1. Trust proxy
   // ---------------------------------------------------------------------------
   if (config.app.trustProxy) {
     app.set('trust proxy', 1);
@@ -53,19 +54,17 @@ function createApp() {
   // ---------------------------------------------------------------------------
   app.set('view engine', 'ejs');
   app.set('views', [
-    config.paths.frontendViews,
-    // admin views pridáme v Phase 1.4
+    config.paths.frontendViews, // frontend/views (verejné stránky)
+    config.paths.adminViews,    // backend/src/views (admin)
   ]);
-  // odstránenie zbytočných whitespace vo výstupe
-  app.set('view options', { rmWhitespace: false });
 
   // ---------------------------------------------------------------------------
-  // 3. Compression (gzip)
+  // 3. Compression
   // ---------------------------------------------------------------------------
   app.use(compression());
 
   // ---------------------------------------------------------------------------
-  // 4. Security headers (helmet)
+  // 4. Security headers
   // ---------------------------------------------------------------------------
   app.use(buildSecurity());
 
@@ -82,7 +81,7 @@ function createApp() {
   app.use(buildSession());
 
   // ---------------------------------------------------------------------------
-  // 7. Request logging (morgan → náš logger)
+  // 7. Request logging
   // ---------------------------------------------------------------------------
   const morganFormat = config.app.isDev ? 'dev' : 'combined';
   app.use(
@@ -93,14 +92,26 @@ function createApp() {
           if (trimmed) log.debug(trimmed);
         },
       },
-      // logujeme aj statiku v dev, v prod nie
-      skip: (req) => !config.app.isDev && req.path.startsWith('/uploads/'),
+      skip: (req) =>
+        !config.app.isDev &&
+        (req.path.startsWith('/uploads/') ||
+          req.path.startsWith('/admin/static/') ||
+          req.path.startsWith('/css/') ||
+          req.path.startsWith('/js/')),
     })
   );
 
   // ---------------------------------------------------------------------------
   // 8. Static files
   // ---------------------------------------------------------------------------
+  // Admin assets (CSS, JS) — /admin/static/*
+  app.use(
+    '/admin/static',
+    express.static(config.paths.adminPublic, {
+      maxAge: config.app.isProd ? '1d' : 0,
+    })
+  );
+
   // Verejne nahrané médiá
   app.use(
     '/uploads',
@@ -111,7 +122,7 @@ function createApp() {
     })
   );
 
-  // Frontend public (CSS, JS, statické obrázky webu)
+  // Frontend public (CSS, JS verejnej časti) — servuje sa z /
   app.use(
     express.static(config.paths.frontendPublic, {
       maxAge: config.app.isProd ? '1d' : 0,
@@ -119,22 +130,33 @@ function createApp() {
   );
 
   // ---------------------------------------------------------------------------
-  // 9. Visit tracking (zápis do page_visits)
+  // 9. Locals injection — premenné dostupné vo všetkých views
+  // ---------------------------------------------------------------------------
+  app.use((req, res, next) => {
+    res.locals.appName = config.app.name;
+    res.locals.currentPath = req.path;
+    res.locals.user = req.session?.user || null; // Phase 2 ho nastaví
+    res.locals.isDev = config.app.isDev;
+    next();
+  });
+
+  // ---------------------------------------------------------------------------
+  // 10. Visit tracking
   // ---------------------------------------------------------------------------
   app.use(trackVisit);
 
   // ---------------------------------------------------------------------------
-  // 10. Routes
+  // 11. Routes
   // ---------------------------------------------------------------------------
   app.use(routes);
 
   // ---------------------------------------------------------------------------
-  // 11. 404 handler — chytí všetko ostatné
+  // 12. 404 handler
   // ---------------------------------------------------------------------------
   app.use(notFoundHandler);
 
   // ---------------------------------------------------------------------------
-  // 12. Error handler — finálny, MUSÍ mať 4 argumenty (err, req, res, next)
+  // 13. Error handler — MUSÍ mať 4 argumenty
   // ---------------------------------------------------------------------------
   app.use(errorHandler);
 

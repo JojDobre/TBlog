@@ -1,0 +1,42 @@
+<%#
+  Verejný footer — kostra bez štýlov.
+  Triedy:
+    .site-footer            — wrap
+    .site-footer__inner     — kontajner
+    .site-footer__columns   — grid stĺpcov
+    .site-footer__col       — stĺpec
+    .site-footer__bottom    — copyright riadok
+%>
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__columns">
+      <div class="site-footer__col">
+        <h3 class="site-footer__heading"><%= appName %></h3>
+        <p class="site-footer__text">Tech blog so zameraním na recenzie technológií.</p>
+      </div>
+
+      <div class="site-footer__col">
+        <h3 class="site-footer__heading">Sekcie</h3>
+        <ul class="site-footer__list">
+          <li><a href="/recenzie">Recenzie</a></li>
+          <li><a href="/navody">Návody</a></li>
+          <li><a href="/aktuality">Aktuality</a></li>
+          <li><a href="/rebricky">Rebríčky</a></li>
+        </ul>
+      </div>
+
+      <div class="site-footer__col">
+        <h3 class="site-footer__heading">Web</h3>
+        <ul class="site-footer__list">
+          <li><a href="/o-nas">O nás</a></li>
+          <li><a href="/kontakt">Kontakt</a></li>
+          <li><a href="/gdpr">Ochrana osobných údajov</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <small>© <%= new Date().getFullYear() %> <%= appName %>. Všetky práva vyhradené.</small>
+    </div>
+  </div>
+</footer>

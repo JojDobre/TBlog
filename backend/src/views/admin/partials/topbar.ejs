@@ -1,0 +1,60 @@
+<%#
+  Admin topbar
+  ============
+  Sticky horný bar s burger toggle (mobile) a user dropdownom.
+  Vo Phase 2 user dropdown ukáže meno + odkaz na logout.
+%>
+<header class="bz-topbar">
+  <button
+    class="btn btn-link bz-topbar-toggle d-lg-none"
+    type="button"
+    data-bs-toggle="offcanvas"
+    data-bs-target="#bzSidebar"
+    aria-controls="bzSidebar"
+    aria-label="Menu"
+  >
+    <i class="bi bi-list"></i>
+  </button>
+
+  <div class="bz-topbar-title">
+    <%= typeof pageTitle !== 'undefined' ? pageTitle : (typeof title !== 'undefined' ? title : '') %>
+  </div>
+
+  <div class="bz-topbar-actions">
+    <a href="/" class="btn btn-sm btn-outline-secondary me-2" target="_blank" rel="noopener">
+      <i class="bi bi-box-arrow-up-right me-1"></i>
+      Pozrieť web
+    </a>
+
+    <div class="dropdown">
+      <button
+        class="btn btn-sm btn-light dropdown-toggle"
+        type="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      >
+        <i class="bi bi-person-circle me-1"></i>
+        <% if (typeof user !== 'undefined' && user) { %>
+          <%= user.nickname %>
+        <% } else { %>
+          Hosť
+        <% } %>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <% if (typeof user !== 'undefined' && user) { %>
+          <li><a class="dropdown-item" href="/admin/profile"><i class="bi bi-person me-2"></i>Profil</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <form method="POST" action="/admin/logout" class="m-0">
+              <button type="submit" class="dropdown-item">
+                <i class="bi bi-box-arrow-right me-2"></i>Odhlásiť sa
+              </button>
+            </form>
+          </li>
+        <% } else { %>
+          <li><a class="dropdown-item" href="/admin/login"><i class="bi bi-box-arrow-in-right me-2"></i>Prihlásiť sa</a></li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+</header>

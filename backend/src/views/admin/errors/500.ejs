@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: title }) %>
+</head>
+<body class="bz-admin-body">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: title }) %>
+
+    <main class="bz-content">
+      <div class="container py-5">
+        <div class="text-center mb-4">
+          <div class="display-1 text-muted"><%= status %></div>
+          <h1 class="h3 mb-3"><%= title %></h1>
+          <p class="text-muted"><%= message %></p>
+        </div>
+
+        <% if (stack) { %>
+          <details class="mt-4">
+            <summary class="text-muted small mb-2">Detail chyby (dev only)</summary>
+            <pre class="bg-body-secondary p-3 rounded small"><code><%= stack %></code></pre>
+          </details>
+        <% } %>
+
+        <p class="text-center mt-4">
+          <a href="/admin/dashboard" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-1"></i>Späť na dashboard
+          </a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

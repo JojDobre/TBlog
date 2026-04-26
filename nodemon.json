@@ -1,0 +1,15 @@
+{
+  "watch": [
+    "backend/src",
+    "frontend/views",
+    "config.js",
+    "knexfile.js"
+  ],
+  "ext": "js,json,ejs",
+  "ignore": [
+    "node_modules",
+    "uploads",
+    "*.log"
+  ],
+  "delay": 200
+}

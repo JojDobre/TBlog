@@ -1,0 +1,96 @@
+<%#
+  Admin sidebar
+  ============
+  Bootstrap responsive offcanvas — desktop static, mobile drawer.
+
+  Premenné z locals:
+    currentPath  — req.path, na zvýraznenie aktívneho linku
+    user         — neaktuálne v Phase 1.4, zobrazí sa "Hosť"
+%>
+<%
+  const navGroups = [
+    {
+      label: 'Obsah',
+      items: [
+        { href: '/admin/dashboard',  icon: 'speedometer2', label: 'Dashboard' },
+        { href: '/admin/articles',   icon: 'file-earmark-text', label: 'Články' },
+        { href: '/admin/reviews',    icon: 'star', label: 'Recenzie' },
+        { href: '/admin/rankings',   icon: 'trophy', label: 'Rebríčky' },
+        { href: '/admin/pages',      icon: 'file-earmark', label: 'Stránky' },
+      ],
+    },
+    {
+      label: 'Komunita',
+      items: [
+        { href: '/admin/comments',   icon: 'chat-dots', label: 'Komentáre' },
+        { href: '/admin/users',      icon: 'people', label: 'Používatelia' },
+        { href: '/admin/messages',   icon: 'envelope', label: 'Správy' },
+      ],
+    },
+    {
+      label: 'Štruktúra',
+      items: [
+        { href: '/admin/categories', icon: 'diagram-3', label: 'Kategórie' },
+        { href: '/admin/tags',       icon: 'tags', label: 'Tagy' },
+        { href: '/admin/media',      icon: 'images', label: 'Médiá' },
+        { href: '/admin/banners',    icon: 'megaphone', label: 'Bannery a slidery' },
+      ],
+    },
+    {
+      label: 'Systém',
+      items: [
+        { href: '/admin/stats',      icon: 'graph-up', label: 'Štatistiky' },
+        { href: '/admin/settings',   icon: 'gear', label: 'Nastavenia' },
+      ],
+    },
+  ];
+  // Pozn.: NEPOUŽÍVAJ rovnaký názov ako z locals — TDZ.
+  const cp = (typeof currentPath === 'string') ? currentPath : '';
+%>
+
+<aside
+  class="bz-sidebar offcanvas-lg offcanvas-start"
+  tabindex="-1"
+  id="bzSidebar"
+  aria-labelledby="bzSidebarLabel"
+>
+  <div class="offcanvas-header d-lg-none">
+    <h5 class="offcanvas-title text-white" id="bzSidebarLabel">Bytezone</h5>
+    <button
+      type="button"
+      class="btn-close btn-close-white"
+      data-bs-dismiss="offcanvas"
+      data-bs-target="#bzSidebar"
+      aria-label="Zatvoriť"
+    ></button>
+  </div>
+
+  <div class="bz-sidebar-brand d-none d-lg-flex">
+    <i class="bi bi-hdd-stack me-2"></i>
+    <span>Bytezone</span>
+  </div>
+
+  <nav class="bz-sidebar-nav">
+    <% navGroups.forEach(group => { %>
+      <div class="bz-sidebar-group">
+        <div class="bz-sidebar-group-label"><%= group.label %></div>
+        <ul class="nav flex-column">
+          <% group.items.forEach(item => {
+              const active = cp === item.href || cp.startsWith(item.href + '/');
+          %>
+            <li class="nav-item">
+              <a class="nav-link <%= active ? 'active' : '' %>" href="<%= item.href %>">
+                <i class="bi bi-<%= item.icon %> me-2"></i>
+                <%= item.label %>
+              </a>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    <% }) %>
+  </nav>
+
+  <div class="bz-sidebar-footer">
+    <small class="text-white-50">v0.1.0 — dev</small>
+  </div>
+</aside>

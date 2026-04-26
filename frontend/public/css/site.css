@@ -1,0 +1,79 @@
+/* =============================================================================
+   Bytezone — verejný web (frontend)
+   =============================================================================
+   Toto je TVOJ priestor pre vlastné CSS. EJS šablóny v frontend/views/
+   používajú nasledujúce class-y, ktoré tu môžeš ostýlovať:
+
+   Layout:
+     .site-header, .site-header__inner, .site-header__actions
+     .site-brand
+     .site-nav, .site-nav__list, .site-nav__item, .site-nav__link, .site-nav__link--active
+     .site-main
+     .site-container       — kontajner pre šírku obsahu
+     .site-footer, .site-footer__inner
+     .site-footer__columns, .site-footer__col
+     .site-footer__heading, .site-footer__list
+     .site-footer__bottom
+
+   Komponenty (placeholder triedy):
+     .hero
+     .dev-note
+     .error-page, .error-page__code
+     .error-page--404, .error-page--500
+   =============================================================================
+*/
+
+/* --------------------------------------------------------------------- Reset */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+
+/* --------------------------------------- Veľmi minimálny baseline (zmaž ak chceš) */
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: #111;
+}
+
+.site-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.site-header__inner,
+.site-footer__inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.site-nav__list {
+  list-style: none;
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+.site-header__actions {
+  margin-left: auto;
+}
+
+a { color: inherit; }
+
+.site-main { padding: 2rem 0; min-height: 60vh; }
+
+.site-footer { border-top: 1px solid #eee; margin-top: 4rem; }
+.site-footer__columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; }
+.site-footer__list { list-style: none; padding: 0; margin: 0; }
+.site-footer__list li { margin: 0.25rem 0; }
+.site-footer__bottom { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; color: #888; }
+
+.error-page { text-align: center; padding: 4rem 0; }
+.error-page__code { font-size: 5rem; font-weight: 700; color: #ddd; }

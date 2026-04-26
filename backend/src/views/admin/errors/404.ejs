@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: 'Stránka nenájdená' }) %>
+</head>
+<body class="bz-admin-body">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: 'Stránka nenájdená' }) %>
+
+    <main class="bz-content">
+      <div class="container py-5 text-center">
+        <div class="display-1 text-muted">404</div>
+        <h1 class="h3 mb-3">Stránka nenájdená</h1>
+        <p class="text-muted">
+          Adresa <code><%= url %></code> v administrácii neexistuje.
+        </p>
+        <p class="mt-4">
+          <a href="/admin/dashboard" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-1"></i>Späť na dashboard
+          </a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

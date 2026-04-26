@@ -3,10 +3,13 @@
  *
  * Nastavuje bezpečnostné HTTP hlavičky.
  *
- * CSP poznámka: zatiaľ je rozumne otvorené — povoľujeme inline štýly
- * (lebo budeš používať vlastné CSS, niekedy aj inline style atribúty)
- * a YouTube iframe (kvôli embedu vo videách). V Phase 16 to ešte
- * pritvrdíme, hlavne pre /admin endpoint.
+ * CSP poznámka:
+ *   - povoľujeme jsdelivr.net (Bootstrap CSS/JS, Bootstrap Icons fonty)
+ *   - inline štýly povolené (style atribúty, BS komponenty)
+ *   - YouTube iframe pre embed videí
+ *
+ * Production roadmap: namiesto CDN bundlovať Bootstrap lokálne pod /admin/static.
+ * Vtedy môžeme zo CSP odstrániť jsdelivr.net a sprísniť skript zdroje.
  */
 
 'use strict';
@@ -14,18 +17,24 @@
 const helmet = require('helmet');
 const config = require('../../../config');
 
+const JSDELIVR = 'https://cdn.jsdelivr.net';
+const YOUTUBE = 'https://www.youtube.com';
+const YOUTUBE_NOCOOKIE = 'https://www.youtube-nocookie.com';
+
 module.exports = function buildSecurity() {
   return helmet({
     contentSecurityPolicy: {
       useDefaults: true,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline pre style atribúty
+        scriptSrc: ["'self'", JSDELIVR],
+        scriptSrcAttr: ["'none'"], // žiadne `onclick="..."`
+        styleSrc: ["'self'", "'unsafe-inline'", JSDELIVR],
+        styleSrcAttr: ["'unsafe-inline'"], // style="..." atribúty (Bootstrap ich miestami používa)
         imgSrc: ["'self'", 'data:', 'https:'],
-        fontSrc: ["'self'", 'https:', 'data:'],
+        fontSrc: ["'self'", 'data:', JSDELIVR],
         connectSrc: ["'self'"],
-        frameSrc: ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'],
+        frameSrc: ["'self'", YOUTUBE, YOUTUBE_NOCOOKIE],
         mediaSrc: ["'self'"],
         objectSrc: ["'none'"],
         frameAncestors: ["'self'"],
@@ -38,8 +47,6 @@ module.exports = function buildSecurity() {
     strictTransportSecurity: config.app.isProd
       ? { maxAge: 31536000, includeSubDomains: true, preload: false }
       : false,
-    // X-Frame-Options: SAMEORIGIN (vyplýva už z CSP frameAncestors, ale
-    // helmet to dáva default)
     crossOriginEmbedderPolicy: false, // YouTube embed by inak nefungoval
     crossOriginResourcePolicy: { policy: 'same-site' },
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' },

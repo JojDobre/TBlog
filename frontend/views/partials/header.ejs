@@ -1,0 +1,49 @@
+<%#
+  Verejný header — žiadne Bootstrap štýly.
+  Sem pridáš svoje vlastné CSS (frontend/public/css/site.css).
+  Triedy sú pripravené ako kostra na štylizáciu:
+    .site-header     — wrap
+    .site-brand      — logo / názov
+    .site-nav        — navigácia
+    .site-nav__link  — jednotlivé linky
+    .site-nav__link--active — aktívny link
+%>
+<%
+  const navLinks = [
+    { href: '/recenzie',   label: 'Recenzie' },
+    { href: '/navody',     label: 'Návody' },
+    { href: '/aktuality',  label: 'Aktuality' },
+    { href: '/rebricky',   label: 'Rebríčky' },
+  ];
+  const cur = typeof currentPath !== 'undefined' ? currentPath : '';
+%>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="/" class="site-brand">
+      <%= appName %>
+    </a>
+
+    <nav class="site-nav" aria-label="Hlavná navigácia">
+      <ul class="site-nav__list">
+        <% navLinks.forEach(link => {
+            const active = cur === link.href || cur.startsWith(link.href + '/');
+        %>
+          <li class="site-nav__item">
+            <a
+              href="<%= link.href %>"
+              class="site-nav__link <%= active ? 'site-nav__link--active' : '' %>"
+            ><%= link.label %></a>
+          </li>
+        <% }) %>
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/profil" class="site-header__user"><%= user.nickname %></a>
+      <% } else { %>
+        <a href="/admin/login" class="site-header__login">Prihlásenie</a>
+      <% } %>
+    </div>
+  </div>
+</header>
