@@ -1,0 +1,23 @@
+# Predvolené: text súbory s LF (Unix) line endings, aj na Windowse.
+# Bez tohto by Git na Windowse robil CRLF a Express by sa občas mýlil
+# pri parsovaní HTML a EJS šablón.
+
+* text=auto eol=lf
+
+# Windows-only súbory si zachovajú CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binárne súbory — nikdy nediff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.mp4 binary
+*.webm binary

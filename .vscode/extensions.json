@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "qassimfarid.ejs-language-support",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-mysql",
+    "ms-azuretools.vscode-docker",
+    "eamodio.gitlens",
+    "editorconfig.editorconfig",
+    "yzhang.markdown-all-in-one",
+    "christian-kohler.path-intellisense"
+  ]
+}

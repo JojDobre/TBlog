@@ -1,0 +1,84 @@
+# =============================================================================
+# Bytezone — lokálne dev prostredie
+# =============================================================================
+# MariaDB 10.11.16 — IDENTICKÁ verzia ako na Wedos (md421.wedos.net)
+# phpMyAdmin — to isté rozhranie ako Wedos používa
+#
+# Použitie:
+#   docker compose up -d        # spustí na pozadí
+#   docker compose down         # zastaví (dáta zostanú vo volume)
+#   docker compose down -v      # zastaví + zmaže dáta (čistý reštart DB)
+#   docker compose logs -f      # pozri logy
+#
+# Po štarte:
+#   MariaDB:    localhost:3306
+#   phpMyAdmin: http://localhost:8080
+#
+# Credentials sú LEN pre lokálny dev. Skutočné Wedos credentials nikdy
+# nedávame do tohto súboru — idú do .env, ktorý je v .gitignore.
+# =============================================================================
+
+services:
+  mariadb:
+    image: mariadb:10.11.16
+    container_name: bytezone-mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      # root heslo (admin prístup, používame iba pri setupe a migráciách)
+      MARIADB_ROOT_PASSWORD: rootlocaldev
+
+      # automaticky vytvorená DB pri prvom štarte
+      MARIADB_DATABASE: bytezone_dev
+
+      # aplikačný user (analógia k w387610_web na Wedosi — obmedzené práva,
+      # toto je ten, ktorého použije Express pri bežnej prevádzke)
+      MARIADB_USER: bytezone_app
+      MARIADB_PASSWORD: applocaldev
+
+    # Konfigurácia matchujúca Wedos:
+    # - utf8mb4 + utf8mb4_unicode_ci (rovnako ako schéma)
+    # - prísny sql_mode (chyby na neplatné dáta, nie tichá konverzia)
+    # - timezone UTC (zhoda so schémou — všetky DATETIME sú UTC)
+    # - InnoDB ako default engine
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --sql-mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      --default-time-zone=+00:00
+      --default-storage-engine=InnoDB
+      --innodb-strict-mode=ON
+      --max-allowed-packet=256M
+
+    volumes:
+      # perzistentné dáta — prežijú reštart kontajnera
+      - mariadb_data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: bytezone-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mariadb
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 256M
+      # prihlasovanie:
+      #   user: root          / heslo: rootlocaldev    (full access)
+      #   user: bytezone_app  / heslo: applocaldev     (app user)
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+volumes:
+  mariadb_data:
+    driver: local
