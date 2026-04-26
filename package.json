@@ -31,6 +31,7 @@
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.5",
     "connect-session-knex": "^5.0.0",
+    "cookie-parser": "^1.4.7",
     "csrf-csrf": "^3.0.6",
     "dompurify": "^3.2.2",
     "dotenv": "^16.4.7",
