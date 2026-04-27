@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <%- include('../partials/head', { title: 'Registrácia' }) %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="site-main">
+    <div class="site-container auth-container">
+      <div class="auth-card">
+        <div class="auth-card__header">
+          <h1 class="auth-card__title">Registrácia</h1>
+          <p class="auth-card__subtitle">Vytvor si účet a zapoj sa do diskusií.</p>
+        </div>
+
+        <% if (error) { %>
+          <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/register" novalidate class="auth-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <div class="auth-field">
+            <label for="nickname">Nickname</label>
+            <input type="text" id="nickname" name="nickname"
+                   value="<%= values.nickname %>"
+                   required autocomplete="username"
+                   minlength="3" maxlength="64"
+                   pattern="[a-zA-Z0-9_-]+" />
+            <small>3–64 znakov: písmená, čísla, _ a -</small>
+          </div>
+
+          <div class="auth-field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email"
+                   value="<%= values.email %>"
+                   required autocomplete="email" maxlength="255" />
+            <small>Použijeme len na rozlíšenie účtov, e-maily neposielame.</small>
+          </div>
+
+          <div class="auth-field">
+            <label for="password">Heslo</label>
+            <input type="password" id="password" name="password"
+                   required autocomplete="new-password"
+                   minlength="<%= minPasswordLength %>" maxlength="200" />
+            <small>Aspoň <%= minPasswordLength %> znakov.</small>
+          </div>
+
+          <div class="auth-field">
+            <label for="password2">Heslo (znova)</label>
+            <input type="password" id="password2" name="password2"
+                   required autocomplete="new-password"
+                   minlength="<%= minPasswordLength %>" maxlength="200" />
+          </div>
+
+          <hr class="auth-sep" />
+
+          <div class="auth-field">
+            <label for="question_id">Bezpečnostná otázka</label>
+            <select id="question_id" name="question_id">
+              <option value="">— Vyber zo zoznamu —</option>
+              <% questions.forEach((q) => { %>
+                <option value="<%= q.id %>"><%= q.text %></option>
+              <% }) %>
+            </select>
+            <small>Slúži na obnovu hesla. Môžeš zadať aj vlastnú otázku nižšie.</small>
+          </div>
+
+          <div class="auth-field">
+            <label for="custom_question">…alebo vlastná otázka</label>
+            <input type="text" id="custom_question" name="custom_question"
+                   value="<%= values.custom_question %>"
+                   maxlength="255" />
+          </div>
+
+          <div class="auth-field">
+            <label for="answer">Odpoveď</label>
+            <input type="text" id="answer" name="answer"
+                   required autocomplete="off" minlength="3" />
+            <small>Nie je citlivé na veľkosť písmen ani medzery.</small>
+          </div>
+
+          <hr class="auth-sep" />
+
+          <div class="auth-field auth-field--checkbox">
+            <label>
+              <input type="checkbox" name="gdpr" value="on" required />
+              Súhlasím so <a href="/gdpr" target="_blank">spracovaním osobných údajov</a>.
+            </label>
+          </div>
+
+          <button type="submit" class="auth-button">Vytvoriť účet</button>
+        </form>
+
+        <p class="auth-card__footer">
+          Už máš účet? <a href="/login">Prihlás sa</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

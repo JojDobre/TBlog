@@ -9,7 +9,8 @@
  *                   redirectne na login s ?next=originalUrl.
  *
  *   requireRole(roles) — vyžaduje že user má jednu z daných rolí.
- *                   Inak vráti 403. Beží AŽ PO requireAuth.
+ *                   Ak nie, vyrenderuje verejnú 403 stránku (NIE admin
+ *                   layout — reader nemá vidieť admin sidebar).
  */
 
 'use strict';
@@ -17,12 +18,7 @@
 const db = require('../db');
 const log = require('../logger');
 
-// ---------------------------------------------------------------------------
-// attachUser
-// ---------------------------------------------------------------------------
-
 async function attachUser(req, res, next) {
-  // default — žiaden prihlásený user
   res.locals.user = null;
 
   if (!req.session?.userId) {
@@ -33,15 +29,11 @@ async function attachUser(req, res, next) {
     const user = await db('users').where('id', req.session.userId).first();
 
     if (!user || user.is_banned) {
-      // Stale session — user vymazaný alebo banovaný. Vyhoď session.
       req.session.destroy(() => {});
       return next();
     }
 
-    // bezpečné — len prečítané z vlastnej DB
     req.user = user;
-
-    // Vo views je `user` len verejne prijateľný subset
     res.locals.user = {
       id: user.id,
       role: user.role,
@@ -57,50 +49,42 @@ async function attachUser(req, res, next) {
   }
 }
 
-// ---------------------------------------------------------------------------
-// requireAuth
-// ---------------------------------------------------------------------------
-
-/**
- * Factory: vytvorí middleware ktorý vyžaduje prihlásenie.
- *
- * @param {Object} [opts]
- * @param {string} [opts.redirectTo='/admin/login']
- *        kam presmerovať ak user nie je prihlásený
- */
 function requireAuth(opts = {}) {
   const redirectTo = opts.redirectTo || '/admin/login';
   return (req, res, next) => {
     if (req.user) return next();
-
-    // Zachovať pôvodnú URL aby sa po prihlásení dalo vrátiť
     const nextUrl = encodeURIComponent(req.originalUrl);
     return res.redirect(`${redirectTo}?next=${nextUrl}`);
   };
 }
 
-// ---------------------------------------------------------------------------
-// requireRole
-// ---------------------------------------------------------------------------
-
 /**
  * Factory: vyžaduje že user má jednu z daných rolí.
- * Použitie:
- *   router.use(requireRole('admin'))
- *   router.use(requireRole('admin', 'editor'))
- *   router.use(requireRole(['admin', 'editor']))
+ *
+ * Ak user nie je prihlásený → redirect na login.
+ * Ak je prihlásený ale nemá rolu → render verejnej 403 stránky.
+ *
+ * Zámerne renderujeme VEREJNÚ 403, nie admin error stránku — keď reader
+ * skúša ísť na /admin/*, nemá zmysel mu ukázať admin layout. Verejná 403
+ * je v rovnakej kostre ako zvyšok webu (header + footer + dropdown s
+ * odhlásením), takže user sa môže odhlásiť alebo ísť späť.
  */
 function requireRole(...allowed) {
   const roles = allowed.flat();
   return (req, res, next) => {
     if (!req.user) {
-      // defensive — malo by byť obstarané requireAuth-om predtým
       return res.redirect('/admin/login');
     }
     if (!roles.includes(req.user.role)) {
-      const err = new Error('Na túto akciu nemáš oprávnenie.');
-      err.status = 403;
-      return next(err);
+      log.info('access denied', {
+        userId: req.user.id,
+        role: req.user.role,
+        path: req.originalUrl,
+        required: roles,
+      });
+      return res.status(403).render('errors/403', {
+        title: 'Bez oprávnenia',
+      });
     }
     next();
   };

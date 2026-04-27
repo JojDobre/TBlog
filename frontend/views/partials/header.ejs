@@ -1,12 +1,10 @@
 <%#
-  Verejný header — žiadne Bootstrap štýly.
-  Sem pridáš svoje vlastné CSS (frontend/public/css/site.css).
-  Triedy sú pripravené ako kostra na štylizáciu:
-    .site-header     — wrap
-    .site-brand      — logo / názov
-    .site-nav        — navigácia
-    .site-nav__link  — jednotlivé linky
-    .site-nav__link--active — aktívny link
+  Verejný header.
+  Triedy:
+    .site-header, .site-header__inner, .site-header__actions
+    .site-brand, .site-nav, .site-nav__list, .site-nav__item, .site-nav__link
+    .site-nav__link--active
+    .site-user, .site-user__name, .site-user__menu, .site-user__menu-item
 %>
 <%
   const navLinks = [
@@ -15,13 +13,13 @@
     { href: '/aktuality',  label: 'Aktuality' },
     { href: '/rebricky',   label: 'Rebríčky' },
   ];
-  const cur = typeof currentPath !== 'undefined' ? currentPath : '';
+  const cur = (typeof currentPath === 'string') ? currentPath : '';
+  const csrf = (typeof csrfToken === 'string') ? csrfToken : '';
+  const usr = (typeof user !== 'undefined') ? user : null;
 %>
 <header class="site-header">
   <div class="site-header__inner">
-    <a href="/" class="site-brand">
-      <%= appName %>
-    </a>
+    <a href="/" class="site-brand"><%= appName %></a>
 
     <nav class="site-nav" aria-label="Hlavná navigácia">
       <ul class="site-nav__list">
@@ -29,9 +27,8 @@
             const active = cur === link.href || cur.startsWith(link.href + '/');
         %>
           <li class="site-nav__item">
-            <a
-              href="<%= link.href %>"
-              class="site-nav__link <%= active ? 'site-nav__link--active' : '' %>"
+            <a href="<%= link.href %>"
+               class="site-nav__link <%= active ? 'site-nav__link--active' : '' %>"
             ><%= link.label %></a>
           </li>
         <% }) %>
@@ -39,11 +36,31 @@
     </nav>
 
     <div class="site-header__actions">
-      <% if (typeof user !== 'undefined' && user) { %>
-        <a href="/profil" class="site-header__user"><%= user.nickname %></a>
+      <% if (usr) { %>
+        <div class="site-user">
+          <button type="button" class="site-user__name" aria-haspopup="true" aria-expanded="false" data-user-toggle>
+            <%= usr.nickname %>
+            <% if (usr.role === 'admin') { %><span class="site-user__badge site-user__badge--admin">admin</span><% } %>
+            <% if (usr.role === 'editor') { %><span class="site-user__badge site-user__badge--editor">editor</span><% } %>
+          </button>
+          <ul class="site-user__menu" data-user-menu hidden>
+            <% if (usr.role === 'admin' || usr.role === 'editor') { %>
+              <li><a class="site-user__menu-item" href="/admin/dashboard">Administrácia</a></li>
+            <% } %>
+            <li><a class="site-user__menu-item" href="/profil">Môj profil</a></li>
+            <li>
+              <form method="POST" action="/logout" class="site-user__logout">
+                <input type="hidden" name="_csrf" value="<%= csrf %>" />
+                <button type="submit" class="site-user__menu-item site-user__menu-item--button">Odhlásiť sa</button>
+              </form>
+            </li>
+          </ul>
+        </div>
       <% } else { %>
-        <a href="/admin/login" class="site-header__login">Prihlásenie</a>
+        <a href="/login" class="site-header__login">Prihlásenie</a>
+        <a href="/register" class="site-header__register">Registrácia</a>
       <% } %>
     </div>
   </div>
 </header>
+<%# Dropdown logika je v /js/site.js (externe — kvôli CSP). %>

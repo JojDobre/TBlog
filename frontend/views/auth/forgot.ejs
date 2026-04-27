@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <%- include('../partials/head', { title: 'Zabudnuté heslo' }) %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="site-main">
+    <div class="site-container auth-container">
+      <div class="auth-card">
+        <div class="auth-card__header">
+          <h1 class="auth-card__title">Zabudnuté heslo</h1>
+          <p class="auth-card__subtitle">
+            <% if (step === 'identify') { %>Identifikácia účtu<% } else { %>Bezpečnostná otázka<% } %>
+          </p>
+        </div>
+
+        <% if (error) { %>
+          <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
+        <% } %>
+        <% if (info) { %>
+          <div class="auth-alert auth-alert--info" role="alert"><%= info %></div>
+        <% } %>
+
+        <% if (step === 'identify') { %>
+          <form method="POST" action="/forgot" novalidate class="auth-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <div class="auth-field">
+              <label for="nickname">Nickname</label>
+              <input type="text" id="nickname" name="nickname"
+                     value="<%= nickname %>"
+                     required autofocus maxlength="64" />
+              <small>Po zadaní sa zobrazí tvoja bezpečnostná otázka.</small>
+            </div>
+            <button type="submit" class="auth-button">Pokračovať</button>
+          </form>
+
+        <% } else { %>
+          <div class="auth-info-box">
+            <small>Účet:</small><br />
+            <strong><%= nickname %></strong>
+          </div>
+
+          <div class="auth-info-box">
+            <small>Bezpečnostná otázka:</small><br />
+            <strong><%= question %></strong>
+          </div>
+
+          <form method="POST" action="/forgot" novalidate class="auth-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+            <div class="auth-field">
+              <label for="answer">Tvoja odpoveď</label>
+              <input type="text" id="answer" name="answer"
+                     required autofocus autocomplete="off" />
+              <small>Nie je citlivé na veľkosť písmen ani medzery.</small>
+            </div>
+
+            <hr class="auth-sep" />
+
+            <div class="auth-field">
+              <label for="password">Nové heslo</label>
+              <input type="password" id="password" name="password"
+                     required autocomplete="new-password"
+                     minlength="<%= minPasswordLength %>" maxlength="200" />
+              <small>Aspoň <%= minPasswordLength %> znakov.</small>
+            </div>
+
+            <div class="auth-field">
+              <label for="password2">Nové heslo (znova)</label>
+              <input type="password" id="password2" name="password2"
+                     required autocomplete="new-password"
+                     minlength="<%= minPasswordLength %>" maxlength="200" />
+            </div>
+
+            <button type="submit" class="auth-button">Zmeniť heslo</button>
+          </form>
+
+          <p class="auth-card__footer">
+            <a href="/forgot">← Začať odznova</a>
+          </p>
+        <% } %>
+
+        <p class="auth-card__footer">
+          <a href="/login">← Späť na prihlásenie</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <%- include('../partials/head', { title: 'Prihlásenie' }) %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="site-main">
+    <div class="site-container auth-container">
+      <div class="auth-card">
+        <div class="auth-card__header">
+          <h1 class="auth-card__title">Prihlásenie</h1>
+        </div>
+
+        <% if (error) { %>
+          <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
+        <% } %>
+        <% if (info) { %>
+          <div class="auth-alert auth-alert--info" role="alert"><%= info %></div>
+        <% } %>
+
+        <form method="POST" action="/login" novalidate class="auth-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <% if (nextUrl) { %>
+            <input type="hidden" name="next" value="<%= nextUrl %>" />
+          <% } %>
+
+          <div class="auth-field">
+            <label for="nickname">Nickname</label>
+            <input type="text" id="nickname" name="nickname"
+                   value="<%= nickname %>"
+                   required autofocus autocomplete="username" maxlength="64" />
+          </div>
+
+          <div class="auth-field">
+            <label for="password">Heslo</label>
+            <input type="password" id="password" name="password"
+                   required autocomplete="current-password" maxlength="200" />
+          </div>
+
+          <button type="submit" class="auth-button">Prihlásiť sa</button>
+        </form>
+
+        <p class="auth-card__footer">
+          <a href="/forgot">Zabudnuté heslo?</a>
+          <span class="auth-sep-dot">·</span>
+          <a href="/register">Vytvoriť účet</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <%- include('../partials/head', { title: 'Bez oprávnenia' }) %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="site-main">
+    <div class="site-container">
+      <section class="error-page error-page--403">
+        <div class="error-page__code">403</div>
+        <h1>Nemáš prístup</h1>
+        <p>Na túto stránku nemáš dostatočné oprávnenie.</p>
+        <p><a href="/">← Späť na úvod</a></p>
+      </section>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>
