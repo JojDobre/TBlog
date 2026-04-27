@@ -1,47 +1,25 @@
 /* =============================================================================
    Bytezone — verejný web (frontend)
    =============================================================================
-   Toto je TVOJ priestor pre vlastné CSS. EJS šablóny v frontend/views/
-   používajú nasledujúce class-y, ktoré tu môžeš ostýlovať:
+   Triedy popísané v hornej časti súboru zo Phase 2.2. Phase 2.3 doplnila:
 
-   Layout:
-     .site-header, .site-header__inner, .site-header__actions
-     .site-brand
-     .site-nav, .site-nav__list, .site-nav__item, .site-nav__link, .site-nav__link--active
-     .site-main
-     .site-container       — kontajner pre šírku obsahu
-     .site-footer, .site-footer__inner
-     .site-footer__columns, .site-footer__col
-     .site-footer__heading, .site-footer__list
-     .site-footer__bottom
+   Profile (vlastný profil — edit):
+     .profile-edit, .profile-edit__header
+     .profile-tabs, .profile-tabs__link, .profile-tabs__link.is-active
+     .profile-section, .profile-row, .profile-subhead
+     .text-muted
 
-   Komponenty:
-     .hero
-     .dev-note
-     .error-page, .error-page__code
-     .error-page--404, .error-page--500
-
-   Auth (Phase 2.2):
-     .auth-container, .auth-card, .auth-card__header, .auth-card__title,
-     .auth-card__subtitle, .auth-card__footer
-     .auth-form, .auth-field, .auth-field--checkbox
-     .auth-button, .auth-sep, .auth-sep-dot
-     .auth-alert, .auth-alert--error, .auth-alert--info
-     .auth-info-box
-
-   User dropdown (header):
-     .site-user, .site-user__name, .site-user__badge, .site-user__menu,
-     .site-user__menu-item, .site-user__menu-item--button, .site-user__logout
-     .site-user__badge--admin, .site-user__badge--editor
-
-   .site-header__login, .site-header__register
+   Profile (verejný profil):
+     .profile-show, .profile-show__header, .profile-show__avatar,
+     .profile-show__name, .profile-show__meta, .profile-show__joined,
+     .profile-show__edit, .profile-show__section, .profile-show__bio,
+     .profile-show__links
    ============================================================================= */
 
 /* --------------------------------------------------------------------- Reset */
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; }
 
-/* --------------------------------------- Veľmi minimálny baseline */
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.6;
@@ -233,7 +211,10 @@ a { color: inherit; }
 .auth-field input[type="text"],
 .auth-field input[type="email"],
 .auth-field input[type="password"],
-.auth-field select {
+.auth-field input[type="url"],
+.auth-field input[type="date"],
+.auth-field select,
+.auth-field textarea {
   width: 100%;
   padding: 0.55rem 0.75rem;
   border: 1px solid #d1d5db;
@@ -242,8 +223,10 @@ a { color: inherit; }
   font-size: 0.95rem;
   background: #fff;
 }
+.auth-field textarea { resize: vertical; min-height: 80px; }
 .auth-field input:focus,
-.auth-field select:focus {
+.auth-field select:focus,
+.auth-field textarea:focus {
   outline: none;
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -279,3 +262,153 @@ a { color: inherit; }
   border-top: 1px solid #eee;
   margin: 1.25rem 0;
 }
+
+/* =============================================================================
+   PROFILE — vlastný (edit)
+   ========================================================================== */
+.text-muted { color: #6b7280; }
+
+.profile-edit { max-width: 720px; margin: 0 auto; }
+
+.profile-edit__header {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+.profile-edit__header h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
+.profile-edit__header p { margin: 0; font-size: 0.9rem; }
+.profile-edit__header a { color: #2563eb; text-decoration: none; }
+.profile-edit__header a:hover { text-decoration: underline; }
+
+.profile-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+.profile-tabs__link {
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+  color: #4b5563;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-size: 0.95rem;
+}
+.profile-tabs__link:hover { color: #111; }
+.profile-tabs__link.is-active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  font-weight: 600;
+}
+
+.profile-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  scroll-margin-top: 1rem;
+}
+.profile-section h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+
+.profile-subhead {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 1rem 0 0.75rem;
+  color: #374151;
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+@media (max-width: 600px) {
+  .profile-row { grid-template-columns: 1fr; }
+}
+
+/* =============================================================================
+   PROFILE — verejný (show)
+   ========================================================================== */
+.profile-show { max-width: 720px; margin: 0 auto; }
+
+.profile-show__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+}
+
+.profile-show__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-show__name {
+  margin: 0 0 0.25rem;
+  font-size: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-show__meta {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.profile-show__joined::before { content: "·"; margin-right: 0.75rem; color: #9ca3af; }
+.profile-show__meta > :first-child::before { display: none; }
+
+.profile-show__edit {
+  margin-left: auto;
+  background: #f3f4f6;
+  color: #111;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  border: 1px solid #e5e7eb;
+}
+.profile-show__edit:hover { background: #e5e7eb; }
+
+.profile-show__section { margin-bottom: 1.5rem; }
+.profile-show__section h2 { font-size: 1.05rem; margin: 0 0 0.5rem; color: #374151; }
+.profile-show__bio { white-space: pre-wrap; }
+
+.profile-show__links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.profile-show__links a {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #2563eb;
+  font-size: 0.9rem;
+}
+.profile-show__links a:hover { background: #e5e7eb; }

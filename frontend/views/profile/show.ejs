@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <%- include('../partials/head', { title: profile.nickname }) %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="site-main">
+    <div class="site-container">
+      <article class="profile-show">
+
+        <header class="profile-show__header">
+          <div class="profile-show__avatar" aria-hidden="true">
+            <%= profile.nickname.slice(0, 2).toUpperCase() %>
+          </div>
+          <div>
+            <h1 class="profile-show__name">
+              <%= profile.nickname %>
+              <% if (profile.role === 'admin') { %>
+                <span class="site-user__badge site-user__badge--admin">admin</span>
+              <% } else if (profile.role === 'editor') { %>
+                <span class="site-user__badge site-user__badge--editor">editor</span>
+              <% } %>
+            </h1>
+            <p class="profile-show__meta">
+              <% if (profile.location) { %>
+                <span><%= profile.location %></span>
+              <% } %>
+              <span class="profile-show__joined">
+                Registrovaný <%= new Date(profile.created_at).toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' }) %>
+              </span>
+            </p>
+          </div>
+
+          <% if (user && user.id === profile.id) { %>
+            <a href="/profil" class="profile-show__edit">Upraviť profil</a>
+          <% } %>
+        </header>
+
+        <% if (profile.bio) { %>
+          <section class="profile-show__section">
+            <h2>O mne</h2>
+            <p class="profile-show__bio"><%= profile.bio %></p>
+          </section>
+        <% } %>
+
+        <% if (profile.custom_field_label && profile.custom_field_value) { %>
+          <section class="profile-show__section">
+            <h2><%= profile.custom_field_label %></h2>
+            <p><%= profile.custom_field_value %></p>
+          </section>
+        <% } %>
+
+        <% if (links && links.length > 0) { %>
+          <section class="profile-show__section">
+            <h2>Sociálne odkazy</h2>
+            <ul class="profile-show__links">
+              <% links.forEach(l => { %>
+                <li>
+                  <a href="<%= l.url %>" target="_blank" rel="noopener nofollow">
+                    <%= platformLabels[l.platform] || l.platform %>
+                  </a>
+                </li>
+              <% }) %>
+            </ul>
+          </section>
+        <% } %>
+
+      </article>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

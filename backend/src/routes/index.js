@@ -1,10 +1,10 @@
 /**
  * Routes index
- *
  *   /admin/*   → admin router
  *   /health    → health checks
- *   /register, /login, /logout, /forgot → public auth router
- *   /          → home page
+ *   /register, /login, /logout, /forgot → public auth
+ *   /profil, /profil/*, /u/:nickname    → profile
+ *   /          → home
  *   /dev       → debug welcome
  */
 
@@ -14,6 +14,7 @@ const express = require('express');
 
 const adminRouter = require('./admin');
 const authRouter = require('./auth');
+const profileRouter = require('./profile');
 const healthRouter = require('./health');
 const config = require('../../../config');
 
@@ -22,6 +23,7 @@ const router = express.Router();
 router.use('/admin', adminRouter);
 router.use('/health', healthRouter);
 router.use('/', authRouter);
+router.use('/', profileRouter);
 
 router.get('/', (req, res) => {
   res.render('home/index', { title: null });
