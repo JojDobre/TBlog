@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: 'Zabudnuté heslo' }) %>
+</head>
+<body class="bz-auth-body">
+  <main class="bz-auth-wrap">
+    <div class="bz-auth-card">
+      <div class="bz-auth-header">
+        <i class="bi bi-key bz-auth-logo"></i>
+        <h1 class="h4 mb-0">Zabudnuté heslo</h1>
+        <p class="text-muted small mt-1 mb-0">
+          <% if (step === 'identify') { %>
+            Identifikácia účtu
+          <% } else { %>
+            Bezpečnostná otázka
+          <% } %>
+        </p>
+      </div>
+
+      <% if (error) { %>
+        <div class="alert alert-danger" role="alert">
+          <i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+        </div>
+      <% } %>
+
+      <% if (info) { %>
+        <div class="alert alert-info" role="alert">
+          <i class="bi bi-info-circle me-2"></i><%= info %>
+        </div>
+      <% } %>
+
+      <% if (step === 'identify') { %>
+        <%# ============================== KROK 1: nickname ============================== %>
+        <form method="POST" action="/admin/forgot" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <div class="mb-3">
+            <label for="nickname" class="form-label">Nickname</label>
+            <input
+              type="text"
+              class="form-control"
+              id="nickname"
+              name="nickname"
+              value="<%= nickname %>"
+              required
+              autofocus
+              maxlength="64"
+            />
+            <div class="form-text">
+              Po zadaní sa ti zobrazí tvoja bezpečnostná otázka.
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            Pokračovať <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </form>
+
+      <% } else if (step === 'reset') { %>
+        <%# ====================== KROK 2: otázka + odpoveď + nové heslo ====================== %>
+        <div class="alert alert-secondary">
+          <small class="text-muted d-block">Účet:</small>
+          <strong><%= nickname %></strong>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Bezpečnostná otázka</label>
+          <p class="border rounded p-2 bg-body-tertiary mb-0"><%= question %></p>
+        </div>
+
+        <form method="POST" action="/admin/forgot" novalidate>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+          <div class="mb-3">
+            <label for="answer" class="form-label">Tvoja odpoveď</label>
+            <input
+              type="text"
+              class="form-control"
+              id="answer"
+              name="answer"
+              required
+              autofocus
+              autocomplete="off"
+            />
+            <div class="form-text">
+              Odpoveď nie je citlivá na veľkosť písmen ani medzery.
+            </div>
+          </div>
+
+          <hr class="my-4" />
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Nové heslo</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password"
+              name="password"
+              required
+              minlength="<%= minPasswordLength %>"
+              maxlength="200"
+              autocomplete="new-password"
+            />
+            <div class="form-text">Minimálne <%= minPasswordLength %> znakov.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password2" class="form-label">Nové heslo (znova)</label>
+            <input
+              type="password"
+              class="form-control"
+              id="password2"
+              name="password2"
+              required
+              minlength="<%= minPasswordLength %>"
+              maxlength="200"
+              autocomplete="new-password"
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-check-lg me-1"></i>
+            Zmeniť heslo
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <a href="/admin/forgot" class="text-muted small">← Začať odznova</a>
+        </div>
+      <% } %>
+
+      <div class="bz-auth-footer">
+        <a href="/admin/login" class="text-muted small">← Späť na prihlásenie</a>
+      </div>
+    </div>
+
+    <p class="text-muted small text-center mt-4">
+      <a href="/" class="text-decoration-none text-white-50">← Späť na web</a>
+    </p>
+  </main>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

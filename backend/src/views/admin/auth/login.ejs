@@ -19,12 +19,17 @@
       <% } %>
 
       <% if (typeof info !== 'undefined' && info) { %>
-        <div class="alert alert-info" role="alert">
-          <i class="bi bi-info-circle me-2"></i><%= info %>
+        <div class="alert alert-success" role="alert">
+          <i class="bi bi-check-circle me-2"></i><%= info %>
         </div>
       <% } %>
 
       <form method="POST" action="/admin/login" autocomplete="on" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <% if (typeof nextUrl !== 'undefined' && nextUrl) { %>
+          <input type="hidden" name="next" value="<%= nextUrl %>" />
+        <% } %>
+
         <div class="mb-3">
           <label for="nickname" class="form-label">Nickname</label>
           <input
@@ -32,9 +37,11 @@
             class="form-control"
             id="nickname"
             name="nickname"
+            value="<%= typeof nickname !== 'undefined' ? nickname : '' %>"
             required
             autocomplete="username"
             autofocus
+            maxlength="64"
           />
         </div>
         <div class="mb-3">
@@ -46,6 +53,7 @@
             name="password"
             required
             autocomplete="current-password"
+            maxlength="200"
           />
         </div>
         <button type="submit" class="btn btn-primary w-100">
@@ -60,7 +68,7 @@
     </div>
 
     <p class="text-muted small text-center mt-4">
-      <a href="/" class="text-decoration-none">← Späť na web</a>
+      <a href="/" class="text-decoration-none text-white-50">← Späť na web</a>
     </p>
   </main>
 

@@ -6,20 +6,23 @@
  *
  * Poradie middleware je zámerné, NEMENIŤ bez rozmýšľania:
  *
- *   1. trust proxy            — aby req.ip bol správny za reverse proxy
- *   2. view engine            — EJS s 2 directories (frontend + admin)
- *   3. compression            — čo najskôr, aby sa všetko stláčalo
- *   4. helmet                 — security headers na response
- *   5. body-parser            — parse JSON/forms PRED routes
- *   6. cookie-parser          — PRED session a CSRF
- *   7. session                — PRED CSRF (CSRF id berie zo session)
- *   8. morgan                 — logging requestov
- *   9. static (admin, uploads, public)
- *   10. locals injection      — appName, currentPath, user pre views
- *   11. track-visit           — PO session, pred routes (chytí všetky GETs)
- *   12. routes                — naša aplikácia
- *   13. 404 handler           — chytí čo neprešlo cez routes
- *   14. error handler         — finálne, 4 args!
+ *   1. trust proxy
+ *   2. view engine
+ *   3. compression
+ *   4. helmet (security headers)
+ *   5. body parsers (JSON, urlencoded)
+ *   6. cookie-parser              — PRED session a CSRF
+ *   7. session                    — PRED CSRF a attachUser
+ *   8. morgan logging
+ *   9. static files
+ *   10. attachUser                — req.user, res.locals.user (PO session)
+ *   11. setCsrfToken              — res.locals.csrfToken
+ *   12. csrfProtection            — validácia POSTs (PO body parser, session)
+ *   13. locals (appName, currentPath, isDev)
+ *   14. track-visit
+ *   15. routes
+ *   16. 404 handler
+ *   17. error handler             — finálny, MUSÍ mať 4 argumenty
  */
 
 'use strict';
@@ -34,6 +37,8 @@ const log = require('./logger');
 
 const buildSecurity = require('./middleware/security');
 const buildSession = require('./middleware/session');
+const { attachUser } = require('./middleware/auth');
+const { setCsrfToken, csrfProtection } = require('./middleware/csrf');
 const trackVisit = require('./middleware/track-visit');
 const notFoundHandler = require('./middleware/not-found');
 const errorHandler = require('./middleware/error-handler');
@@ -42,47 +47,35 @@ const routes = require('./routes');
 function createApp() {
   const app = express();
 
-  // ---------------------------------------------------------------------------
   // 1. Trust proxy
-  // ---------------------------------------------------------------------------
   if (config.app.trustProxy) {
     app.set('trust proxy', 1);
   }
 
-  // ---------------------------------------------------------------------------
-  // 2. View engine — EJS
-  // ---------------------------------------------------------------------------
+  // 2. View engine
   app.set('view engine', 'ejs');
   app.set('views', [
-    config.paths.frontendViews, // frontend/views (verejné stránky)
-    config.paths.adminViews,    // backend/src/views (admin)
+    config.paths.frontendViews,
+    config.paths.adminViews,
   ]);
 
-  // ---------------------------------------------------------------------------
   // 3. Compression
-  // ---------------------------------------------------------------------------
   app.use(compression());
 
-  // ---------------------------------------------------------------------------
   // 4. Security headers
-  // ---------------------------------------------------------------------------
   app.use(buildSecurity());
 
-  // ---------------------------------------------------------------------------
-  // 5. Body parsers
-  // ---------------------------------------------------------------------------
+  // 5. Body parsers (PRED CSRF — csrf-csrf číta token z req.body)
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: false, limit: '1mb' }));
 
-  // ---------------------------------------------------------------------------
-  // 6. Cookies + session
-  // ---------------------------------------------------------------------------
+  // 6. Cookies
   app.use(cookieParser());
+
+  // 7. Session
   app.use(buildSession());
 
-  // ---------------------------------------------------------------------------
-  // 7. Request logging
-  // ---------------------------------------------------------------------------
+  // 8. Request logging
   const morganFormat = config.app.isDev ? 'dev' : 'combined';
   app.use(
     morgan(morganFormat, {
@@ -101,18 +94,13 @@ function createApp() {
     })
   );
 
-  // ---------------------------------------------------------------------------
-  // 8. Static files
-  // ---------------------------------------------------------------------------
-  // Admin assets (CSS, JS) — /admin/static/*
+  // 9. Static files
   app.use(
     '/admin/static',
     express.static(config.paths.adminPublic, {
       maxAge: config.app.isProd ? '1d' : 0,
     })
   );
-
-  // Verejne nahrané médiá
   app.use(
     '/uploads',
     express.static(config.paths.uploads, {
@@ -121,43 +109,39 @@ function createApp() {
       fallthrough: true,
     })
   );
-
-  // Frontend public (CSS, JS verejnej časti) — servuje sa z /
   app.use(
     express.static(config.paths.frontendPublic, {
       maxAge: config.app.isProd ? '1d' : 0,
     })
   );
 
-  // ---------------------------------------------------------------------------
-  // 9. Locals injection — premenné dostupné vo všetkých views
-  // ---------------------------------------------------------------------------
+  // 10. Auth — načíta usera zo session
+  app.use(attachUser);
+
+  // 11. CSRF token do res.locals (pre formuláre v šablónach)
+  app.use(setCsrfToken);
+
+  // 12. CSRF validácia (POST/PUT/DELETE/PATCH)
+  app.use(csrfProtection);
+
+  // 13. Ostatné locals — appName, currentPath, isDev
   app.use((req, res, next) => {
     res.locals.appName = config.app.name;
     res.locals.currentPath = req.path;
-    res.locals.user = req.session?.user || null; // Phase 2 ho nastaví
     res.locals.isDev = config.app.isDev;
     next();
   });
 
-  // ---------------------------------------------------------------------------
-  // 10. Visit tracking
-  // ---------------------------------------------------------------------------
+  // 14. Visit tracking
   app.use(trackVisit);
 
-  // ---------------------------------------------------------------------------
-  // 11. Routes
-  // ---------------------------------------------------------------------------
+  // 15. Routes
   app.use(routes);
 
-  // ---------------------------------------------------------------------------
-  // 12. 404 handler
-  // ---------------------------------------------------------------------------
+  // 16. 404 handler
   app.use(notFoundHandler);
 
-  // ---------------------------------------------------------------------------
-  // 13. Error handler — MUSÍ mať 4 argumenty
-  // ---------------------------------------------------------------------------
+  // 17. Error handler — MUSÍ mať 4 argumenty
   app.use(errorHandler);
 
   return app;

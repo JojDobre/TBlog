@@ -1,17 +1,17 @@
 /**
  * CSRF middleware (csrf-csrf, double-submit cookie pattern)
  *
- * V Phase 1.3 ešte nemontujeme — formuláre prídu vo Phase 2.
- * Tento súbor exportuje konfiguráciu, ktorá sa neskôr aplikuje
- * cez `csrfProtection` na router/route.
+ * Aktivované od Phase 2.1. Mounted v app.js takto:
  *
- * Použitie (v neskorších fázach):
- *   const { csrfProtection, generateToken } = require('./middleware/csrf');
- *   router.post('/login', csrfProtection, loginHandler);
- *   // v GET handlere ktorý renderuje login formulár:
- *   res.render('login', { csrfToken: generateToken(req, res) });
+ *   app.use(setCsrfToken);     // res.locals.csrfToken — pre views
+ *   app.use(csrfProtection);   // validuje POSTs/PUTs/DELETEs
  *
- * Pozn.: vyžaduje cookie-parser pred ním (mountnutý v app.js).
+ * V šablónach formulárov:
+ *   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+ *
+ * Token sa berie z req.body._csrf alebo z hlavičky X-CSRF-Token.
+ *
+ * Vyžaduje cookie-parser PRED touto middleware-ou (mount v app.js).
  */
 
 'use strict';
@@ -40,8 +40,27 @@ const {
     req.headers['x-csrf-token'] || (req.body && req.body._csrf),
 });
 
+/**
+ * Middleware: pridá `csrfToken` do res.locals aby ho EJS šablóny mohli
+ * jednoducho includnúť do formulárov bez extra logiky v handleroch.
+ *
+ * Volá generateToken s validateOnReuse=false — ak má prehliadač starú
+ * CSRF cookie z predošlej session (napr. po session.regenerate() pri logine),
+ * defaultné správanie csrf-csrf by hodilo invalidCsrfTokenError. Toto by
+ * sa pri každom GET requeste spotrebiteľa zmenilo na 403 chybu, čo nechceme.
+ *
+ * S validateOnReuse=false sa stale cookie ticho nahradí novou, čo je presne
+ * to, čo potrebujeme — sessionID sa zmenilo, takže predošlý token je
+ * legitímne neplatný a treba vygenerovať nový.
+ */
+function setCsrfToken(req, res, next) {
+  res.locals.csrfToken = generateToken(req, res, false, false);
+  next();
+}
+
 module.exports = {
   csrfProtection: doubleCsrfProtection,
+  setCsrfToken,
   generateToken,
   validateRequest,
   invalidCsrfTokenError,

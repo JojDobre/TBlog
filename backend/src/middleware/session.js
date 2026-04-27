@@ -10,6 +10,16 @@
  *   sameSite: 'lax'      (CSRF baseline)
  *   secure: prod         (HTTPS only v produkcii)
  *   maxAge: 14 dní
+ *
+ * saveUninitialized: true (od Phase 2.1)
+ *   Potrebné aby CSRF fungoval na formulároch pre neprihlásených userov
+ *   (login, registrácia, kontaktný formulár). csrf-csrf používa session
+ *   ID ako stabilný identifikátor — pri saveUninitialized: false by sa
+ *   medzi GET a POST zmenil a CSRF validácia by zlyhala.
+ *
+ *   Cena: každý anonymný visitor vytvorí session row. Hourly cleanup
+ *   ich však pratá podľa expiry, takže storage rastie len úmerne počtu
+ *   aktívnych návštevníkov za posledných 14 dní.
  */
 
 'use strict';
@@ -34,8 +44,8 @@ module.exports = function buildSession() {
     name: config.session.name,
     secret: config.session.secret,
     resave: false,
-    saveUninitialized: false, // anonymný používateľ nedostane session zatiaľ
-    rolling: true, // každým requestom predĺži platnosť
+    saveUninitialized: true, // pozri komentár vyššie
+    rolling: true,
     cookie: {
       httpOnly: config.session.httpOnly,
       secure: config.session.secure,
