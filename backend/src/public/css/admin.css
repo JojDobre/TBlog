@@ -40,8 +40,15 @@
 }
 
 /* ================================================================ Sidebar */
+/*
+  Pozn.: Bootstrap má pri .offcanvas-lg @media (min-width: 992px) pravidlo
+  s `background-color: transparent !important;`. Aby sme to prebili, MUSÍME
+  použiť `!important` aj tu — bez toho zostane sidebar priehľadný/biely
+  na desktope a všetok text na ňom bude neviditeľný.
+*/
 .bz-sidebar {
-  background: var(--bz-sidebar-bg);
+  background-color: var(--bz-sidebar-bg) !important;
+  background-image: none !important;
   color: var(--bz-sidebar-text);
   display: flex;
   flex-direction: column;
