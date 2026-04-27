@@ -12,7 +12,13 @@
 
         <header class="profile-show__header">
           <div class="profile-show__avatar" aria-hidden="true">
-            <%= profile.nickname.slice(0, 2).toUpperCase() %>
+            <% if (profile.avatar_thumb) { %>
+              <img src="/uploads/<%= profile.avatar_thumb %>" alt="" />
+            <% } else { %>
+              <span class="profile-show__avatar-initials">
+                <%= profile.nickname.slice(0, 2).toUpperCase() %>
+              </span>
+            <% } %>
           </div>
           <div>
             <h1 class="profile-show__name">
@@ -24,9 +30,7 @@
               <% } %>
             </h1>
             <p class="profile-show__meta">
-              <% if (profile.location) { %>
-                <span><%= profile.location %></span>
-              <% } %>
+              <% if (profile.location) { %><span><%= profile.location %></span><% } %>
               <span class="profile-show__joined">
                 Registrovaný <%= new Date(profile.created_at).toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' }) %>
               </span>

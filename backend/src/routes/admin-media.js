@@ -1,14 +1,3 @@
-/**
- * Admin media library routes  (mounted at /admin/media)
- *
- *   GET  /              — list (grid)
- *   POST /upload        — upload image
- *   POST /:id/delete    — delete (only if not used)
- *
- * Multer parsuje multipart, CSRF validujeme MANUÁLNE po multer-i
- * (globálny csrfProtection skipuje multipart — pozri middleware/csrf.js).
- */
-
 'use strict';
 
 const fs = require('fs/promises');
@@ -26,149 +15,190 @@ const { validateRequest } = require('../middleware/csrf');
 
 const router = express.Router();
 
-// Auth gate — len admin alebo editor
 router.use(requireAuth());
 router.use(requireRole('admin', 'editor'));
 
-// Multer config
 const TEMP_DIR = path.join(config.paths.uploads, 'temp');
+fs.mkdir(TEMP_DIR, { recursive: true }).catch(() => {});
 
-// Ensure temp dir exists at boot (best-effort)
-fs.mkdir(TEMP_DIR, { recursive: true }).catch((err) =>
-  log.warn('failed to create uploads/temp', { err: err.message })
-);
+const PER_PAGE = 24;
+const MAX_FILES_PER_UPLOAD = 20;
 
 const upload = multer({
   dest: TEMP_DIR,
-  limits: { fileSize: config.uploads.image.maxSizeBytes },
+  limits: {
+    fileSize: config.uploads.image.maxSizeBytes,
+    files: MAX_FILES_PER_UPLOAD,
+  },
   fileFilter: (req, file, cb) => {
-    if (config.uploads.image.allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Nepodporovaný typ súboru. Povolené: JPEG, PNG, WebP, GIF.'));
-    }
+    if (config.uploads.image.allowedMimes.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Nepodporovaný typ: ' + file.originalname));
   },
 });
 
-// ---------------------------------------------------------------------------
-// GET /admin/media
-// ---------------------------------------------------------------------------
+function multerErrorMessage(err) {
+  if (!err) return null;
+  if (err.code === 'LIMIT_FILE_COUNT' || err.code === 'LIMIT_UNEXPECTED_FILE') {
+    return `Naraz môžeš nahrať maximálne ${MAX_FILES_PER_UPLOAD} súborov.`;
+  }
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    const mb = Math.floor(config.uploads.image.maxSizeBytes / (1024 * 1024));
+    return `Súbor je príliš veľký (max ${mb} MB).`;
+  }
+  return err.message || 'Nahrávanie zlyhalo.';
+}
 
+// GET /
 router.get('/', async (req, res, next) => {
   try {
-    const items = await db('media')
-      .leftJoin('users', 'media.uploader_id', 'users.id')
-      .select(
-        'media.*',
-        'users.nickname as uploader_nickname'
-      )
-      .orderBy('media.created_at', 'desc')
-      .limit(60);
+    const q = String(req.query.q || '').trim().slice(0, 100);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * PER_PAGE;
 
-    // attach usage count for each (one query, then map)
+    let baseQuery = db('media');
+    if (q) {
+      baseQuery = baseQuery.whereRaw(
+        'MATCH(original_filename, alt_text, caption) AGAINST(? IN BOOLEAN MODE)',
+        [q + '*']
+      );
+    }
+
+    const [{ total }, items] = await Promise.all([
+      baseQuery.clone().count({ total: '*' }).first(),
+      baseQuery.clone()
+        .leftJoin('users', 'media.uploader_id', 'users.id')
+        .select('media.*', 'users.nickname as uploader_nickname')
+        .orderBy('media.created_at', 'desc')
+        .limit(PER_PAGE).offset(offset),
+    ]);
+
+    const totalCount = Number(total) || 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
+
     const ids = items.map((i) => i.id);
     let usageCounts = {};
     if (ids.length > 0) {
       const rows = await db('media_usages')
-        .whereIn('media_id', ids)
-        .select('media_id')
-        .count({ c: '*' })
-        .groupBy('media_id');
+        .whereIn('media_id', ids).select('media_id').count({ c: '*' }).groupBy('media_id');
       usageCounts = Object.fromEntries(rows.map((r) => [r.media_id, Number(r.c)]));
     }
     items.forEach((i) => { i.usage_count = usageCounts[i.id] || 0; });
 
-    const flash = {
-      uploaded: req.query.uploaded === '1',
-      deleted: req.query.deleted === '1',
-      err: typeof req.query.err === 'string' ? req.query.err : null,
-    };
-
     res.render('admin/media/index', {
       title: 'Médiá',
-      items,
-      flash,
+      items, q, page, totalPages, totalCount,
+      flash: {
+        uploadedCount: parseInt(req.query.uploaded, 10) || 0,
+        deleted: req.query.deleted === '1',
+        saved: req.query.saved === '1',
+        err: typeof req.query.err === 'string' ? req.query.err : null,
+      },
       maxSizeMb: Math.floor(config.uploads.image.maxSizeBytes / (1024 * 1024)),
+      maxFiles: MAX_FILES_PER_UPLOAD,
     });
   } catch (err) { next(err); }
 });
 
-// ---------------------------------------------------------------------------
-// POST /admin/media/upload
-// Order: multer → CSRF check → handler
-// ---------------------------------------------------------------------------
-
+// POST /upload — multi-file s lepšou error handling
 router.post('/upload',
-  // 1) Parse multipart (this handles file validation via fileFilter / limits)
   (req, res, next) => {
-    upload.single('file')(req, res, (err) => {
+    upload.array('files', MAX_FILES_PER_UPLOAD)(req, res, (err) => {
       if (err) {
-        // multer error — file too big, wrong mime, etc.
-        log.warn('media upload multer error', { err: err.message });
-        return res.redirect('/admin/media?err=' + encodeURIComponent(err.message));
+        log.warn('media upload multer error', { code: err.code, msg: err.message });
+        return res.redirect('/admin/media?err=' + encodeURIComponent(multerErrorMessage(err)));
       }
       next();
     });
   },
-
-  // 2) Manual CSRF validation (now that req.body has _csrf from multipart)
   async (req, res, next) => {
     if (!validateRequest(req)) {
-      if (req.file) await fs.unlink(req.file.path).catch(() => {});
+      if (req.files) for (const f of req.files) await fs.unlink(f.path).catch(() => {});
       return res.redirect('/admin/media?err=' + encodeURIComponent('Neplatný CSRF token.'));
     }
     next();
   },
-
-  // 3) Process & save
-  async (req, res, next) => {
-    if (!req.file) {
+  async (req, res) => {
+    const files = req.files || [];
+    if (files.length === 0) {
       return res.redirect('/admin/media?err=' + encodeURIComponent('Žiadny súbor nebol odoslaný.'));
     }
-    try {
-      const result = await media.processImageUpload({
-        file: req.file,
-        uploaderId: req.user.id,
-        altText: req.body.alt_text || null,
-        caption: req.body.caption || null,
-      });
-      log.info('media uploaded', { id: result.id, uploaderId: req.user.id });
-      res.redirect('/admin/media?uploaded=1');
-    } catch (err) {
-      // ensure temp file cleaned up
-      if (req.file) await fs.unlink(req.file.path).catch(() => {});
-      log.error('media upload failed', { err: err.message });
-      res.redirect('/admin/media?err=' + encodeURIComponent(err.message));
+
+    let okCount = 0;
+    const errors = [];
+
+    for (const file of files) {
+      try {
+        await media.processImageUpload({
+          file,
+          uploaderId: req.user.id,
+          altText: req.body.alt_text || null,
+          caption: req.body.caption || null,
+        });
+        okCount++;
+      } catch (err) {
+        await fs.unlink(file.path).catch(() => {});
+        errors.push(`${file.originalname}: ${err.message}`);
+        log.warn('media upload failed', { file: file.originalname, err: err.message });
+      }
     }
+
+    log.info('media batch uploaded', { count: okCount, total: files.length, userId: req.user.id });
+
+    const params = new URLSearchParams();
+    if (okCount > 0) params.set('uploaded', String(okCount));
+    if (errors.length > 0) params.set('err', errors.slice(0, 3).join('; '));
+
+    res.redirect('/admin/media?' + params.toString());
   }
 );
 
-// ---------------------------------------------------------------------------
-// POST /admin/media/:id/delete
-// ---------------------------------------------------------------------------
+// GET /:id/edit
+router.get('/:id/edit', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isFinite(id)) return res.redirect('/admin/media');
+
+    const item = await db('media')
+      .leftJoin('users', 'media.uploader_id', 'users.id')
+      .select('media.*', 'users.nickname as uploader_nickname')
+      .where('media.id', id).first();
+
+    if (!item) return res.redirect('/admin/media');
+    res.render('admin/media/edit', { title: 'Úprava média', item, error: null });
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/edit', async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isFinite(id)) return res.redirect('/admin/media');
+
+    const { alt_text = '', caption = '' } = req.body;
+    await db('media').where('id', id).update({
+      alt_text: String(alt_text).trim().slice(0, 255) || null,
+      caption: String(caption).trim().slice(0, 1000) || null,
+    });
+    res.redirect('/admin/media?saved=1');
+  } catch (err) { next(err); }
+});
 
 router.post('/:id/delete', async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    if (!Number.isFinite(id)) {
-      return res.redirect('/admin/media?err=' + encodeURIComponent('Neplatné ID.'));
-    }
+    if (!Number.isFinite(id)) return res.redirect('/admin/media');
 
-    // Check if media is used anywhere
     const u = await db('media_usages').where('media_id', id).count({ c: '*' }).first();
     if (Number(u.c) > 0) {
-      return res.redirect('/admin/media?err=' + encodeURIComponent('Médium sa používa, nemožno zmazať.'));
+      return res.redirect('/admin/media?err=' + encodeURIComponent('Médium sa používa.'));
     }
 
-    // Also check direct references (avatar, cover, og_image)
-    const [avatarUsers, coverArticles, ogArticles] = await Promise.all([
+    const [au, ca, og] = await Promise.all([
       db('users').where('avatar_media_id', id).count({ c: '*' }).first(),
       db('articles').where('cover_media_id', id).count({ c: '*' }).first(),
       db('articles').where('og_image_media_id', id).count({ c: '*' }).first(),
     ]);
-    const totalRefs = Number(avatarUsers.c) + Number(coverArticles.c) + Number(ogArticles.c);
-    if (totalRefs > 0) {
-      return res.redirect('/admin/media?err=' + encodeURIComponent('Médium sa používa (avatar / cover), nemožno zmazať.'));
+    if (Number(au.c) + Number(ca.c) + Number(og.c) > 0) {
+      return res.redirect('/admin/media?err=' + encodeURIComponent('Médium sa používa.'));
     }
 
     const m = await db('media').where('id', id).first();
@@ -176,8 +206,6 @@ router.post('/:id/delete', async (req, res, next) => {
 
     await media.deleteMediaFiles(m);
     await db('media').where('id', id).del();
-
-    log.info('media deleted', { id, userId: req.user.id });
     res.redirect('/admin/media?deleted=1');
   } catch (err) { next(err); }
 });

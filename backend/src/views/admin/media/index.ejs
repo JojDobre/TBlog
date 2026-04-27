@@ -12,104 +12,91 @@
     <main class="bz-content">
       <div class="container-fluid p-4">
 
-        <% if (flash.uploaded) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Súbor bol úspešne nahraný.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zatvoriť"></button>
-          </div>
+        <% if (flash.uploadedCount > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Nahraných: <%= flash.uploadedCount %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
         <% if (flash.deleted) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Súbor bol zmazaný.
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zatvoriť"></button>
-          </div>
+          <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Súbor zmazaný.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <% } %>
+        <% if (flash.saved) { %>
+          <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Zmeny uložené.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
         <% if (flash.err) { %>
-          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i><%= flash.err %>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Zatvoriť"></button>
-          </div>
+          <div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-triangle me-2"></i><%= flash.err %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
         <% } %>
 
-        <%# ====================================== UPLOAD FORM ====================================== %>
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white">
-            <h2 class="h6 mb-0"><i class="bi bi-cloud-upload me-2"></i>Nahrať obrázok</h2>
+            <h2 class="h6 mb-0"><i class="bi bi-cloud-upload me-2"></i>Nahrať obrázky</h2>
           </div>
           <div class="card-body">
-            <form method="POST" action="/admin/media/upload" enctype="multipart/form-data" class="row g-3">
+            <form method="POST" action="/admin/media/upload" enctype="multipart/form-data" class="row g-3"
+                  data-max-files="<%= maxFiles %>">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
+              <div class="col-md-12">
+                <label for="files" class="form-label">Súbory <span class="text-muted small">(JPEG, PNG, WebP, GIF — max <%= maxSizeMb %> MB / súbor, naraz max <%= maxFiles %>)</span></label>
+                <input type="file" class="form-control" id="files" name="files"
+                       accept="image/jpeg,image/png,image/webp,image/gif"
+                       multiple required data-multi-file-input />
+                <div class="form-text" data-file-count-info>Vyber viacero súborov naraz (Ctrl/Shift + klik).</div>
+              </div>
               <div class="col-md-6">
-                <label for="file" class="form-label">Súbor <span class="text-muted small">(JPEG, PNG, WebP, GIF — max <%= maxSizeMb %> MB)</span></label>
-                <input type="file" class="form-control" id="file" name="file"
-                       accept="image/jpeg,image/png,image/webp,image/gif" required />
+                <label for="alt_text" class="form-label">Alt text <span class="text-muted small">(spoločný)</span></label>
+                <input type="text" class="form-control" id="alt_text" name="alt_text" maxlength="255" />
               </div>
-
               <div class="col-md-6">
-                <label for="alt_text" class="form-label">Alt text <span class="text-muted small">(voliteľné)</span></label>
-                <input type="text" class="form-control" id="alt_text" name="alt_text" maxlength="255"
-                       placeholder="Krátky popis obrázka pre prístupnosť" />
+                <label for="caption" class="form-label">Popis <span class="text-muted small">(spoločný)</span></label>
+                <input type="text" class="form-control" id="caption" name="caption" maxlength="1000" />
               </div>
-
               <div class="col-12">
-                <label for="caption" class="form-label">Popis <span class="text-muted small">(voliteľné)</span></label>
-                <input type="text" class="form-control" id="caption" name="caption" maxlength="1000"
-                       placeholder="Dlhší popis alebo zdroj" />
-              </div>
-
-              <div class="col-12">
-                <button type="submit" class="btn btn-primary">
-                  <i class="bi bi-upload me-1"></i>Nahrať
-                </button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i>Nahrať</button>
               </div>
             </form>
           </div>
         </div>
 
-        <%# ====================================== GRID ====================================== %>
         <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white d-flex align-items-center">
-            <h2 class="h6 mb-0"><i class="bi bi-images me-2"></i>Knižnica</h2>
-            <span class="ms-auto text-muted small"><%= items.length %> najnovších položiek</span>
+          <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
+            <h2 class="h6 mb-0 me-3"><i class="bi bi-images me-2"></i>Knižnica</h2>
+            <form method="GET" action="/admin/media" class="d-flex flex-grow-1" style="max-width:400px">
+              <input type="search" name="q" value="<%= q %>" class="form-control form-control-sm" placeholder="Hľadať…" />
+              <button type="submit" class="btn btn-sm btn-outline-secondary ms-2"><i class="bi bi-search"></i></button>
+              <% if (q) { %><a href="/admin/media" class="btn btn-sm btn-link">Zrušiť</a><% } %>
+            </form>
+            <span class="text-muted small ms-auto">
+              <% if (q) { %>Nájdených: <%= totalCount %><% } else { %><%= totalCount %> položiek<% } %>
+            </span>
           </div>
           <div class="card-body">
             <% if (items.length === 0) { %>
               <p class="text-muted text-center py-4 mb-0">
-                Knižnica je prázdna. Nahraj prvý obrázok vyššie.
+                <% if (q) { %>Pre hľadaný výraz sa nič nenašlo.<% } else { %>Knižnica je prázdna.<% } %>
               </p>
             <% } else { %>
-              <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+              <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
                 <% items.forEach(item => { %>
                   <div class="col">
                     <div class="card h-100 bz-media-card">
-                      <a href="/uploads/<%= item.original_path %>" target="_blank" rel="noopener" class="bz-media-thumb">
-                        <img src="/uploads/<%= item.thumbnail_path %>"
-                             alt="<%= item.alt_text || item.original_filename %>"
-                             loading="lazy"
-                             class="card-img-top" />
+                      <a href="/uploads/<%= item.original_path %>" target="_blank" rel="noopener">
+                        <img src="/uploads/<%= item.thumbnail_path %>" alt="<%= item.alt_text || item.original_filename %>" loading="lazy" class="card-img-top" />
                       </a>
                       <div class="card-body p-2">
-                        <p class="small text-truncate mb-1" title="<%= item.original_filename %>">
-                          <%= item.original_filename %>
-                        </p>
+                        <p class="small text-truncate mb-1" title="<%= item.original_filename %>"><%= item.original_filename %></p>
                         <p class="small text-muted mb-2">
                           <% if (item.width && item.height) { %><%= item.width %>×<%= item.height %> · <% } %>
                           <%= Math.round(item.size_bytes / 1024) %> KB
                         </p>
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-1">
                           <% if (item.usage_count > 0) { %>
-                            <span class="badge text-bg-secondary">Použité <%= item.usage_count %>×</span>
+                            <span class="badge text-bg-secondary flex-grow-1 text-start">Použité <%= item.usage_count %>×</span>
                           <% } else { %>
-                            <span class="badge text-bg-light text-muted">Nepoužité</span>
+                            <span class="badge text-bg-light text-muted flex-grow-1 text-start">Nepoužité</span>
                           <% } %>
+                          <a href="/admin/media/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
                           <% if (item.usage_count === 0) { %>
-                            <form method="POST" action="/admin/media/<%= item.id %>/delete" class="m-0"
-                                  onsubmit="return confirm('Naozaj zmazať tento obrázok?');">
+                            <form method="POST" action="/admin/media/<%= item.id %>/delete" class="m-0" onsubmit="return confirm('Naozaj zmazať?');">
                               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                              <button type="submit" class="btn btn-sm btn-outline-danger" title="Zmazať">
-                                <i class="bi bi-trash"></i>
-                              </button>
+                              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                             </form>
                           <% } %>
                         </div>
@@ -118,6 +105,19 @@
                   </div>
                 <% }) %>
               </div>
+
+              <% if (totalPages > 1) { %>
+                <nav class="mt-4 d-flex justify-content-center">
+                  <ul class="pagination mb-0">
+                    <% const qs = q ? '&q=' + encodeURIComponent(q) : ''; %>
+                    <% if (page > 1) { %><li class="page-item"><a class="page-link" href="?page=<%= page-1 %><%= qs %>">‹</a></li><% } %>
+                    <% for (let p = Math.max(1, page-2); p <= Math.min(totalPages, page+2); p++) { %>
+                      <li class="page-item <%= p === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= p %><%= qs %>"><%= p %></a></li>
+                    <% } %>
+                    <% if (page < totalPages) { %><li class="page-item"><a class="page-link" href="?page=<%= page+1 %><%= qs %>">›</a></li><% } %>
+                  </ul>
+                </nav>
+              <% } %>
             <% } %>
           </div>
         </div>
@@ -127,5 +127,6 @@
   </div>
 
   <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-media.js" defer></script>
 </body>
 </html>

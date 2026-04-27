@@ -17,37 +17,65 @@
           </p>
         </header>
 
-        <% if (success) { %>
-          <div class="auth-alert auth-alert--info" role="alert"><%= success %></div>
-        <% } %>
-        <% if (error) { %>
-          <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
-        <% } %>
+        <% if (success) { %><div class="auth-alert auth-alert--info"><%= success %></div><% } %>
+        <% if (error) { %><div class="auth-alert auth-alert--error"><%= error %></div><% } %>
 
-        <%# Tabs (anchor-based, no JS) %>
         <nav class="profile-tabs">
           <a href="#profile"  class="profile-tabs__link <%= section === 'profile'  ? 'is-active' : '' %>">Údaje</a>
           <a href="#password" class="profile-tabs__link <%= section === 'password' ? 'is-active' : '' %>">Heslo</a>
           <a href="#security" class="profile-tabs__link <%= section === 'security' ? 'is-active' : '' %>">Bezpečnostná otázka</a>
         </nav>
 
-        <%# ========================================== SECTION 1: PROFILE ========================================== %>
+        <%# ====================== AVATAR ====================== %>
+        <section class="profile-section">
+          <h2>Avatar</h2>
+          <div class="profile-avatar-row">
+            <div class="profile-avatar-preview">
+              <% if (avatarThumb) { %>
+                <img src="/uploads/<%= avatarThumb %>" alt="Avatar" />
+              <% } else { %>
+                <div class="profile-avatar-initials">
+                  <%= profile.nickname.slice(0, 2).toUpperCase() %>
+                </div>
+              <% } %>
+            </div>
+            <div class="profile-avatar-actions">
+              <form method="POST" action="/profil/avatar" enctype="multipart/form-data" class="auth-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <div class="auth-field">
+                  <label for="avatar">Nahrať nový obrázok</label>
+                  <input type="file" id="avatar" name="avatar"
+                         accept="image/jpeg,image/png,image/webp,image/gif" required />
+                  <small>JPEG, PNG, WebP, GIF.</small>
+                </div>
+                <button type="submit" class="auth-button">Uložiť avatar</button>
+              </form>
+              <% if (avatarId) { %>
+                <form method="POST" action="/profil/avatar/remove" class="profile-avatar-remove">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                  <button type="submit" class="auth-button auth-button--danger"
+                          onclick="return confirm('Odstrániť avatar?')">Odstrániť avatar</button>
+                </form>
+              <% } %>
+            </div>
+          </div>
+        </section>
+
+        <%# ====================== PROFILE ====================== %>
         <section id="profile" class="profile-section">
           <h2>Údaje profilu</h2>
-          <form method="POST" action="/profil" novalidate class="auth-form">
+          <form method="POST" action="/profil" class="auth-form">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
             <div class="auth-field">
               <label for="bio">O mne</label>
               <textarea id="bio" name="bio" maxlength="1000" rows="4"><%= profile.bio || '' %></textarea>
-              <small>Voliteľné, max 1000 znakov.</small>
             </div>
 
             <div class="profile-row">
               <div class="auth-field">
                 <label for="location">Lokalita</label>
-                <input type="text" id="location" name="location"
-                       value="<%= profile.location || '' %>" maxlength="120" />
+                <input type="text" id="location" name="location" value="<%= profile.location || '' %>" maxlength="120" />
               </div>
               <div class="auth-field">
                 <label for="birth_date">Dátum narodenia</label>
@@ -59,26 +87,21 @@
             <div class="profile-row">
               <div class="auth-field">
                 <label for="custom_field_label">Vlastné pole — názov</label>
-                <input type="text" id="custom_field_label" name="custom_field_label"
-                       value="<%= profile.custom_field_label || '' %>" maxlength="64" />
-                <small>Napr. „Obľúbená hra", „Setup", …</small>
+                <input type="text" id="custom_field_label" name="custom_field_label" value="<%= profile.custom_field_label || '' %>" maxlength="64" />
               </div>
               <div class="auth-field">
                 <label for="custom_field_value">Vlastné pole — hodnota</label>
-                <input type="text" id="custom_field_value" name="custom_field_value"
-                       value="<%= profile.custom_field_value || '' %>" maxlength="255" />
+                <input type="text" id="custom_field_value" name="custom_field_value" value="<%= profile.custom_field_value || '' %>" maxlength="255" />
               </div>
             </div>
 
             <hr class="auth-sep" />
-
             <h3 class="profile-subhead">Sociálne odkazy</h3>
             <% platforms.forEach(p => { %>
               <div class="auth-field">
                 <label for="link_<%= p %>"><%= platformLabels[p] %></label>
                 <input type="url" id="link_<%= p %>" name="link_<%= p %>"
-                       value="<%= links[p] || '' %>"
-                       placeholder="https://…" maxlength="500" />
+                       value="<%= links[p] || '' %>" placeholder="https://…" maxlength="500" />
               </div>
             <% }) %>
 
@@ -86,78 +109,57 @@
           </form>
         </section>
 
-        <%# ========================================== SECTION 2: PASSWORD ========================================== %>
+        <%# ====================== PASSWORD ====================== %>
         <section id="password" class="profile-section">
           <h2>Zmena hesla</h2>
-          <form method="POST" action="/profil/password" novalidate class="auth-form">
+          <form method="POST" action="/profil/password" class="auth-form">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
             <div class="auth-field">
               <label for="current_password">Aktuálne heslo</label>
-              <input type="password" id="current_password" name="current_password"
-                     required autocomplete="current-password" maxlength="200" />
+              <input type="password" id="current_password" name="current_password" required autocomplete="current-password" maxlength="200" />
             </div>
-
             <div class="auth-field">
               <label for="new_password">Nové heslo</label>
-              <input type="password" id="new_password" name="new_password"
-                     required autocomplete="new-password"
-                     minlength="<%= minPasswordLength %>" maxlength="200" />
+              <input type="password" id="new_password" name="new_password" required autocomplete="new-password" minlength="<%= minPasswordLength %>" maxlength="200" />
               <small>Aspoň <%= minPasswordLength %> znakov.</small>
             </div>
-
             <div class="auth-field">
               <label for="new_password2">Nové heslo (znova)</label>
-              <input type="password" id="new_password2" name="new_password2"
-                     required autocomplete="new-password"
-                     minlength="<%= minPasswordLength %>" maxlength="200" />
+              <input type="password" id="new_password2" name="new_password2" required autocomplete="new-password" minlength="<%= minPasswordLength %>" maxlength="200" />
             </div>
-
             <button type="submit" class="auth-button">Zmeniť heslo</button>
           </form>
         </section>
 
-        <%# ========================================== SECTION 3: SECURITY ========================================== %>
+        <%# ====================== SECURITY ====================== %>
         <section id="security" class="profile-section">
           <h2>Bezpečnostná otázka</h2>
           <% if (securityQuestion) { %>
             <div class="auth-info-box">
-              <small>Aktuálna otázka:</small><br />
-              <strong><%= securityQuestion %></strong>
+              <small>Aktuálna otázka:</small><br /><strong><%= securityQuestion %></strong>
             </div>
           <% } %>
-          <p class="text-muted">Použije sa pri obnove zabudnutého hesla. Pri zmene musíš zadať aktuálne heslo.</p>
-
-          <form method="POST" action="/profil/security" novalidate class="auth-form">
+          <form method="POST" action="/profil/security" class="auth-form">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
             <div class="auth-field">
               <label for="sec_current_password">Aktuálne heslo</label>
-              <input type="password" id="sec_current_password" name="current_password"
-                     required autocomplete="current-password" maxlength="200" />
+              <input type="password" id="sec_current_password" name="current_password" required maxlength="200" />
             </div>
-
             <div class="auth-field">
               <label for="question_id">Nová otázka zo zoznamu</label>
               <select id="question_id" name="question_id">
-                <option value="">— Vyber alebo zadaj vlastnú nižšie —</option>
-                <% questions.forEach(q => { %>
-                  <option value="<%= q.id %>"><%= q.text %></option>
-                <% }) %>
+                <option value="">— Vyber alebo zadaj vlastnú —</option>
+                <% questions.forEach(q => { %><option value="<%= q.id %>"><%= q.text %></option><% }) %>
               </select>
             </div>
-
             <div class="auth-field">
               <label for="custom_question">…alebo vlastná otázka</label>
               <input type="text" id="custom_question" name="custom_question" maxlength="255" />
             </div>
-
             <div class="auth-field">
               <label for="answer">Nová odpoveď</label>
               <input type="text" id="answer" name="answer" required minlength="3" autocomplete="off" />
-              <small>Nie je citlivé na veľkosť písmen ani medzery.</small>
             </div>
-
             <button type="submit" class="auth-button">Zmeniť otázku</button>
           </form>
         </section>

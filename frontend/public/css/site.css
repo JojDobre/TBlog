@@ -17,11 +17,23 @@
    ============================================================================= */
 
 /* --------------------------------------------------------------------- Reset */
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
 
 body {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   line-height: 1.6;
   color: #111;
 }
@@ -60,18 +72,48 @@ body {
   gap: 1rem;
 }
 
-a { color: inherit; }
+a {
+  color: inherit;
+}
 
-.site-main { padding: 2rem 0; min-height: 60vh; }
+.site-main {
+  padding: 2rem 0;
+  min-height: 60vh;
+}
 
-.site-footer { border-top: 1px solid #eee; margin-top: 4rem; }
-.site-footer__columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; }
-.site-footer__list { list-style: none; padding: 0; margin: 0; }
-.site-footer__list li { margin: 0.25rem 0; }
-.site-footer__bottom { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; color: #888; }
+.site-footer {
+  border-top: 1px solid #eee;
+  margin-top: 4rem;
+}
+.site-footer__columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+}
+.site-footer__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.site-footer__list li {
+  margin: 0.25rem 0;
+}
+.site-footer__bottom {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  color: #888;
+}
 
-.error-page { text-align: center; padding: 4rem 0; }
-.error-page__code { font-size: 5rem; font-weight: 700; color: #ddd; }
+.error-page {
+  text-align: center;
+  padding: 4rem 0;
+}
+.error-page__code {
+  font-size: 5rem;
+  font-weight: 700;
+  color: #ddd;
+}
 
 /* =============================================================================
    USER DROPDOWN v hlavičke
@@ -88,7 +130,9 @@ a { color: inherit; }
   border-radius: 6px;
 }
 
-.site-user { position: relative; }
+.site-user {
+  position: relative;
+}
 
 .site-user__name {
   background: none;
@@ -102,7 +146,9 @@ a { color: inherit; }
   align-items: center;
   gap: 0.4rem;
 }
-.site-user__name:hover { background: #f6f6f6; }
+.site-user__name:hover {
+  background: #f6f6f6;
+}
 
 .site-user__badge {
   font-size: 0.7rem;
@@ -112,8 +158,14 @@ a { color: inherit; }
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
-.site-user__badge--admin { background: #fee2e2; color: #b91c1c; }
-.site-user__badge--editor { background: #dbeafe; color: #1d4ed8; }
+.site-user__badge--admin {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.site-user__badge--editor {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
 
 .site-user__menu {
   position: absolute;
@@ -130,7 +182,9 @@ a { color: inherit; }
   z-index: 100;
 }
 
-.site-user__menu li { margin: 0; }
+.site-user__menu li {
+  margin: 0;
+}
 
 .site-user__menu-item {
   display: block;
@@ -141,14 +195,18 @@ a { color: inherit; }
   color: #111;
   font-size: 0.95rem;
 }
-.site-user__menu-item:hover { background: #f6f6f6; }
+.site-user__menu-item:hover {
+  background: #f6f6f6;
+}
 .site-user__menu-item--button {
   background: none;
   border: 0;
   cursor: pointer;
   font: inherit;
 }
-.site-user__logout { margin: 0; }
+.site-user__logout {
+  margin: 0;
+}
 
 /* =============================================================================
    AUTH STRÁNKY (login, register, forgot)
@@ -169,9 +227,19 @@ a { color: inherit; }
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.auth-card__header { text-align: center; margin-bottom: 1.5rem; }
-.auth-card__title { margin: 0 0 0.25rem; font-size: 1.5rem; }
-.auth-card__subtitle { margin: 0; color: #666; font-size: 0.95rem; }
+.auth-card__header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.auth-card__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+.auth-card__subtitle {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
 
 .auth-card__footer {
   text-align: center;
@@ -181,9 +249,17 @@ a { color: inherit; }
   color: #666;
   font-size: 0.92rem;
 }
-.auth-card__footer a { color: #2563eb; text-decoration: none; }
-.auth-card__footer a:hover { text-decoration: underline; }
-.auth-sep-dot { margin: 0 0.5rem; color: #999; }
+.auth-card__footer a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.auth-card__footer a:hover {
+  text-decoration: underline;
+}
+.auth-sep-dot {
+  margin: 0 0.5rem;
+  color: #999;
+}
 
 .auth-alert {
   padding: 0.75rem 1rem;
@@ -191,8 +267,16 @@ a { color: inherit; }
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
-.auth-alert--error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-.auth-alert--info  { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.auth-alert--error {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+.auth-alert--info {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
 
 .auth-info-box {
   background: #f9fafb;
@@ -202,17 +286,28 @@ a { color: inherit; }
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
-.auth-info-box small { color: #666; }
+.auth-info-box small {
+  color: #666;
+}
 
-.auth-form { display: block; }
+.auth-form {
+  display: block;
+}
 
-.auth-field { margin-bottom: 1rem; }
-.auth-field label { display: block; margin-bottom: 0.3rem; font-weight: 500; font-size: 0.95rem; }
-.auth-field input[type="text"],
-.auth-field input[type="email"],
-.auth-field input[type="password"],
-.auth-field input[type="url"],
-.auth-field input[type="date"],
+.auth-field {
+  margin-bottom: 1rem;
+}
+.auth-field label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+.auth-field input[type='text'],
+.auth-field input[type='email'],
+.auth-field input[type='password'],
+.auth-field input[type='url'],
+.auth-field input[type='date'],
 .auth-field select,
 .auth-field textarea {
   width: 100%;
@@ -223,7 +318,10 @@ a { color: inherit; }
   font-size: 0.95rem;
   background: #fff;
 }
-.auth-field textarea { resize: vertical; min-height: 80px; }
+.auth-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
 .auth-field input:focus,
 .auth-field select:focus,
 .auth-field textarea:focus {
@@ -231,7 +329,12 @@ a { color: inherit; }
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-.auth-field small { display: block; margin-top: 0.25rem; color: #666; font-size: 0.85rem; }
+.auth-field small {
+  display: block;
+  margin-top: 0.25rem;
+  color: #666;
+  font-size: 0.85rem;
+}
 
 .auth-field--checkbox label {
   display: flex;
@@ -239,7 +342,9 @@ a { color: inherit; }
   gap: 0.5rem;
   font-weight: 400;
 }
-.auth-field--checkbox input { margin-top: 0.25rem; }
+.auth-field--checkbox input {
+  margin-top: 0.25rem;
+}
 
 .auth-button {
   width: 100%;
@@ -254,8 +359,13 @@ a { color: inherit; }
   cursor: pointer;
   margin-top: 0.5rem;
 }
-.auth-button:hover { background: #1d4ed8; }
-.auth-button:disabled { background: #9ca3af; cursor: not-allowed; }
+.auth-button:hover {
+  background: #1d4ed8;
+}
+.auth-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
 
 .auth-sep {
   border: 0;
@@ -266,19 +376,35 @@ a { color: inherit; }
 /* =============================================================================
    PROFILE — vlastný (edit)
    ========================================================================== */
-.text-muted { color: #6b7280; }
+.text-muted {
+  color: #6b7280;
+}
 
-.profile-edit { max-width: 720px; margin: 0 auto; }
+.profile-edit {
+  max-width: 720px;
+  margin: 0 auto;
+}
 
 .profile-edit__header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #eee;
 }
-.profile-edit__header h1 { margin: 0 0 0.25rem; font-size: 1.6rem; }
-.profile-edit__header p { margin: 0; font-size: 0.9rem; }
-.profile-edit__header a { color: #2563eb; text-decoration: none; }
-.profile-edit__header a:hover { text-decoration: underline; }
+.profile-edit__header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.6rem;
+}
+.profile-edit__header p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.profile-edit__header a {
+  color: #2563eb;
+  text-decoration: none;
+}
+.profile-edit__header a:hover {
+  text-decoration: underline;
+}
 
 .profile-tabs {
   display: flex;
@@ -295,7 +421,9 @@ a { color: inherit; }
   margin-bottom: -1px;
   font-size: 0.95rem;
 }
-.profile-tabs__link:hover { color: #111; }
+.profile-tabs__link:hover {
+  color: #111;
+}
 .profile-tabs__link.is-active {
   color: #2563eb;
   border-bottom-color: #2563eb;
@@ -310,7 +438,10 @@ a { color: inherit; }
   margin-bottom: 1.5rem;
   scroll-margin-top: 1rem;
 }
-.profile-section h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+.profile-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
 
 .profile-subhead {
   font-size: 1rem;
@@ -325,13 +456,18 @@ a { color: inherit; }
   gap: 1rem;
 }
 @media (max-width: 600px) {
-  .profile-row { grid-template-columns: 1fr; }
+  .profile-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =============================================================================
    PROFILE — verejný (show)
    ========================================================================== */
-.profile-show { max-width: 720px; margin: 0 auto; }
+.profile-show {
+  max-width: 720px;
+  margin: 0 auto;
+}
 
 .profile-show__header {
   display: flex;
@@ -374,8 +510,14 @@ a { color: inherit; }
   flex-wrap: wrap;
   gap: 0.75rem;
 }
-.profile-show__joined::before { content: "·"; margin-right: 0.75rem; color: #9ca3af; }
-.profile-show__meta > :first-child::before { display: none; }
+.profile-show__joined::before {
+  content: '·';
+  margin-right: 0.75rem;
+  color: #9ca3af;
+}
+.profile-show__meta > :first-child::before {
+  display: none;
+}
 
 .profile-show__edit {
   margin-left: auto;
@@ -387,11 +529,21 @@ a { color: inherit; }
   font-size: 0.9rem;
   border: 1px solid #e5e7eb;
 }
-.profile-show__edit:hover { background: #e5e7eb; }
+.profile-show__edit:hover {
+  background: #e5e7eb;
+}
 
-.profile-show__section { margin-bottom: 1.5rem; }
-.profile-show__section h2 { font-size: 1.05rem; margin: 0 0 0.5rem; color: #374151; }
-.profile-show__bio { white-space: pre-wrap; }
+.profile-show__section {
+  margin-bottom: 1.5rem;
+}
+.profile-show__section h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+  color: #374151;
+}
+.profile-show__bio {
+  white-space: pre-wrap;
+}
 
 .profile-show__links {
   list-style: none;
@@ -411,4 +563,124 @@ a { color: inherit; }
   color: #2563eb;
   font-size: 0.9rem;
 }
-.profile-show__links a:hover { background: #e5e7eb; }
+.profile-show__links a:hover {
+  background: #e5e7eb;
+}
+
+/* ============== /u/:nickname AVATAR — kruh okolo img ============== */
+.profile-show__avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  position: relative;
+}
+
+.profile-show__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-show__avatar-initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* ============== /profil — avatar preview kruh ============== */
+.profile-avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  background: #f3f4f6;
+}
+
+.profile-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-avatar-initials {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* ============== Spinner — viditeľný IBA keď nemá [hidden] ============== */
+/* Použitie atribútu `hidden` v HTML by malo dať `display: none`, ale CSS
+   `display: flex` nižšie by ho prebíjalo. Preto explicitne skryjeme cez
+   atribútový selektor. */
+.profile-avatar-spinner[hidden] {
+  display: none !important;
+}
+
+.profile-avatar-spinner {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border-radius: 50%;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: bz-spin 0.8s linear infinite;
+}
+
+@keyframes bz-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============== Avatar actions ============== */
+.profile-avatar-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.profile-avatar-actions {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.profile-avatar-remove {
+  margin-top: 0.75rem;
+}
+
+.auth-button--danger {
+  background: #dc2626;
+}
+.auth-button--danger:hover {
+  background: #b91c1c;
+}
