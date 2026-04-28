@@ -1,19 +1,10 @@
 /**
- * Article block editor  (Phase 5.1)
+ * Article block editor  (Phase 5.4)
  *
- * State: hidden <input data-content-json> drží JSON pole blokov.
- * Render: pre každý blok vytvoríme klon zo <template data-block-template="{type}">.
+ * Pridaná podpora pre block typy: youtube, quote.
  *
- * Akcie:
- *   - Add block (data-add-block="{type}")     → pridá nový block na koniec
- *   - Move up / down                          → preusporiada
- *   - Remove                                  → vymaže
- *   - Edit field (input/change)               → updatne JSON
- *
- * Pri submit formulára sa odošle hidden input s aktuálnym JSONom — server
- * ho parsuje, sanitizuje a uloží.
- *
- * CSP-safe: žiadny inline JS, len addEventListener, žiadny eval.
+ * YouTube blok: pri opustení URL inputu sa hodnota normalizuje na video_id
+ * (extrahuje z URL); preview ukáže `https://www.youtube.com/embed/{id}`.
  */
 
 (function () {
@@ -27,25 +18,15 @@
   var emptyState = form.querySelector('[data-empty-state]');
   if (!hiddenInput || !container) return;
 
-  // -------------------------------------------------------------------------
-  // State
-  // -------------------------------------------------------------------------
   var blocks = [];
   try {
     blocks = JSON.parse(hiddenInput.value || '[]');
     if (!Array.isArray(blocks)) blocks = [];
-  } catch (e) {
-    blocks = [];
-  }
+  } catch (e) { blocks = []; }
 
-  // -------------------------------------------------------------------------
-  // Helpers
-  // -------------------------------------------------------------------------
   function syncHidden() {
     hiddenInput.value = JSON.stringify(blocks);
-    if (emptyState) {
-      emptyState.style.display = blocks.length === 0 ? '' : 'none';
-    }
+    if (emptyState) emptyState.style.display = blocks.length === 0 ? '' : 'none';
   }
 
   function defaultBlock(type) {
@@ -54,6 +35,8 @@
       case 'heading':   return { type: 'heading', level: 2, text: '' };
       case 'image':     return { type: 'image', media_id: null, alt: '', caption: '' };
       case 'divider':   return { type: 'divider' };
+      case 'youtube':   return { type: 'youtube', video_id: '', caption: '' };
+      case 'quote':     return { type: 'quote', text: '', author: '' };
       default: return null;
     }
   }
@@ -62,19 +45,44 @@
     return document.querySelector('[data-block-template="' + type + '"]');
   }
 
-  // -------------------------------------------------------------------------
-  // Render single block from blocks[index]
-  // -------------------------------------------------------------------------
+  // ---- YouTube ID extraction (rovnaká logika ako server) ----
+  var YT_RE = /^[a-zA-Z0-9_-]{11}$/;
+  function extractYtId(input) {
+    if (!input) return null;
+    var s = String(input).trim();
+    if (!s) return null;
+    if (YT_RE.test(s)) return s;
+    var m = s.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (m) return m[1];
+    m = s.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (m) return m[1];
+    m = s.match(/youtube\.com\/(?:embed|shorts|v)\/([a-zA-Z0-9_-]{11})/);
+    if (m) return m[1];
+    return null;
+  }
+
+  function updateYoutubePreview(node, videoId) {
+    var el = node.querySelector('[data-youtube-preview]');
+    if (!el) return;
+    if (!videoId) {
+      el.innerHTML = '<span class="text-muted small">(zadaj YouTube URL alebo video ID)</span>';
+      return;
+    }
+    el.innerHTML =
+      '<div class="ratio ratio-16x9">' +
+      '<iframe src="https://www.youtube.com/embed/' + videoId + '" ' +
+      'title="YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ' +
+      'allowfullscreen></iframe></div>';
+  }
+
   function renderBlock(index) {
     var block = blocks[index];
     if (!block) return null;
     var tpl = getTemplate(block.type);
     if (!tpl) return null;
 
-    // <template>.content je DocumentFragment — naklonujeme prvý element
     var node = tpl.content.firstElementChild.cloneNode(true);
 
-    // Naplň polia
     var fields = node.querySelectorAll('[data-field]');
     fields.forEach(function (f) {
       var key = f.getAttribute('data-field');
@@ -82,8 +90,11 @@
       if (val === null || val === undefined) val = '';
       f.value = val;
 
+      // YouTube URL input — pri blur normalizuj URL na video_id
+      var isYoutubeUrlInput =
+        block.type === 'youtube' && key === 'video_id';
+
       f.addEventListener('input', function () {
-        // Find current index from DOM (môže sa zmeniť po move)
         var idx = currentIndex(node);
         if (idx === -1) return;
         var v = f.value;
@@ -96,16 +107,33 @@
         } else {
           blocks[idx][key] = v;
         }
+        // Live preview pre YouTube — len ak je už 11-znakové ID
+        if (isYoutubeUrlInput) {
+          var id = extractYtId(v);
+          updateYoutubePreview(node, id);
+        }
         syncHidden();
       });
+
+      // Pri opustení YouTube inputu — normalizuj URL na video_id
+      if (isYoutubeUrlInput) {
+        f.addEventListener('blur', function () {
+          var idx = currentIndex(node);
+          if (idx === -1) return;
+          var id = extractYtId(f.value);
+          if (id) {
+            f.value = id;
+            blocks[idx].video_id = id;
+            updateYoutubePreview(node, id);
+            syncHidden();
+          }
+        });
+      }
     });
 
-    // Image preview
-    if (block.type === 'image' && block.media_id) {
-      updateImagePreview(node, block.media_id);
-    }
+    if (block.type === 'image' && block.media_id) updateImagePreview(node, block.media_id);
+    if (block.type === 'youtube' && block.video_id) updateYoutubePreview(node, block.video_id);
 
-    // Action buttons (move up / down / remove)
     var actionsEl = node.querySelector('.bz-block-actions');
     if (actionsEl) {
       actionsEl.appendChild(makeIconBtn('arrow-up', 'Hore', function () { move(node, -1); }));
@@ -139,28 +167,19 @@
     });
   }
 
-  // -------------------------------------------------------------------------
-  // Image preview
-  // -------------------------------------------------------------------------
-  // Cache (avoid re-fetching same media)
   var mediaCache = {};
-
   function updateImagePreview(node, mediaId) {
     var el = node.querySelector('[data-image-preview]');
     if (!el) return;
-
     if (!mediaId) {
       el.innerHTML = '<span class="text-muted small">(žiadny)</span>';
       return;
     }
-
     if (mediaCache[mediaId]) {
       el.innerHTML = mediaCache[mediaId];
       return;
     }
-
     el.innerHTML = '<span class="text-muted small">načítavam…</span>';
-
     fetch('/admin/articles/media-thumb/' + mediaId, { credentials: 'same-origin' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
@@ -177,9 +196,6 @@
       });
   }
 
-  // -------------------------------------------------------------------------
-  // Mutations
-  // -------------------------------------------------------------------------
   function add(type) {
     var b = defaultBlock(type);
     if (!b) return;
@@ -188,7 +204,6 @@
     if (node) container.appendChild(node);
     reindexDom();
     syncHidden();
-    // Focus first input v novom bloku (ak existuje)
     var first = node && node.querySelector('input, textarea, select');
     if (first) first.focus();
   }
@@ -198,19 +213,11 @@
     if (idx === -1) return;
     var newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= blocks.length) return;
-
-    // Swap v JSON
     var tmp = blocks[idx];
     blocks[idx] = blocks[newIdx];
     blocks[newIdx] = tmp;
-
-    // Swap v DOM
-    if (dir === -1) {
-      container.insertBefore(node, container.children[newIdx]);
-    } else {
-      container.insertBefore(node, container.children[newIdx].nextSibling);
-    }
-
+    if (dir === -1) container.insertBefore(node, container.children[newIdx]);
+    else container.insertBefore(node, container.children[newIdx].nextSibling);
     reindexDom();
     syncHidden();
   }
@@ -225,9 +232,6 @@
     syncHidden();
   }
 
-  // -------------------------------------------------------------------------
-  // Init: render existing blocks, wire add buttons
-  // -------------------------------------------------------------------------
   function renderAll() {
     container.innerHTML = '';
     for (var i = 0; i < blocks.length; i++) {
@@ -238,15 +242,10 @@
   }
 
   document.querySelectorAll('[data-add-block]').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      add(btn.getAttribute('data-add-block'));
-    });
+    btn.addEventListener('click', function () { add(btn.getAttribute('data-add-block')); });
   });
 
-  // Pri submit ešte raz syncneme — istota
-  form.addEventListener('submit', function () {
-    syncHidden();
-  });
+  form.addEventListener('submit', function () { syncHidden(); });
 
   renderAll();
 })();

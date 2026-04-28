@@ -382,3 +382,20 @@
   border-radius: 4px;
   padding: 0.5rem 0.75rem;
 }
+
+/* Quote block — vizuálne zvýraznený citát v editore */
+.bz-block[data-block-type='quote'] textarea[data-field='text'] {
+  font-style: italic;
+  border-left: 4px solid #6366f1;
+  padding-left: 0.75rem;
+  background: #fafafa;
+}
+
+.bz-block[data-block-type='quote'] input[data-field='author'] {
+  font-style: italic;
+  color: #6b7280;
+}
+
+.bz-block[data-block-type='quote'] input[data-field='author']::before {
+  content: '— ';
+}
