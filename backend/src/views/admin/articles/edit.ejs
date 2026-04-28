@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: pageTitle }) %>
+</head>
+<body class="bz-admin-body">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="container-fluid p-4">
+
+        <nav aria-label="breadcrumb" class="mb-3">
+          <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/admin/articles">Články</a></li>
+            <li class="breadcrumb-item active"><%= isNew ? 'Nový' : (article.title || 'Upraviť') %></li>
+          </ol>
+        </nav>
+
+        <% if (typeof flash !== 'undefined' && flash.created) { %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>Článok bol vytvorený.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+        <% if (typeof flash !== 'undefined' && flash.updated) { %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>Zmeny uložené.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+
+        <% if (Object.keys(errors).length > 0) { %>
+          <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Skontroluj chyby vo formulári nižšie.
+          </div>
+        <% } %>
+
+        <form method="POST"
+              action="<%= isNew ? '/admin/articles' : ('/admin/articles/' + article.id) %>"
+              novalidate
+              data-article-form>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="content_json" data-content-json
+                 value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c") %>'>
+
+          <div class="row g-4">
+
+            <!-- LEFT: title + content blocks -->
+            <div class="col-lg-8">
+
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="title" class="form-label">Názov <span class="text-danger">*</span></label>
+                    <input type="text"
+                           class="form-control form-control-lg <%= errors.title ? 'is-invalid' : '' %>"
+                           id="title" name="title" maxlength="255" required autofocus
+                           value="<%= article.title || '' %>">
+                    <% if (errors.title) { %>
+                      <div class="invalid-feedback"><%= errors.title %></div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="slug" class="form-label">Slug</label>
+                    <input type="text"
+                           class="form-control <%= errors.slug ? 'is-invalid' : '' %>"
+                           id="slug" name="slug" maxlength="255"
+                           pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                           value="<%= article.slug || '' %>"
+                           placeholder="<%= isNew ? 'Auto-generuje sa z názvu' : '' %>">
+                    <% if (errors.slug) { %>
+                      <div class="invalid-feedback"><%= errors.slug %></div>
+                    <% } else { %>
+                      <div class="form-text">Časť URL — len <code>a-z</code>, <code>0-9</code>, pomlčky.</div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-0">
+                    <label for="excerpt" class="form-label">Krátky popis (excerpt)</label>
+                    <textarea class="form-control <%= errors.excerpt ? 'is-invalid' : '' %>"
+                              id="excerpt" name="excerpt" rows="2"
+                              maxlength="5000"><%= article.excerpt || '' %></textarea>
+                    <% if (errors.excerpt) { %>
+                      <div class="invalid-feedback"><%= errors.excerpt %></div>
+                    <% } else { %>
+                      <div class="form-text">Zobrazí sa v listingu a meta tagoch.</div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Block editor -->
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                  <h2 class="h5 mb-0">Obsah</h2>
+                  <small class="text-muted">Bloky sa zobrazia v poradí v akom sú tu.</small>
+                </div>
+                <div class="card-body">
+
+                  <% if (errors.content) { %>
+                    <div class="alert alert-danger small"><%= errors.content %></div>
+                  <% } %>
+
+                  <div data-blocks-container>
+                    <!-- JS sem rendrne bloky z hidden content_json -->
+                  </div>
+
+                  <div data-empty-state class="text-center text-muted py-4 border-top">
+                    Žiadne bloky. Pridaj prvý cez tlačidlá nižšie.
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="paragraph">
+                      <i class="bi bi-paragraph me-1"></i>Odsek
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="heading">
+                      <i class="bi bi-type-h2 me-1"></i>Nadpis
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="image">
+                      <i class="bi bi-image me-1"></i>Obrázok
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="divider">
+                      <i class="bi bi-dash-lg me-1"></i>Oddeľovač
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- RIGHT: sidebar with meta -->
+            <div class="col-lg-4">
+
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white"><h3 class="h6 mb-0">Publikovanie</h3></div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="status" class="form-label">Stav</label>
+                    <select class="form-select <%= errors.status ? 'is-invalid' : '' %>"
+                            id="status" name="status">
+                      <option value="draft"     <%= article.status === 'draft' ? 'selected' : '' %>>Draft</option>
+                      <option value="published" <%= article.status === 'published' ? 'selected' : '' %>>Publikovaný</option>
+                    </select>
+                    <% if (errors.status) { %>
+                      <div class="invalid-feedback"><%= errors.status %></div>
+                    <% } else { %>
+                      <div class="form-text">Naplánované a archivované — Phase 5.2.</div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-0">
+                    <label for="type" class="form-label">Typ</label>
+                    <select class="form-select" id="type" name="type">
+                      <option value="article" <%= article.type === 'article' ? 'selected' : '' %>>Klasický článok</option>
+                      <option value="review"  <%= article.type === 'review' ? 'selected' : '' %>>Recenzia</option>
+                    </select>
+                    <div class="form-text">Recenzie majú špeciálne bloky — pribudnú v Phase 8.</div>
+                  </div>
+                </div>
+                <div class="card-footer bg-white d-flex gap-2">
+                  <button type="submit" class="btn btn-primary flex-fill">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <%= isNew ? 'Vytvoriť' : 'Uložiť' %>
+                  </button>
+                  <a href="/admin/articles" class="btn btn-outline-secondary">Zrušiť</a>
+                </div>
+              </div>
+
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white"><h3 class="h6 mb-0">Hlavný obrázok (cover)</h3></div>
+                <div class="card-body">
+                  <div class="mb-2" data-cover-preview>
+                    <% if (coverMedia && coverMedia.thumbnail_path) { %>
+                      <img src="/uploads/<%= coverMedia.thumbnail_path %>"
+                           class="img-fluid rounded" style="max-height: 180px;">
+                    <% } else { %>
+                      <div class="text-muted small fst-italic">(bez obrázka)</div>
+                    <% } %>
+                  </div>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">ID</span>
+                    <input type="number" class="form-control <%= errors.cover_media_id ? 'is-invalid' : '' %>"
+                           name="cover_media_id" min="1"
+                           value="<%= article.cover_media_id || '' %>"
+                           placeholder="napr. 12">
+                    <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
+                      <i class="bi bi-images"></i>
+                    </a>
+                  </div>
+                  <% if (errors.cover_media_id) { %>
+                    <div class="invalid-feedback d-block"><%= errors.cover_media_id %></div>
+                  <% } else { %>
+                    <div class="form-text small">Skopíruj ID z mediálnej knižnice.</div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white"><h3 class="h6 mb-0">Rubriky</h3></div>
+                <div class="card-body">
+                  <% if (taxonomy.rubrics.length === 0) { %>
+                    <p class="text-muted small mb-0">
+                      Žiadne rubriky. <a href="/admin/rubrics/new" target="_blank">Vytvor</a>.
+                    </p>
+                  <% } else { %>
+                    <% taxonomy.rubrics.forEach(r => { %>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="rubric_ids[]"
+                               value="<%= r.id %>" id="rub_<%= r.id %>"
+                               <%= relations.rubric_ids.includes(r.id) ? 'checked' : '' %>>
+                        <label class="form-check-label" for="rub_<%= r.id %>"><%= r.name %></label>
+                      </div>
+                    <% }) %>
+                  <% } %>
+                  <% if (errors.rubric_ids) { %>
+                    <div class="text-danger small mt-1"><%= errors.rubric_ids %></div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white"><h3 class="h6 mb-0">Kategórie</h3></div>
+                <div class="card-body">
+                  <% if (taxonomy.categories.length === 0) { %>
+                    <p class="text-muted small mb-0">
+                      Žiadne kategórie. <a href="/admin/categories/new" target="_blank">Vytvor</a>.
+                    </p>
+                  <% } else { %>
+                    <div class="bz-checklist mb-2">
+                      <% taxonomy.categories.forEach(c => { %>
+                        <div class="form-check" style="padding-left: calc(1.5em + <%= c.depth %> * 1rem);">
+                          <input class="form-check-input" type="checkbox" name="category_ids[]"
+                                 value="<%= c.id %>" id="cat_<%= c.id %>"
+                                 <%= relations.category_ids.includes(c.id) ? 'checked' : '' %>>
+                          <label class="form-check-label" for="cat_<%= c.id %>"><%= c.name %></label>
+                        </div>
+                      <% }) %>
+                    </div>
+
+                    <label class="form-label small mb-1 mt-2">Primárna kategória</label>
+                    <select class="form-select form-select-sm" name="primary_category_id">
+                      <option value="">— (auto: prvá vybraná)</option>
+                      <% taxonomy.categories.forEach(c => {
+                          if (relations.category_ids.includes(c.id)) { %>
+                        <option value="<%= c.id %>"
+                          <%= relations.primary_category_id === c.id ? 'selected' : '' %>>
+                          <%= c.label %>
+                        </option>
+                      <% }}) %>
+                    </select>
+                    <div class="form-text small">Použije sa v breadcrumbs a primárnej URL.</div>
+                  <% } %>
+                  <% if (errors.category_ids) { %>
+                    <div class="text-danger small mt-1"><%= errors.category_ids %></div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white"><h3 class="h6 mb-0">Tagy</h3></div>
+                <div class="card-body">
+                  <% if (taxonomy.tags.length === 0) { %>
+                    <p class="text-muted small mb-0">
+                      Žiadne tagy. <a href="/admin/tags/new" target="_blank">Vytvor</a>.
+                    </p>
+                  <% } else { %>
+                    <% taxonomy.tags.forEach(t => { %>
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="tag_ids[]"
+                               value="<%= t.id %>" id="tag_<%= t.id %>"
+                               <%= relations.tag_ids.includes(t.id) ? 'checked' : '' %>>
+                        <label class="form-check-label" for="tag_<%= t.id %>">
+                          <span class="bz-tag-pill" style="--bz-tag-color: <%= t.color || '#9ca3af' %>;">
+                            <%= t.name %>
+                          </span>
+                        </label>
+                      </div>
+                    <% }) %>
+                  <% } %>
+                  <% if (errors.tag_ids) { %>
+                    <div class="text-danger small mt-1"><%= errors.tag_ids %></div>
+                  <% } %>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </form>
+
+        <!-- Block templates (hidden, used by JS to clone) -->
+        <template data-block-template="paragraph">
+          <div class="bz-block" data-block-type="paragraph">
+            <div class="bz-block-header">
+              <span class="bz-block-label"><i class="bi bi-paragraph me-1"></i>Odsek</span>
+              <div class="bz-block-actions"></div>
+            </div>
+            <textarea class="form-control" rows="4" data-field="text"
+                      placeholder="Text odseku..."></textarea>
+          </div>
+        </template>
+
+        <template data-block-template="heading">
+          <div class="bz-block" data-block-type="heading">
+            <div class="bz-block-header">
+              <span class="bz-block-label"><i class="bi bi-type-h2 me-1"></i>Nadpis</span>
+              <div class="bz-block-actions"></div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+              <select class="form-select form-select-sm" data-field="level" style="width: 90px;">
+                <option value="2">H2</option>
+                <option value="3">H3</option>
+              </select>
+              <input type="text" class="form-control" data-field="text"
+                     placeholder="Nadpis..." maxlength="255">
+            </div>
+          </div>
+        </template>
+
+        <template data-block-template="image">
+          <div class="bz-block" data-block-type="image">
+            <div class="bz-block-header">
+              <span class="bz-block-label"><i class="bi bi-image me-1"></i>Obrázok</span>
+              <div class="bz-block-actions"></div>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-4">
+                <div data-image-preview class="bz-image-preview">
+                  <span class="text-muted small">(žiadny)</span>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="input-group input-group-sm mb-2">
+                  <span class="input-group-text">Media ID</span>
+                  <input type="number" class="form-control" data-field="media_id"
+                         min="1" placeholder="napr. 7">
+                  <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
+                    <i class="bi bi-images"></i>
+                  </a>
+                </div>
+                <input type="text" class="form-control form-control-sm mb-2"
+                       data-field="alt" placeholder="Alt text (pre prístupnosť)" maxlength="255">
+                <input type="text" class="form-control form-control-sm"
+                       data-field="caption" placeholder="Popis pod obrázkom (voliteľný)" maxlength="500">
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template data-block-template="divider">
+          <div class="bz-block" data-block-type="divider">
+            <div class="bz-block-header">
+              <span class="bz-block-label"><i class="bi bi-dash-lg me-1"></i>Oddeľovač</span>
+              <div class="bz-block-actions"></div>
+            </div>
+            <hr class="my-1">
+          </div>
+        </template>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-taxonomy.js" defer></script>
+  <script src="/admin/static/js/admin-article-editor.js" defer></script>
+</body>
+</html>

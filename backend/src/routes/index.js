@@ -1,9 +1,5 @@
 /**
- * Routes index
- *
- * Phase 4.2 update: pribudol admin-categories.
- *
- * Špecifické /admin/<resource> idú PRED /admin (ktorý má catchall 404).
+ * Routes index — Phase 5.1: pribudol admin-articles.
  */
 
 'use strict';
@@ -15,6 +11,7 @@ const adminMediaRouter = require('./admin-media');
 const adminRubricsRouter = require('./admin-rubrics');
 const adminTagsRouter = require('./admin-tags');
 const adminCategoriesRouter = require('./admin-categories');
+const adminArticlesRouter = require('./admin-articles');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
 const healthRouter = require('./health');
@@ -27,6 +24,7 @@ router.use('/admin/media', adminMediaRouter);
 router.use('/admin/rubrics', adminRubricsRouter);
 router.use('/admin/tags', adminTagsRouter);
 router.use('/admin/categories', adminCategoriesRouter);
+router.use('/admin/articles', adminArticlesRouter);
 
 // Generický /admin
 router.use('/admin', adminRouter);
