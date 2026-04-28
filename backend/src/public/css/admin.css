@@ -255,3 +255,52 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
+/* ---- Tag pill (used in tag list, edit preview, future article tag chips) ---- */
+.bz-tag-pill {
+  --bz-tag-color: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #fff;
+  background: var(--bz-tag-color);
+  border-radius: 999px;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Tag swatch (small circle in lists) ---- */
+.bz-tag-swatch {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  vertical-align: middle;
+}
+
+/* ---- Color chip buttons (palette in tag form) ---- */
+.bz-color-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.bz-color-chip:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+}
+.bz-color-chip:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}

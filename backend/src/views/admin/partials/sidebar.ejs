@@ -5,7 +5,9 @@
 
   Premenné z locals:
     currentPath  — req.path, na zvýraznenie aktívneho linku
-    user         — neaktuálne v Phase 1.4, zobrazí sa "Hosť"
+    user         — z res.locals (admin/editor po prihlásení)
+
+  Phase 4.1 update: pridaný link na Rubriky (predtým len Kategórie + Tagy).
 %>
 <%
   const navGroups = [
@@ -30,6 +32,7 @@
     {
       label: 'Štruktúra',
       items: [
+        { href: '/admin/rubrics',    icon: 'collection', label: 'Rubriky' },
         { href: '/admin/categories', icon: 'diagram-3', label: 'Kategórie' },
         { href: '/admin/tags',       icon: 'tags', label: 'Tagy' },
         { href: '/admin/media',      icon: 'images', label: 'Médiá' },
@@ -79,9 +82,8 @@
               const active = cp === item.href || cp.startsWith(item.href + '/');
           %>
             <li class="nav-item">
-              <a class="nav-link <%= active ? 'active' : '' %>" href="<%= item.href %>">
-                <i class="bi bi-<%= item.icon %> me-2"></i>
-                <%= item.label %>
+              <a class="nav-link <%= active ? 'is-active' : '' %>" href="<%= item.href %>">
+                <i class="bi bi-<%= item.icon %> me-2"></i><span><%= item.label %></span>
               </a>
             </li>
           <% }) %>
@@ -89,8 +91,4 @@
       </div>
     <% }) %>
   </nav>
-
-  <div class="bz-sidebar-footer">
-    <small class="text-white-50">v0.1.0 — dev</small>
-  </div>
 </aside>

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: pageTitle }) %>
+</head>
+<body class="bz-admin-body">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="container-fluid p-4">
+
+        <nav aria-label="breadcrumb" class="mb-3">
+          <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/admin/tags">Tagy</a></li>
+            <li class="breadcrumb-item active" aria-current="page">
+              <%= isNew ? 'Nový' : (tag.name || 'Upraviť') %>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="row">
+          <div class="col-lg-8 col-xl-7">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-white">
+                <h2 class="h5 mb-0"><%= pageTitle %></h2>
+              </div>
+              <div class="card-body">
+
+                <% if (Object.keys(errors).length > 0) { %>
+                  <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Skontroluj chyby vo formulári nižšie.
+                  </div>
+                <% } %>
+
+                <form
+                  method="POST"
+                  action="<%= isNew ? '/admin/tags' : ('/admin/tags/' + tag.id) %>"
+                  novalidate
+                  data-tag-form
+                >
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                  <div class="mb-3">
+                    <label for="name" class="form-label">
+                      Názov <span class="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      class="form-control <%= errors.name ? 'is-invalid' : '' %>"
+                      id="name"
+                      name="name"
+                      maxlength="64"
+                      required
+                      autofocus
+                      value="<%= tag.name || '' %>"
+                      data-color-name-source
+                    >
+                    <% if (errors.name) { %>
+                      <div class="invalid-feedback"><%= errors.name %></div>
+                    <% } else { %>
+                      <div class="form-text">Max 64 znakov.</div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="slug" class="form-label">Slug</label>
+                    <input
+                      type="text"
+                      class="form-control <%= errors.slug ? 'is-invalid' : '' %>"
+                      id="slug"
+                      name="slug"
+                      maxlength="120"
+                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                      value="<%= tag.slug || '' %>"
+                      placeholder="<%= isNew ? 'Nechaj prázdne pre automatické generovanie' : '' %>"
+                    >
+                    <% if (errors.slug) { %>
+                      <div class="invalid-feedback"><%= errors.slug %></div>
+                    <% } else { %>
+                      <div class="form-text">
+                        Časť URL — len <code>a-z</code>, <code>0-9</code> a pomlčky.
+                      </div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Farba</label>
+                    <div class="d-flex gap-2 align-items-center mb-2 flex-wrap">
+                      <input
+                        type="color"
+                        class="form-control form-control-color <%= errors.color ? 'is-invalid' : '' %>"
+                        id="color"
+                        name="color"
+                        value="<%= tag.color || '#9ca3af' %>"
+                        title="Vyber farbu"
+                        style="width: 60px;"
+                        data-color-input
+                      >
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="color_text"
+                        maxlength="7"
+                        value="<%= tag.color || '' %>"
+                        placeholder="<%= isNew ? '(prázdne = náhodná z palety)' : '' %>"
+                        style="max-width: 180px; font-family: monospace;"
+                        data-color-text
+                        aria-label="Hex hodnota farby"
+                      >
+                      <span
+                        class="bz-tag-pill"
+                        style="--bz-tag-color: <%= tag.color || '#9ca3af' %>;"
+                        data-color-preview
+                      >
+                        <%= tag.name || 'náhľad' %>
+                      </span>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-1 mb-2" role="group" aria-label="Paleta farieb">
+                      <% palette.forEach(c => { %>
+                        <button
+                          type="button"
+                          class="bz-color-chip"
+                          data-color-chip="<%= c %>"
+                          style="background: <%= c %>;"
+                          title="<%= c %>"
+                          aria-label="Vybrať farbu <%= c %>"
+                        ></button>
+                      <% }) %>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-outline-secondary ms-2"
+                        data-color-clear
+                        title="Vymazať — pri uložení sa vyberie náhodná z palety"
+                      >
+                        <i class="bi bi-shuffle"></i> Náhodná
+                      </button>
+                    </div>
+
+                    <% if (errors.color) { %>
+                      <div class="invalid-feedback d-block"><%= errors.color %></div>
+                    <% } else { %>
+                      <div class="form-text">
+                        Hex <code>#RRGGBB</code>. Ak necháš prázdne, vyberie sa náhodná z palety.
+                      </div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="description" class="form-label">Popis</label>
+                    <textarea
+                      class="form-control"
+                      id="description"
+                      name="description"
+                      rows="3"
+                    ><%= tag.description || '' %></textarea>
+                    <div class="form-text">Voliteľný popis (zobrazí sa na stránke tagu).</div>
+                  </div>
+
+                  <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                      <i class="bi bi-check-lg me-1"></i>
+                      <%= isNew ? 'Vytvoriť tag' : 'Uložiť zmeny' %>
+                    </button>
+                    <a href="/admin/tags" class="btn btn-outline-secondary">Zrušiť</a>
+                  </div>
+                </form>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-taxonomy.js" defer></script>
+</body>
+</html>
