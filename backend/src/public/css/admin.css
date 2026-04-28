@@ -22,8 +22,8 @@
 .bz-admin-body,
 .bz-auth-body {
   /* Fallback font ak by Bootstrap CSS nedohádzal alebo bol zablokovaný */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    "Helvetica Neue", sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -117,7 +117,9 @@
   font-size: 0.92rem;
   display: flex;
   align-items: center;
-  transition: background-color 0.15s, color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 }
 
 .bz-sidebar .nav-link:hover {
@@ -248,7 +250,9 @@
 /* ============================================================== Utilities */
 .bz-card-clickable {
   cursor: pointer;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
 }
 
 .bz-card-clickable:hover {
@@ -294,7 +298,9 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   padding: 0;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
 }
 .bz-color-chip:hover {
   transform: scale(1.1);
@@ -303,4 +309,19 @@
 .bz-color-chip:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+/* Tree row indent — odsadí podľa hĺbky v hierarchii */
+.bz-cat-row {
+  padding-left: calc(var(--bz-cat-depth, 0) * 1.5rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.bz-cat-tree-marker {
+  color: #94a3b8;
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  user-select: none;
 }

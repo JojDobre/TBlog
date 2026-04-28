@@ -1,13 +1,9 @@
 /**
  * Routes index
  *
- * Phase 4.1 update: pribudli admin-rubrics a admin-tags routes.
+ * Phase 4.2 update: pribudol admin-categories.
  *
- * Poradie mountovania:
- *   - špecifické /admin/<resource> idú PRED /admin
- *     (lebo /admin má catchall 404 fallback)
- *   - všetky public auth/profile routes
- *   - home a dev posledné
+ * Špecifické /admin/<resource> idú PRED /admin (ktorý má catchall 404).
  */
 
 'use strict';
@@ -18,6 +14,7 @@ const adminRouter = require('./admin');
 const adminMediaRouter = require('./admin-media');
 const adminRubricsRouter = require('./admin-rubrics');
 const adminTagsRouter = require('./admin-tags');
+const adminCategoriesRouter = require('./admin-categories');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
 const healthRouter = require('./health');
@@ -25,37 +22,21 @@ const config = require('../../../config');
 
 const router = express.Router();
 
-// ---------------------------------------------------------------------------
-// Špecifické admin prefixy — MUSIA ísť pred generickým /admin
-// ---------------------------------------------------------------------------
+// Špecifické admin prefixy
 router.use('/admin/media', adminMediaRouter);
 router.use('/admin/rubrics', adminRubricsRouter);
 router.use('/admin/tags', adminTagsRouter);
+router.use('/admin/categories', adminCategoriesRouter);
 
-// ---------------------------------------------------------------------------
-// Generický /admin (login, dashboard, fallback 404)
-// ---------------------------------------------------------------------------
+// Generický /admin
 router.use('/admin', adminRouter);
 
-// ---------------------------------------------------------------------------
-// Health
-// ---------------------------------------------------------------------------
 router.use('/health', healthRouter);
-
-// ---------------------------------------------------------------------------
-// Public auth + profil (v koreni)
-// ---------------------------------------------------------------------------
 router.use('/', authRouter);
 router.use('/', profileRouter);
 
-// ---------------------------------------------------------------------------
-// Home + dev welcome
-// ---------------------------------------------------------------------------
 router.get('/', (req, res) => {
-  res.render('home/index', {
-    title: null,
-    currentPath: req.path,
-  });
+  res.render('home/index', { title: null, currentPath: req.path });
 });
 
 router.get('/dev', (req, res) => {
