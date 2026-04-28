@@ -28,7 +28,7 @@
         <% } %>
         <% if (typeof flash !== 'undefined' && flash.updated) { %>
           <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Zmeny uložené.
+            <i class="bi bi-check-circle me-2"></i>Zmeny uložené (vytvorená revízia).
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
           </div>
         <% } %>
@@ -49,8 +49,6 @@
                  value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c") %>'>
 
           <div class="row g-4">
-
-            <!-- LEFT: title + content blocks -->
             <div class="col-lg-8">
 
               <div class="card border-0 shadow-sm mb-4">
@@ -61,9 +59,7 @@
                            class="form-control form-control-lg <%= errors.title ? 'is-invalid' : '' %>"
                            id="title" name="title" maxlength="255" required autofocus
                            value="<%= article.title || '' %>">
-                    <% if (errors.title) { %>
-                      <div class="invalid-feedback"><%= errors.title %></div>
-                    <% } %>
+                    <% if (errors.title) { %><div class="invalid-feedback"><%= errors.title %></div><% } %>
                   </div>
 
                   <div class="mb-3">
@@ -84,19 +80,17 @@
                   <div class="mb-0">
                     <label for="excerpt" class="form-label">Krátky popis (excerpt)</label>
                     <textarea class="form-control <%= errors.excerpt ? 'is-invalid' : '' %>"
-                              id="excerpt" name="excerpt" rows="2"
-                              maxlength="5000"><%= article.excerpt || '' %></textarea>
+                              id="excerpt" name="excerpt" rows="2" maxlength="5000"><%= article.excerpt || '' %></textarea>
                     <% if (errors.excerpt) { %>
                       <div class="invalid-feedback"><%= errors.excerpt %></div>
                     <% } else { %>
-                      <div class="form-text">Zobrazí sa v listingu a meta tagoch.</div>
+                      <div class="form-text">Zobrazí sa v listingu. Ak nezadáš SEO description, použije sa toto.</div>
                     <% } %>
                   </div>
                 </div>
               </div>
 
-              <!-- Block editor -->
-              <div class="card border-0 shadow-sm">
+              <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                   <h2 class="h5 mb-0">Obsah</h2>
                   <small class="text-muted">Bloky sa zobrazia v poradí v akom sú tu.</small>
@@ -126,9 +120,70 @@
                 </div>
               </div>
 
+              <!-- SEO panel -->
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                  <h2 class="h5 mb-0"><i class="bi bi-search me-2"></i>SEO &amp; sociálne siete</h2>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="seo_title" class="form-label">SEO Title</label>
+                    <input type="text"
+                           class="form-control <%= errors.seo_title ? 'is-invalid' : '' %>"
+                           id="seo_title" name="seo_title" maxlength="255"
+                           value="<%= article.seo_title || '' %>"
+                           placeholder="Ak prázdne, použije sa Názov článku">
+                    <% if (errors.seo_title) { %>
+                      <div class="invalid-feedback"><%= errors.seo_title %></div>
+                    <% } else { %>
+                      <div class="form-text">Odporúčaná dĺžka: 50–60 znakov.</div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="seo_description" class="form-label">SEO Description</label>
+                    <textarea class="form-control <%= errors.seo_description ? 'is-invalid' : '' %>"
+                              id="seo_description" name="seo_description" rows="2"
+                              maxlength="320"
+                              placeholder="Ak prázdne, použije sa Excerpt"><%= article.seo_description || '' %></textarea>
+                    <% if (errors.seo_description) { %>
+                      <div class="invalid-feedback"><%= errors.seo_description %></div>
+                    <% } else { %>
+                      <div class="form-text">Odporúčaná dĺžka: 150–160 znakov.</div>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-0">
+                    <label class="form-label">OG Image (pre Facebook / Twitter)</label>
+                    <div class="mb-2">
+                      <% if (typeof ogMedia !== 'undefined' && ogMedia && ogMedia.thumbnail_path) { %>
+                        <img src="/uploads/<%= ogMedia.thumbnail_path %>"
+                             class="img-fluid rounded" style="max-height: 140px;">
+                      <% } else { %>
+                        <div class="text-muted small fst-italic">(použije sa cover, ak nie je nastavené)</div>
+                      <% } %>
+                    </div>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text">Media ID</span>
+                      <input type="number" class="form-control <%= errors.og_image_media_id ? 'is-invalid' : '' %>"
+                             name="og_image_media_id" min="1"
+                             value="<%= article.og_image_media_id || '' %>"
+                             placeholder="napr. 12">
+                      <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
+                        <i class="bi bi-images"></i>
+                      </a>
+                    </div>
+                    <% if (errors.og_image_media_id) { %>
+                      <div class="invalid-feedback d-block"><%= errors.og_image_media_id %></div>
+                    <% } else { %>
+                      <div class="form-text small">Odporúčaná veľkosť 1200×630.</div>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            <!-- RIGHT: sidebar -->
             <div class="col-lg-4">
 
               <div class="card border-0 shadow-sm mb-4">
@@ -143,15 +198,12 @@
                       <option value="published" <%= article.status === 'published' ? 'selected' : '' %>>Publikovaný</option>
                       <option value="archived"  <%= article.status === 'archived' ? 'selected' : '' %>>Archivovaný</option>
                     </select>
-                    <% if (errors.status) { %>
-                      <div class="invalid-feedback"><%= errors.status %></div>
-                    <% } %>
+                    <% if (errors.status) { %><div class="invalid-feedback"><%= errors.status %></div><% } %>
                   </div>
 
-                  <!-- Scheduled at picker — JS sa stará o show/hide -->
                   <div class="mb-3" data-scheduled-at-wrap
                        <%= article.status === 'scheduled' ? '' : 'style="display:none;"' %>>
-                    <label for="scheduled_at" class="form-label">Plánovaný čas publikácie</label>
+                    <label for="scheduled_at" class="form-label">Plánovaný čas</label>
                     <input type="datetime-local"
                            class="form-control <%= errors.scheduled_at ? 'is-invalid' : '' %>"
                            id="scheduled_at" name="scheduled_at"
@@ -159,7 +211,7 @@
                     <% if (errors.scheduled_at) { %>
                       <div class="invalid-feedback"><%= errors.scheduled_at %></div>
                     <% } else { %>
-                      <div class="form-text">Lokálny čas tvojho prehliadača. Cron skontroluje každých 5 min.</div>
+                      <div class="form-text">Cron tick: každých 5 min.</div>
                     <% } %>
                   </div>
 
@@ -183,10 +235,8 @@
                            name="is_featured" value="1"
                            <%= article.is_featured ? 'checked' : '' %>>
                     <label class="form-check-label" for="is_featured">
-                      <i class="bi bi-star-fill text-warning me-1"></i>
-                      Featured (zvýraznené)
+                      <i class="bi bi-star-fill text-warning me-1"></i>Featured
                     </label>
-                    <div class="form-text small">Použité pri zoradení na home a v sekciách.</div>
                   </div>
                 </div>
                 <div class="card-footer bg-white d-flex gap-2">
@@ -221,8 +271,6 @@
                   </div>
                   <% if (errors.cover_media_id) { %>
                     <div class="invalid-feedback d-block"><%= errors.cover_media_id %></div>
-                  <% } else { %>
-                    <div class="form-text small">Skopíruj ID z mediálnej knižnice.</div>
                   <% } %>
                 </div>
               </div>
@@ -301,6 +349,57 @@
           </div>
         </form>
 
+        <!-- ===================================================================
+             REVÍZIE — MIMO hlavného formulára!
+             Každá revízia má vlastný malý form. Nesmú byť nested vo
+             vonkajšom <form>, lebo HTML nested forms sú neplatné a
+             prehliadač ich „flattenne", čím vznikne dvojitý _csrf input
+             a CSRF validácia zlyhá.
+             ================================================================ -->
+        <% if (!isNew && revisionsList.length > 0) { %>
+          <div class="row g-4 mt-2">
+            <div class="col-lg-8">
+              <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                  <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2"></i>Revízie</h2>
+                  <small class="text-muted">Posledných <%= revisionsList.length %> verzií. Pri obnovení sa aktuálny stav uloží ako nová revízia.</small>
+                </div>
+                <div class="list-group list-group-flush">
+                  <% revisionsList.forEach((r, idx) => { %>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        <div>
+                          <strong><%= r.title || '(bez názvu)' %></strong>
+                          <% if (idx === 0) { %>
+                            <span class="badge text-bg-secondary ms-1">najnovšia</span>
+                          <% } %>
+                        </div>
+                        <small class="text-muted">
+                          <i class="bi bi-clock me-1"></i><%= new Date(r.created_at).toLocaleString('sk-SK') %>
+                          <% if (r.editor_nickname) { %>
+                            · <i class="bi bi-person me-1"></i><%= r.editor_nickname %>
+                          <% } %>
+                        </small>
+                      </div>
+                      <div>
+                        <form method="POST"
+                              action="/admin/articles/<%= article.id %>/revisions/<%= r.id %>/restore"
+                              class="d-inline"
+                              data-confirm="Obnoviť túto revíziu? Aktuálny stav sa uloží ako nová revízia.">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button type="submit" class="btn btn-sm btn-outline-warning" title="Obnoviť">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Obnoviť
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
         <!-- Block templates -->
         <template data-block-template="paragraph">
           <div class="bz-block" data-block-type="paragraph">
@@ -308,11 +407,9 @@
               <span class="bz-block-label"><i class="bi bi-paragraph me-1"></i>Odsek</span>
               <div class="bz-block-actions"></div>
             </div>
-            <textarea class="form-control" rows="4" data-field="text"
-                      placeholder="Text odseku..."></textarea>
+            <textarea class="form-control" rows="4" data-field="text" placeholder="Text odseku..."></textarea>
           </div>
         </template>
-
         <template data-block-template="heading">
           <div class="bz-block" data-block-type="heading">
             <div class="bz-block-header">
@@ -321,15 +418,12 @@
             </div>
             <div class="d-flex gap-2 align-items-center">
               <select class="form-select form-select-sm" data-field="level" style="width: 90px;">
-                <option value="2">H2</option>
-                <option value="3">H3</option>
+                <option value="2">H2</option><option value="3">H3</option>
               </select>
-              <input type="text" class="form-control" data-field="text"
-                     placeholder="Nadpis..." maxlength="255">
+              <input type="text" class="form-control" data-field="text" placeholder="Nadpis..." maxlength="255">
             </div>
           </div>
         </template>
-
         <template data-block-template="image">
           <div class="bz-block" data-block-type="image">
             <div class="bz-block-header">
@@ -345,8 +439,7 @@
               <div class="col-md-8">
                 <div class="input-group input-group-sm mb-2">
                   <span class="input-group-text">Media ID</span>
-                  <input type="number" class="form-control" data-field="media_id"
-                         min="1" placeholder="napr. 7">
+                  <input type="number" class="form-control" data-field="media_id" min="1" placeholder="napr. 7">
                   <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
                     <i class="bi bi-images"></i>
                   </a>
@@ -359,7 +452,6 @@
             </div>
           </div>
         </template>
-
         <template data-block-template="divider">
           <div class="bz-block" data-block-type="divider">
             <div class="bz-block-header">

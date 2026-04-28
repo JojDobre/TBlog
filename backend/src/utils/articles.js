@@ -1,7 +1,7 @@
 /**
- * Article utility funkcie  (Phase 5.2)
+ * Article utility funkcie  (Phase 5.3)
  *
- * Pridané: scheduled, archived stavy; scheduled_at validácia; is_featured.
+ * Pridané: SEO polia (seo_title, seo_description, og_image_media_id).
  */
 
 'use strict';
@@ -10,10 +10,7 @@ const taxonomy = require('./taxonomy');
 
 const TYPES = ['article', 'review'];
 const STATUSES = ['draft', 'scheduled', 'published', 'archived', 'trash'];
-
-// Stavy ktoré môže admin nastaviť cez form (trash sa nastavuje cez separátny endpoint)
 const ALLOWED_STATUS_TRANSITIONS = ['draft', 'scheduled', 'published', 'archived'];
-
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function slugifyArticle(name) {
@@ -24,11 +21,6 @@ async function ensureUniqueArticleSlug(knex, baseSlug, excludeId = null) {
   return taxonomy.ensureUniqueSlug('articles', baseSlug, excludeId);
 }
 
-/**
- * Parser `<input type="datetime-local">` hodnoty na Date.
- * Vstup je v lokálnom čase prehliadača (bez TZ): 'YYYY-MM-DDTHH:MM'.
- * `new Date(value)` to interpretuje ako lokálny čas a vráti Date v UTC.
- */
 function parseLocalDatetime(value) {
   if (!value || typeof value !== 'string') return null;
   const trimmed = value.trim();
@@ -37,9 +29,6 @@ function parseLocalDatetime(value) {
   return Number.isFinite(d.getTime()) ? d : null;
 }
 
-/**
- * Validuje a normalizuje meta polia článku.
- */
 function validateArticleMeta(input, { isNew = true } = {}) {
   const errors = {};
   const value = {};
@@ -68,23 +57,17 @@ function validateArticleMeta(input, { isNew = true } = {}) {
   if (!ALLOWED_STATUS_TRANSITIONS.includes(status)) errors.status = 'Neplatný stav.';
   value.status = status;
 
-  // scheduled_at — povinné iba pri status='scheduled', musí byť v budúcnosti
-  const schedRaw = input.scheduled_at;
+  // scheduled_at
   if (status === 'scheduled') {
-    const d = parseLocalDatetime(schedRaw);
-    if (!d) {
-      errors.scheduled_at = 'Pri stave „Naplánovaný" musí byť dátum a čas vyplnený.';
-    } else if (d.getTime() <= Date.now()) {
-      errors.scheduled_at = 'Naplánovaný čas musí byť v budúcnosti.';
-    } else {
-      value.scheduled_at = d;
-    }
+    const d = parseLocalDatetime(input.scheduled_at);
+    if (!d) errors.scheduled_at = 'Pri stave „Naplánovaný" musí byť dátum a čas vyplnený.';
+    else if (d.getTime() <= Date.now()) errors.scheduled_at = 'Naplánovaný čas musí byť v budúcnosti.';
+    else value.scheduled_at = d;
   } else {
-    // pre iné stavy ignoruj scheduled_at (nastavíme NULL)
     value.scheduled_at = null;
   }
 
-  // is_featured (checkbox: 'on' / undefined)
+  // is_featured
   value.is_featured = input.is_featured ? 1 : 0;
 
   // excerpt
@@ -97,11 +80,25 @@ function validateArticleMeta(input, { isNew = true } = {}) {
     value.cover_media_id = null;
   } else {
     const cm = Number(input.cover_media_id);
-    if (!Number.isInteger(cm) || cm < 1) {
-      errors.cover_media_id = 'Neplatné ID obrázka pre cover.';
-    } else {
-      value.cover_media_id = cm;
-    }
+    if (!Number.isInteger(cm) || cm < 1) errors.cover_media_id = 'Neplatné ID obrázka pre cover.';
+    else value.cover_media_id = cm;
+  }
+
+  // ---- SEO polia (Phase 5.3) ----
+  const seoTitle = String(input.seo_title || '').trim();
+  if (seoTitle.length > 255) errors.seo_title = 'SEO title max 255 znakov.';
+  value.seo_title = seoTitle || null;
+
+  const seoDesc = String(input.seo_description || '').trim();
+  if (seoDesc.length > 320) errors.seo_description = 'SEO description max 320 znakov.';
+  value.seo_description = seoDesc || null;
+
+  if (input.og_image_media_id === '' || input.og_image_media_id === null || input.og_image_media_id === undefined) {
+    value.og_image_media_id = null;
+  } else {
+    const og = Number(input.og_image_media_id);
+    if (!Number.isInteger(og) || og < 1) errors.og_image_media_id = 'Neplatné ID OG obrázka.';
+    else value.og_image_media_id = og;
   }
 
   return { value, errors };
@@ -113,9 +110,7 @@ function parseContentJson(input) {
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 function parseIdList(raw) {
@@ -129,33 +124,18 @@ function parseIdList(raw) {
   return out;
 }
 
-/**
- * Pre <input type="datetime-local"> potrebujeme YYYY-MM-DDTHH:MM string
- * v lokálnom čase. JSov `Date.toISOString()` vracia UTC, takže sami vytvoríme.
- */
 function toDatetimeLocalString(date) {
   if (!date) return '';
   const d = date instanceof Date ? date : new Date(date);
   if (!Number.isFinite(d.getTime())) return '';
   const pad = (n) => String(n).padStart(2, '0');
-  return (
-    d.getFullYear() + '-' +
-    pad(d.getMonth() + 1) + '-' +
-    pad(d.getDate()) + 'T' +
-    pad(d.getHours()) + ':' +
-    pad(d.getMinutes())
-  );
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+    + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 
 module.exports = {
-  TYPES,
-  STATUSES,
-  ALLOWED_STATUS_TRANSITIONS,
-  slugifyArticle,
-  ensureUniqueArticleSlug,
-  validateArticleMeta,
-  parseContentJson,
-  parseIdList,
-  parseLocalDatetime,
-  toDatetimeLocalString,
+  TYPES, STATUSES, ALLOWED_STATUS_TRANSITIONS,
+  slugifyArticle, ensureUniqueArticleSlug,
+  validateArticleMeta, parseContentJson, parseIdList,
+  parseLocalDatetime, toDatetimeLocalString,
 };
