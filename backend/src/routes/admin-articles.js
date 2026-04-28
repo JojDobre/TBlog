@@ -1,16 +1,11 @@
 /**
- * Admin articles routes (mounted at /admin/articles)  Phase 5.1
+ * Admin articles routes  (Phase 5.2)
  *
- *   GET  /                    — list with status filter
- *   GET  /new                 — empty form
- *   POST /                    — create
- *   GET  /:id/edit            — edit form
- *   POST /:id                 — update
- *   POST /:id/trash           — move to trash (soft delete)
- *   POST /:id/restore         — back to draft
- *   POST /:id/delete          — permanent delete (only from trash)
- *
- * V 5.1 nemáme: scheduled, archived, revisions, related, featured.
+ * Pridané: scheduled_at, is_featured, archived stavy.
+ *   - status='scheduled' vyžaduje scheduled_at v budúcnosti; published_at = null
+ *   - status='archived' zachováva published_at, ale nie je vo verejných listingoch
+ *   - status='published' nastaví published_at pri prvom publikovaní
+ *   - is_featured ako boolean (pre highlight na home)
  */
 
 'use strict';
@@ -28,35 +23,27 @@ const router = express.Router();
 router.use(requireAuth());
 router.use(requireRole('admin', 'editor'));
 
-// ---------------------------------------------------------------------------
-// API: GET /admin/articles/media-thumb/:id  → JSON s thumbnail_path
-// Použité editorom blokov pre náhľad obrázkov.
-// ---------------------------------------------------------------------------
 router.get('/media-thumb/:id', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'invalid id' });
-    const m = await db('media')
-      .where('id', id)
-      .select('id', 'thumbnail_path', 'original_filename', 'alt_text')
-      .first();
+    const m = await db('media').where('id', id)
+      .select('id', 'thumbnail_path', 'original_filename', 'alt_text').first();
     if (!m) return res.status(404).json({ error: 'not found' });
     res.json(m);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 const PER_PAGE = 20;
 const STATUS_TABS = [
   { key: 'all',       label: 'Všetko',     filter: { excludeTrash: true } },
   { key: 'draft',     label: 'Drafty',     filter: { status: 'draft' } },
+  { key: 'scheduled', label: 'Naplánované', filter: { status: 'scheduled' } },
   { key: 'published', label: 'Publikované', filter: { status: 'published' } },
+  { key: 'archived',  label: 'Archív',     filter: { status: 'archived' } },
   { key: 'trash',     label: 'Kôš',        filter: { status: 'trash' } },
 ];
 
-// ---------------------------------------------------------------------------
-// Helpers
 // ---------------------------------------------------------------------------
 function buildFlash(req) {
   return {
@@ -69,18 +56,12 @@ function buildFlash(req) {
   };
 }
 
-/**
- * Načíta thumbnail path pre dané media_ids (na image preview v editore).
- */
 async function loadMediaMap(ids) {
   if (!ids || ids.length === 0) return new Map();
   const rows = await db('media').whereIn('id', ids).select('id', 'thumbnail_path', 'original_filename');
   return new Map(rows.map((r) => [r.id, r]));
 }
 
-/**
- * Načíta priradené M:N hodnoty pre článok.
- */
 async function loadRelations(articleId) {
   const [cats, rubs, tags] = await Promise.all([
     db('article_categories').where('article_id', articleId).select('category_id', 'is_primary'),
@@ -95,16 +76,12 @@ async function loadRelations(articleId) {
   };
 }
 
-/**
- * Načíta zoznamy taxonómie pre form (pre selecty).
- */
 async function loadTaxonomyForForm() {
   const [rubs, cats, tagRows] = await Promise.all([
     db('rubrics').orderBy('display_order').orderBy('name').select('id', 'name'),
     db('categories').orderBy('path').select('id', 'name', 'path'),
     db('tags').orderBy('name').select('id', 'name', 'color'),
   ]);
-  // pridaj depth + label do kategórií
   const categories = cats.map((c) => {
     const depth = (c.path.match(/\//g) || []).length;
     return { ...c, depth, label: '— '.repeat(depth) + c.name };
@@ -112,18 +89,13 @@ async function loadTaxonomyForForm() {
   return { rubrics: rubs, categories, tags: tagRows };
 }
 
-/**
- * Sync M:N priradenia pre článok (replace strategy).
- */
 async function syncRelations(trx, articleId, { categoryIds, primaryCategoryId, rubricIds, tagIds }) {
   await trx('article_categories').where('article_id', articleId).del();
   await trx('article_rubrics').where('article_id', articleId).del();
   await trx('article_tags').where('article_id', articleId).del();
-
   if (categoryIds.length > 0) {
     const rows = categoryIds.map((cid) => ({
-      article_id: articleId,
-      category_id: cid,
+      article_id: articleId, category_id: cid,
       is_primary: cid === primaryCategoryId ? 1 : 0,
     }));
     await trx('article_categories').insert(rows);
@@ -162,25 +134,21 @@ router.get('/', async (req, res, next) => {
         .leftJoin('users', 'articles.author_id', 'users.id')
         .select(
           'articles.id', 'articles.title', 'articles.slug', 'articles.type',
-          'articles.status', 'articles.published_at', 'articles.updated_at',
-          'articles.created_at', 'articles.is_featured',
+          'articles.status', 'articles.published_at', 'articles.scheduled_at',
+          'articles.updated_at', 'articles.is_featured',
           'users.nickname as author_nickname'
         )
-        .orderBy('articles.updated_at', 'desc')
-        .limit(PER_PAGE)
-        .offset(offset)
+        .orderBy('articles.updated_at', 'desc').limit(PER_PAGE).offset(offset)
     );
 
-    // Counts per tab (pre tab badges)
     const counts = {};
-    const countAll = await db('articles').whereNot('status', 'trash').count({ c: '*' }).first();
-    const countDraft = await db('articles').where('status', 'draft').count({ c: '*' }).first();
-    const countPub = await db('articles').where('status', 'published').count({ c: '*' }).first();
-    const countTrash = await db('articles').where('status', 'trash').count({ c: '*' }).first();
-    counts.all = Number(countAll.c);
-    counts.draft = Number(countDraft.c);
-    counts.published = Number(countPub.c);
-    counts.trash = Number(countTrash.c);
+    for (const t of STATUS_TABS) {
+      const qb = db('articles');
+      if (t.filter.status) qb.where('status', t.filter.status);
+      if (t.filter.excludeTrash) qb.whereNot('status', 'trash');
+      const r = await qb.count({ c: '*' }).first();
+      counts[t.key] = Number(r.c);
+    }
 
     res.render('admin/articles/index', {
       title: 'Články',
@@ -195,13 +163,11 @@ router.get('/', async (req, res, next) => {
       flash: buildFlash(req),
       csrfToken: generateToken(req, res),
     });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 // ---------------------------------------------------------------------------
-// NEW form
+// NEW
 // ---------------------------------------------------------------------------
 router.get('/new', async (req, res, next) => {
   try {
@@ -213,6 +179,7 @@ router.get('/new', async (req, res, next) => {
       article: {
         id: null, type: 'article', status: 'draft',
         title: '', slug: '', excerpt: '', cover_media_id: null,
+        scheduled_at: null, is_featured: 0, published_at: null,
       },
       content: [],
       mediaMap: new Map(),
@@ -222,10 +189,9 @@ router.get('/new', async (req, res, next) => {
       errors: {},
       csrfToken: generateToken(req, res),
       isNew: true,
+      utils: articles,
     });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 // ---------------------------------------------------------------------------
@@ -252,20 +218,12 @@ router.post('/', async (req, res, next) => {
         title: 'Nový článok',
         currentPath: '/admin/articles',
         pageTitle: 'Nový článok',
-        article: { id: null, ...value },
-        content: sanitized,
-        mediaMap,
+        article: { id: null, ...value, published_at: null },
+        content: sanitized, mediaMap,
         coverMedia: value.cover_media_id ? mediaMap.get(value.cover_media_id) : null,
-        relations: {
-          category_ids: categoryIds,
-          primary_category_id: primaryCategoryId,
-          rubric_ids: rubricIds,
-          tag_ids: tagIds,
-        },
-        taxonomy: taxo,
-        errors: errs,
-        csrfToken: generateToken(req, res),
-        isNew: true,
+        relations: { category_ids: categoryIds, primary_category_id: primaryCategoryId, rubric_ids: rubricIds, tag_ids: tagIds },
+        taxonomy: taxo, errors: errs, csrfToken: generateToken(req, res),
+        isNew: true, utils: articles,
       });
     };
 
@@ -275,31 +233,30 @@ router.post('/', async (req, res, next) => {
     const searchText = blocks.extractSearchText(cleanBlocks);
 
     const baseSlug = value.slug || articles.slugifyArticle(value.title);
-    if (!baseSlug) return renderAgain({ title: 'Z názvu sa nedá vygenerovať slug — zadaj ho manuálne.' });
+    if (!baseSlug) return renderAgain({ title: 'Z názvu sa nedá vygenerovať slug.' });
     const finalSlug = await articles.ensureUniqueArticleSlug(db, baseSlug);
 
-    // Validuj cover media
     if (value.cover_media_id) {
       const m = await db('media').where('id', value.cover_media_id).first();
       if (!m) return renderAgain({ cover_media_id: 'Cover obrázok neexistuje.' });
     }
-
-    // Validuj M:N IDs
     if (categoryIds.length > 0) {
-      const found = await db('categories').whereIn('id', categoryIds).pluck('id');
-      if (found.length !== categoryIds.length) return renderAgain({ category_ids: 'Niektorá kategória neexistuje.' });
+      const f = await db('categories').whereIn('id', categoryIds).pluck('id');
+      if (f.length !== categoryIds.length) return renderAgain({ category_ids: 'Niektorá kategória neexistuje.' });
     }
     if (rubricIds.length > 0) {
-      const found = await db('rubrics').whereIn('id', rubricIds).pluck('id');
-      if (found.length !== rubricIds.length) return renderAgain({ rubric_ids: 'Niektorá rubrika neexistuje.' });
+      const f = await db('rubrics').whereIn('id', rubricIds).pluck('id');
+      if (f.length !== rubricIds.length) return renderAgain({ rubric_ids: 'Niektorá rubrika neexistuje.' });
     }
     if (tagIds.length > 0) {
-      const found = await db('tags').whereIn('id', tagIds).pluck('id');
-      if (found.length !== tagIds.length) return renderAgain({ tag_ids: 'Niektorý tag neexistuje.' });
+      const f = await db('tags').whereIn('id', tagIds).pluck('id');
+      if (f.length !== tagIds.length) return renderAgain({ tag_ids: 'Niektorý tag neexistuje.' });
     }
 
-    // INSERT v transakcii
+    // Status logika
     const now = new Date();
+    const publishedAt = value.status === 'published' ? now : null;
+
     let articleId;
     await db.transaction(async (trx) => {
       const inserted = await trx('articles').insert({
@@ -310,29 +267,27 @@ router.post('/', async (req, res, next) => {
         cover_media_id: value.cover_media_id,
         author_id: req.user.id,
         status: value.status,
-        published_at: value.status === 'published' ? now : null,
+        published_at: publishedAt,
+        scheduled_at: value.scheduled_at,
+        is_featured: value.is_featured,
         content: JSON.stringify(cleanBlocks),
         search_text: searchText,
       });
       articleId = Array.isArray(inserted) ? inserted[0] : inserted;
-
       await syncRelations(trx, articleId, {
         categoryIds,
         primaryCategoryId: categoryIds.includes(primaryCategoryId) ? primaryCategoryId : (categoryIds[0] || null),
-        rubricIds,
-        tagIds,
+        rubricIds, tagIds,
       });
     });
 
     log.info('article created', { id: articleId, slug: finalSlug, status: value.status, userId: req.user.id });
     res.redirect(`/admin/articles/${articleId}/edit?created=1`);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 // ---------------------------------------------------------------------------
-// EDIT form
+// EDIT
 // ---------------------------------------------------------------------------
 router.get('/:id/edit', async (req, res, next) => {
   try {
@@ -346,13 +301,10 @@ router.get('/:id/edit', async (req, res, next) => {
     try {
       content = typeof article.content === 'string' ? JSON.parse(article.content) : article.content || [];
       if (!Array.isArray(content)) content = [];
-    } catch {
-      content = [];
-    }
+    } catch { content = []; }
 
     const relations = await loadRelations(id);
     const taxo = await loadTaxonomyForForm();
-
     const mediaIds = content.filter((b) => b.type === 'image').map((b) => b.media_id);
     if (article.cover_media_id) mediaIds.push(article.cover_media_id);
     const mediaMap = await loadMediaMap(mediaIds);
@@ -362,20 +314,14 @@ router.get('/:id/edit', async (req, res, next) => {
       title: 'Upraviť: ' + article.title,
       currentPath: '/admin/articles',
       pageTitle: article.title,
-      article,
-      content,
-      mediaMap,
-      coverMedia,
-      relations,
-      taxonomy: taxo,
-      errors: {},
+      article, content, mediaMap, coverMedia, relations,
+      taxonomy: taxo, errors: {},
       csrfToken: generateToken(req, res),
       isNew: false,
       flash: { created: !!req.query.created, updated: !!req.query.updated },
+      utils: articles,
     });
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 // ---------------------------------------------------------------------------
@@ -409,20 +355,11 @@ router.post('/:id', async (req, res, next) => {
         currentPath: '/admin/articles',
         pageTitle: existing.title,
         article: { ...existing, ...value },
-        content: sanitized,
-        mediaMap,
+        content: sanitized, mediaMap,
         coverMedia: value.cover_media_id ? mediaMap.get(value.cover_media_id) : null,
-        relations: {
-          category_ids: categoryIds,
-          primary_category_id: primaryCategoryId,
-          rubric_ids: rubricIds,
-          tag_ids: tagIds,
-        },
-        taxonomy: taxo,
-        errors: errs,
-        csrfToken: generateToken(req, res),
-        isNew: false,
-        flash: {},
+        relations: { category_ids: categoryIds, primary_category_id: primaryCategoryId, rubric_ids: rubricIds, tag_ids: tagIds },
+        taxonomy: taxo, errors: errs, csrfToken: generateToken(req, res),
+        isNew: false, flash: {}, utils: articles,
       });
     };
 
@@ -432,7 +369,7 @@ router.post('/:id', async (req, res, next) => {
     const searchText = blocks.extractSearchText(cleanBlocks);
 
     let finalSlug = value.slug || articles.slugifyArticle(value.title);
-    if (!finalSlug) return renderAgain({ title: 'Z názvu sa nedá vygenerovať slug — zadaj ho manuálne.' });
+    if (!finalSlug) return renderAgain({ title: 'Z názvu sa nedá vygenerovať slug.' });
     if (finalSlug !== existing.slug) {
       finalSlug = await articles.ensureUniqueArticleSlug(db, finalSlug, id);
     }
@@ -454,10 +391,19 @@ router.post('/:id', async (req, res, next) => {
       if (f.length !== tagIds.length) return renderAgain({ tag_ids: 'Niektorý tag neexistuje.' });
     }
 
-    // Pri prechode draft → published prvýkrát nastav published_at
+    // Status logika:
+    //   draft → published_at = null (resetuj)
+    //   scheduled → published_at = null (cron neskôr nastaví keď publikuje)
+    //   published prvýkrát → published_at = now
+    //   published znova (už bol) → zachovaj pôvodné published_at
+    //   archived → zachovaj published_at
     let publishedAt = existing.published_at;
-    if (value.status === 'published' && !publishedAt) publishedAt = new Date();
-    if (value.status === 'draft') publishedAt = null;
+    if (value.status === 'draft' || value.status === 'scheduled') {
+      publishedAt = null;
+    } else if (value.status === 'published' && !publishedAt) {
+      publishedAt = new Date();
+    }
+    // archived → no change to published_at
 
     await db.transaction(async (trx) => {
       await trx('articles').where('id', id).update({
@@ -468,26 +414,25 @@ router.post('/:id', async (req, res, next) => {
         cover_media_id: value.cover_media_id,
         status: value.status,
         published_at: publishedAt,
+        scheduled_at: value.scheduled_at,
+        is_featured: value.is_featured,
         content: JSON.stringify(cleanBlocks),
         search_text: searchText,
       });
       await syncRelations(trx, id, {
         categoryIds,
         primaryCategoryId: categoryIds.includes(primaryCategoryId) ? primaryCategoryId : (categoryIds[0] || null),
-        rubricIds,
-        tagIds,
+        rubricIds, tagIds,
       });
     });
 
     log.info('article updated', { id, slug: finalSlug, status: value.status, userId: req.user.id });
     res.redirect(`/admin/articles/${id}/edit?updated=1`);
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 // ---------------------------------------------------------------------------
-// TRASH (soft delete)
+// TRASH / RESTORE / DELETE
 // ---------------------------------------------------------------------------
 router.post('/:id/trash', async (req, res, next) => {
   try {
@@ -495,40 +440,24 @@ router.post('/:id/trash', async (req, res, next) => {
     if (!Number.isInteger(id) || id < 1) return res.redirect('/admin/articles');
     const a = await db('articles').where('id', id).first();
     if (!a) return res.redirect('/admin/articles');
-    await db('articles').where('id', id).update({
-      status: 'trash',
-      deleted_at: new Date(),
-    });
+    await db('articles').where('id', id).update({ status: 'trash', deleted_at: new Date() });
     log.info('article trashed', { id, userId: req.user.id });
     res.redirect('/admin/articles?trashed=1');
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
-// ---------------------------------------------------------------------------
-// RESTORE (z trash späť na draft)
-// ---------------------------------------------------------------------------
 router.post('/:id/restore', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) return res.redirect('/admin/articles');
     const a = await db('articles').where('id', id).first();
     if (!a || a.status !== 'trash') return res.redirect('/admin/articles');
-    await db('articles').where('id', id).update({
-      status: 'draft',
-      deleted_at: null,
-    });
+    await db('articles').where('id', id).update({ status: 'draft', deleted_at: null });
     log.info('article restored', { id, userId: req.user.id });
     res.redirect('/admin/articles?tab=draft&restored=1');
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
-// ---------------------------------------------------------------------------
-// DELETE permanently (only from trash)
-// ---------------------------------------------------------------------------
 router.post('/:id/delete', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -541,9 +470,7 @@ router.post('/:id/delete', async (req, res, next) => {
     await db('articles').where('id', id).del();
     log.info('article permanently deleted', { id, userId: req.user.id });
     res.redirect('/admin/articles?tab=trash&deleted=1');
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

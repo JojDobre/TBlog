@@ -1,27 +1,48 @@
 /**
- * Cron: trash cleanup
+ * Cron: trash cleanup  (Phase 5.2)
  *
- * Schedule: každý deň o 03:00
- * Akcia: zmaže články v stave 'trash' starší ako TRASH_RETENTION_DAYS dní.
+ * Schedule: denne 03:00.
+ * Akcia: permanentne zmaže články kde status='trash' AND
+ *        deleted_at < NOW() - INTERVAL <trashRetentionDays> DAY.
  *
- * Implementácia tela príde v Phase 5 (články backend), tu len placeholder
- * aby sme videli že cron beží.
+ * `trashRetentionDays` je v config.defaults (default 30).
+ *
+ * FK CASCADE odstrania aj relácie (article_categories, article_rubrics,
+ * article_tags, article_revisions, comments, atď.).
  */
 
 'use strict';
 
 const log = require('../logger');
-// const db = require('../db');
-// const config = require('../../../config');
+const db = require('../db');
+const config = require('../../../config');
 
 module.exports = async function trashCleanup() {
-  log.info('cron:trash-cleanup tick (placeholder, nemaže ešte nič)');
+  try {
+    const days = config.defaults.trashRetentionDays || 30;
+    const cutoff = new Date(Date.now() - days * 86_400_000);
 
-  // TODO Phase 5:
-  // const cutoff = new Date(Date.now() - config.defaults.trashRetentionDays * 86400_000);
-  // const deleted = await db('articles')
-  //   .where('status', 'trash')
-  //   .where('deleted_at', '<', cutoff)
-  //   .del();
-  // log.info('cron:trash-cleanup done', { deleted });
+    const candidates = await db('articles')
+      .where('status', 'trash')
+      .where('deleted_at', '<', cutoff)
+      .select('id', 'title', 'deleted_at');
+
+    if (candidates.length === 0) {
+      log.debug('cron:trash-cleanup: nothing to delete', { days });
+      return;
+    }
+
+    const deleted = await db('articles')
+      .where('status', 'trash')
+      .where('deleted_at', '<', cutoff)
+      .del();
+
+    log.info('cron:trash-cleanup: deleted', {
+      count: deleted,
+      retentionDays: days,
+      ids: candidates.map((c) => c.id),
+    });
+  } catch (err) {
+    log.error('cron:trash-cleanup failed', { err: err.message, stack: err.stack });
+  }
 };

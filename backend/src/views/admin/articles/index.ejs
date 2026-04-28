@@ -42,13 +42,11 @@
           </a>
         </div>
 
-        <ul class="nav nav-tabs mb-3">
+        <ul class="nav nav-tabs mb-3 flex-wrap">
           <% tabs.forEach(t => { %>
             <li class="nav-item">
-              <a
-                class="nav-link <%= activeTab === t.key ? 'active' : '' %>"
-                href="/admin/articles?tab=<%= t.key %><%= query.q ? '&q=' + encodeURIComponent(query.q) : '' %>"
-              >
+              <a class="nav-link <%= activeTab === t.key ? 'active' : '' %>"
+                 href="/admin/articles?tab=<%= t.key %><%= query.q ? '&q=' + encodeURIComponent(query.q) : '' %>">
                 <%= t.label %>
                 <span class="badge text-bg-light ms-1"><%= counts[t.key] || 0 %></span>
               </a>
@@ -81,13 +79,11 @@
           <div class="card border-0 shadow-sm">
             <div class="card-body text-center text-muted py-5">
               <i class="bi bi-file-earmark-text fs-1 d-block mb-2 text-body-tertiary"></i>
-              <% if (query.q) { %>
-                Žiadne články nezodpovedajú hľadaniu.
-              <% } else if (activeTab === 'trash') { %>
-                Kôš je prázdny.
-              <% } else { %>
-                Žiadne články zatiaľ. Vytvor prvý cez tlačidlo vyššie.
-              <% } %>
+              <% if (query.q) { %>Žiadne články nezodpovedajú hľadaniu.
+              <% } else if (activeTab === 'trash') { %>Kôš je prázdny.
+              <% } else if (activeTab === 'scheduled') { %>Žiadne naplánované články.
+              <% } else if (activeTab === 'archived') { %>Žiadne archivované články.
+              <% } else { %>Žiadne články zatiaľ. Vytvor prvý cez tlačidlo vyššie.<% } %>
             </div>
           </div>
         <% } else { %>
@@ -97,33 +93,45 @@
                 <thead class="table-light">
                   <tr>
                     <th>Názov</th>
-                    <th style="width: 100px;">Typ</th>
-                    <th style="width: 120px;">Stav</th>
+                    <th style="width: 90px;">Typ</th>
+                    <th style="width: 130px;">Stav</th>
+                    <th style="width: 170px;">Čas</th>
                     <th style="width: 140px;">Autor</th>
-                    <th style="width: 160px;">Upravené</th>
                     <th class="text-end" style="width: 200px;">Akcie</th>
                   </tr>
                 </thead>
                 <tbody>
                   <% articles.forEach(a => {
-                    const statusClass = {
-                      draft: 'text-bg-secondary',
-                      published: 'text-bg-success',
-                      scheduled: 'text-bg-warning',
-                      archived: 'text-bg-dark',
-                      trash: 'text-bg-danger',
-                    }[a.status] || 'text-bg-light';
-                    const statusLabel = {
-                      draft: 'Draft', published: 'Publikovaný',
-                      scheduled: 'Naplánovaný', archived: 'Archivovaný', trash: 'V koši',
-                    }[a.status] || a.status;
-                    const updated = a.updated_at ? new Date(a.updated_at).toLocaleString('sk-SK') : '';
+                    const statusMeta = {
+                      draft:     { cls: 'text-bg-secondary', label: 'Draft',         icon: 'pencil' },
+                      scheduled: { cls: 'text-bg-warning',   label: 'Naplánovaný',   icon: 'clock' },
+                      published: { cls: 'text-bg-success',   label: 'Publikovaný',   icon: 'check-circle' },
+                      archived:  { cls: 'text-bg-dark',      label: 'Archivovaný',   icon: 'archive' },
+                      trash:     { cls: 'text-bg-danger',    label: 'V koši',        icon: 'trash' },
+                    }[a.status] || { cls: 'text-bg-light', label: a.status, icon: 'question' };
+
+                    let timeLabel = '—';
+                    let timeHint = '';
+                    if (a.status === 'scheduled' && a.scheduled_at) {
+                      const d = new Date(a.scheduled_at);
+                      timeLabel = d.toLocaleString('sk-SK');
+                      timeHint = 'Naplánované';
+                    } else if (a.status === 'published' && a.published_at) {
+                      timeLabel = new Date(a.published_at).toLocaleDateString('sk-SK');
+                      timeHint = 'Publikované';
+                    } else if (a.updated_at) {
+                      timeLabel = new Date(a.updated_at).toLocaleDateString('sk-SK');
+                      timeHint = 'Upravené';
+                    }
                   %>
                     <tr>
                       <td>
                         <a href="/admin/articles/<%= a.id %>/edit" class="text-decoration-none">
                           <strong><%= a.title %></strong>
                         </a>
+                        <% if (a.is_featured) { %>
+                          <i class="bi bi-star-fill text-warning ms-1" title="Featured"></i>
+                        <% } %>
                         <div class="small text-muted"><code><%= a.slug %></code></div>
                       </td>
                       <td>
@@ -133,9 +141,20 @@
                           <span class="badge text-bg-light">Článok</span>
                         <% } %>
                       </td>
-                      <td><span class="badge <%= statusClass %>"><%= statusLabel %></span></td>
+                      <td>
+                        <span class="badge <%= statusMeta.cls %>">
+                          <i class="bi bi-<%= statusMeta.icon %> me-1"></i><%= statusMeta.label %>
+                        </span>
+                      </td>
+                      <td class="small text-muted">
+                        <% if (timeHint) { %>
+                          <div class="text-body-tertiary" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.04em;">
+                            <%= timeHint %>
+                          </div>
+                        <% } %>
+                        <%= timeLabel %>
+                      </td>
                       <td class="small text-muted"><%= a.author_nickname || '—' %></td>
-                      <td class="small text-muted"><%= updated %></td>
                       <td class="text-end">
                         <a href="/admin/articles/<%= a.id %>/edit"
                            class="btn btn-sm btn-outline-secondary" title="Upraviť">
@@ -193,8 +212,7 @@
                 <% pages.forEach((p, idx) => {
                   if (idx > 0 && pages[idx-1] < p - 1) { %>
                     <li class="page-item disabled"><span class="page-link">…</span></li>
-                  <% }
-                %>
+                  <% } %>
                   <li class="page-item <%= p === cur ? 'active' : '' %>">
                     <a class="page-link" href="<%= buildHref(p) %>"><%= p %></a>
                   </li>
