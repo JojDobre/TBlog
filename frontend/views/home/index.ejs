@@ -248,6 +248,206 @@
 
 
       <!-- ============================================================
+           5. "RECENZIE V SKRATKE" — vlep ZA sekciu "Recenzie grid"
+           ============================================================ -->
+
+      <!-- Minimal reviews -->
+      <% if (reviews.length > 0) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Skóre & nič viac</span>
+            <h2>Recenzie v skratke</h2>
+          </div>
+          <a class="sec-head-link" href="/recenzie">Všetky
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="grid-4">
+          <% reviews.slice(0, 4).forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="card card-link minimal-review">
+              <div class="ph" style="aspect-ratio:1; position:relative;">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+                <div class="minimal-review-overlay">
+                  <span class="minimal-review-label">Skóre</span>
+                  <span class="minimal-review-num"><%= a.viewsFormatted %></span>
+                  <h4 class="minimal-review-title"><%= a.title %></h4>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+
+      <!-- ============================================================
+           4. EDITOR'S PICK — magazine split
+           ============================================================ -->
+      <% if (editorsPick) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Výber redakcie</span>
+            <h2>Článok, ktorý si nechceš nechať ujsť</h2>
+          </div>
+        </div>
+        <a href="/clanok/<%= editorsPick.slug %>" class="editorial-split card card-link">
+          <div class="editorial-split-img">
+            <% if (editorsPick.cover_full) { %>
+              <img src="/uploads/<%= editorsPick.cover_full %>" alt="<%= editorsPick.title %>" loading="lazy">
+            <% } else { %>
+              <div class="ph ph-<%= (editorsPick.id % 9) + 1 %>"></div>
+            <% } %>
+          </div>
+          <div class="editorial-split-body">
+            <span class="eyebrow" style="color:var(--accent);"><%= editorsPick.type === 'review' ? 'Recenzia' : 'Článok' %> · Editor's Pick</span>
+            <h3 class="h-2" style="margin:16px 0; letter-spacing:-0.03em;"><%= editorsPick.title %></h3>
+            <p class="lead" style="margin:0;"><%= editorsPick.excerpt %></p>
+            <div style="margin:32px 0; height:1px; background:var(--border);"></div>
+            <div class="editorial-split-footer">
+              <div class="editorial-author">
+                <span class="avatar"><%= (editorsPick.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                <div>
+                  <div class="editorial-author-name"><%= editorsPick.author_name || 'Redakcia' %></div>
+                  <div class="editorial-author-date">
+                    <%= editorsPick.published_at ? new Date(editorsPick.published_at).toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' }) : '' %>
+                    · <%= editorsPick.readTime %>
+                  </div>
+                </div>
+              </div>
+              <span class="btn btn-sm">Čítať
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </span>
+            </div>
+          </div>
+        </a>
+      <% } %>
+
+      <!-- ============================================================
+           10. PROMO BANNER 3 — App download (placeholder)
+           ============================================================ -->
+      <section class="promo-banner promo-app">
+        <div class="promo-app-grid"></div>
+        <div class="promo-app-content">
+          <div>
+            <span class="eyebrow" style="color:oklch(0.85 0.1 155);">Mobilná aplikácia · iOS & Android</span>
+            <h2 class="h-2" style="margin:12px 0; max-width:540px; color:oklch(1 0 0);">ByteZone ti zmestíme do vrecka.</h2>
+            <p class="lead" style="max-width:480px; margin:0; color:oklch(1 0 0/0.8);">Offline čítanie, push notifikácie len na to dôležité a tmavý režim, ktorý sa neoslepí.</p>
+            <div style="display:flex; gap:12px; margin-top:28px; flex-wrap:wrap;">
+              <span class="btn btn-lg btn-accent">App Store</span>
+              <span class="btn btn-lg" style="background:oklch(1 0 0/0.15); color:oklch(1 0 0); border-color:oklch(1 0 0/0.2);">Google Play</span>
+            </div>
+          </div>
+          <div class="promo-app-stats">
+            <div class="promo-stat">
+              <span class="promo-stat-num">4.8</span>
+              <span class="promo-stat-label">App Store rating</span>
+            </div>
+            <div class="promo-stat">
+              <span class="promo-stat-num">52k</span>
+              <span class="promo-stat-label">aktívnych čitateľov</span>
+            </div>
+            <div class="promo-stat">
+              <span class="promo-stat-num">2.1k</span>
+              <span class="promo-stat-label">recenzií</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ============================================================
+           "BEZ OBRÁZKOV"
+           ============================================================ -->
+
+      <!-- Minimal text feed -->
+      <% if (latest.length > 4) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Z archívu · Týždeň späť</span>
+            <h2>Bez obrázkov, len slová</h2>
+          </div>
+        </div>
+        <div class="minimal-feed">
+          <% latest.slice(3, 8).forEach((a, i) => { %>
+            <a href="/clanok/<%= a.slug %>" class="minimal-item">
+              <span class="minimal-num"><%= String(i + 1).padStart(2, '0') %></span>
+              <div class="minimal-body">
+                <div class="minimal-item-meta">
+                  <span class="minimal-tag"><%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %></span>
+                  <span class="minimal-dot"></span>
+                  <span class="minimal-date"><%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %></span>
+                </div>
+                <h3 class="minimal-title"><%= a.title %></h3>
+                <p class="minimal-excerpt"><%= a.excerpt %></p>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+      <!-- ============================================================
+           7. PROMO BANNER — sponzorovaný produkt (placeholder)
+           ============================================================ -->
+      <section class="promo-banner promo-brand">
+        <div class="promo-banner-bg promo-bg-mesh"></div>
+        <div style="position:relative; z-index:1;">
+          <span class="eyebrow" style="color:oklch(1 0 0/0.7);">Partner · Apple</span>
+          <h2 class="h-2" style="margin:12px 0; color:oklch(1 0 0);">MacBook Pro M5. Tichý. Rýchly. Tvoj.</h2>
+          <p class="lead" style="max-width:520px; color:oklch(1 0 0/0.85);">Konfigurovaný presne pre tvoj workflow. So študentskou zľavou ušetríš až 280 €.</p>
+          <span style="font-family:var(--font-mono); font-size:11px; color:oklch(1 0 0/0.5); margin-top:16px; display:block;">Sponzorované · Apple Slovakia</span>
+        </div>
+        <div class="promo-banner-cta">
+          <div class="promo-banner-product ph ph-mesh"></div>
+          <span class="btn btn-lg" style="background:oklch(1 0 0); color:oklch(0.18 0.01 240);">
+            Pozri ponuky
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+          </span>
+        </div>
+      </section>
+
+
+      <!-- ============================================================
+           9. COMPACT LIST — mini správy
+           ============================================================ -->
+      <% if (latest.length > 2) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Krátko a rýchlo</span>
+            <h2>Mini správy</h2>
+          </div>
+        </div>
+        <div class="compact-list">
+          <% latest.slice(0, 6).forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="compact-item">
+              <div class="compact-thumb">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm);">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="aspect-ratio:1;border-radius:var(--r-sm);"></div>
+                <% } %>
+              </div>
+              <div class="compact-body">
+                <span class="eyebrow" style="font-size:10px;"><%= a.category ? a.category.name : 'Článok' %></span>
+                <h4 class="compact-title"><%= a.title %></h4>
+                <span class="compact-date">
+                  <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %>
+                  · <%= a.readTime %>
+                </span>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+
+      <!-- ============================================================
            4. PROMO BANNER — placeholder
            ============================================================ -->
       <section class="promo-banner promo-cross">
@@ -291,6 +491,209 @@
           <span class="newsletter-note">Žiadny spam. Odhlásiť sa môžeš jedným klikom.</span>
         </div>
       </section>
+
+
+
+
+
+
+
+
+
+
+
+
+<!--
+
+           ============================================================
+           5. RÝCHLY POHĽAD" Title-only grid
+           ============================================================
+
+      <% if (latest.length > 1) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Rýchly pohľad</span>
+            <h2>Bez zbytočných slov</h2>
+          </div>
+          <a class="sec-head-link" href="/kategorie">Viac
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="grid-3">
+          <% latest.slice(0, 6).forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="card card-link title-only">
+              <div class="ph" style="aspect-ratio:4/3; position:relative;">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+              </div>
+              <div class="title-only-body">
+                <div class="title-only-meta">
+                  <span class="tag <%= a.type === 'review' ? 'tag-accent' : '' %>" style="padding:2px 8px; font-size:10px;">
+                    <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                  </span>
+                  <span class="dot"></span>
+                  <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                    <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %>
+                  </span>
+                </div>
+                <h4 class="title-only-title"><%= a.title %></h4>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+      <!-- ============================================================
+           5. NAJNOVŠIE — standard card grid
+           ============================================================
+      <% if (latest.length > 0) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Najnovšie</span>
+            <h2>Čo sa stalo tento týždeň</h2>
+          </div>
+        </div>
+        <div class="grid-3">
+          <% latest.slice(0, 6).forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="card card-link acard">
+              <div class="ph">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+              </div>
+              <div class="acard-body">
+                <div class="acard-meta">
+                  <span class="tag tag-accent" style="padding:2px 8px; font-size:11px;">
+                    <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                  </span>
+                  <span class="dot"></span>
+                  <span><%= a.readTime %></span>
+                  <span class="dot"></span>
+                  <span><%= a.viewsFormatted %> pozretí</span>
+                </div>
+                <h3 class="acard-title"><%= a.title %></h3>
+                <p class="acard-excerpt"><%= a.excerpt %></p>
+                <div class="acard-foot">
+                  <div class="acard-author">
+                    <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                    <span><%= a.author_name || 'Redakcia' %></span>
+                    <span class="dot"></span>
+                    <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                      <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+      <!-- ============================================================
+           6. RECENZIE — score overlay grid
+           ============================================================
+      <% if (reviews.length > 0) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Recenzie</span>
+            <h2>Otestované, skóre udelené</h2>
+          </div>
+          <a class="sec-head-link" href="/recenzie">
+            Všetky recenzie
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="grid-3">
+          <% reviews.forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="card card-link review-card">
+              <div class="ph" style="aspect-ratio:16/10; position:relative;">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+                <div class="review-card-score">
+                  <span class="review-card-score-label">Skóre</span>
+                  <span class="review-card-score-num"><%= a.viewsFormatted %></span>
+                </div>
+              </div>
+              <div class="acard-body">
+                <div class="acard-meta">
+                  <span class="tag tag-accent" style="padding:2px 8px; font-size:11px;">Recenzia</span>
+                  <span class="dot"></span>
+                  <span><%= a.readTime %></span>
+                </div>
+                <h3 class="acard-title"><%= a.title %></h3>
+                <p class="acard-excerpt"><%= a.excerpt %></p>
+                <div class="acard-foot">
+                  <div class="acard-author">
+                    <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                    <span><%= a.author_name %></span>
+                  </div>
+                  <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                    <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %>
+                  </span>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <!-- ============================================================
+           8. CAROUSEL — mohlo by ťa zaujímať
+           ============================================================
+      <% if (latest.length > 0) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Pre teba · Personalizované</span>
+            <h2>Mohlo by ťa zaujímať</h2>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="icon-btn" data-carousel-prev>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+            <button class="icon-btn" data-carousel-next>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="carousel-track" data-carousel-track>
+          <% latest.forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="carousel-card card card-link">
+              <div class="ph" style="aspect-ratio:4/5;">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+              </div>
+              <div style="padding:var(--s-card-pad); display:flex; flex-direction:column; gap:8px;">
+                <span class="eyebrow" style="font-size:10px;">
+                  <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                </span>
+                <h4 class="carousel-card-title"><%= a.title %></h4>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:6px;">
+                  <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);"><%= a.readTime %></span>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+-->
+
+
+
 
     </div>
   </main>

@@ -31,8 +31,12 @@
     dots[current].classList.add('active');
   }
 
-  function next() { goTo(current + 1); }
-  function prev() { goTo(current - 1); }
+  function next() {
+    goTo(current + 1);
+  }
+  function prev() {
+    goTo(current - 1);
+  }
 
   function startAuto() {
     stopAuto();
@@ -40,7 +44,10 @@
   }
 
   function stopAuto() {
-    if (interval) { clearInterval(interval); interval = null; }
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
   }
 
   // Dot clicks
@@ -54,20 +61,35 @@
   });
 
   // Arrow clicks
-  if (prevBtn) prevBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    prev();
-    startAuto();
-  });
-  if (nextBtn) nextBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    next();
-    startAuto();
-  });
+  if (prevBtn)
+    prevBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      prev();
+      startAuto();
+    });
+  if (nextBtn)
+    nextBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      next();
+      startAuto();
+    });
 
   // Pause on hover, resume on leave
   slider.addEventListener('mouseenter', stopAuto);
   slider.addEventListener('mouseleave', startAuto);
 
   startAuto();
+
+  // Carousel scroll buttons
+  var track = document.querySelector('[data-carousel-track]');
+  var prevC = document.querySelector('[data-carousel-prev]');
+  var nextC = document.querySelector('[data-carousel-next]');
+  if (track && prevC && nextC) {
+    prevC.addEventListener('click', function () {
+      track.scrollBy({ left: -340, behavior: 'smooth' });
+    });
+    nextC.addEventListener('click', function () {
+      track.scrollBy({ left: 340, behavior: 'smooth' });
+    });
+  }
 })();

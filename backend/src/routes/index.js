@@ -126,6 +126,47 @@ router.get('/', async (req, res, next) => {
       trending.push(...extra);
     }
 
+    // 4. Editor's Pick — najčítanejší published článok
+    const editorsPick = await db('articles')
+      .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media', 'articles.cover_media_id', 'media.id')
+      .where('articles.status', 'published')
+      .select(
+        'articles.id',
+        'articles.title',
+        'articles.slug',
+        'articles.excerpt',
+        'articles.type',
+        'articles.published_at',
+        'articles.view_count',
+        'users.nickname as author_name',
+        'media.thumbnail_path as cover_thumb',
+        'media.original_path as cover_full'
+      )
+      .orderBy('articles.view_count', 'desc')
+      .first();
+
+    // 5. Reviews — posledné published recenzie
+    const reviews = await db('articles')
+      .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media', 'articles.cover_media_id', 'media.id')
+      .where('articles.status', 'published')
+      .where('articles.type', 'review')
+      .select(
+        'articles.id',
+        'articles.title',
+        'articles.slug',
+        'articles.excerpt',
+        'articles.type',
+        'articles.published_at',
+        'articles.view_count',
+        'users.nickname as author_name',
+        'media.thumbnail_path as cover_thumb',
+        'media.original_path as cover_full'
+      )
+      .orderBy('articles.published_at', 'desc')
+      .limit(6);
+
     // 4. Tagy pre článok (pre bento overlay tag)
     const articleIds = [...new Set([...featured, ...latest, ...trending].map((a) => a.id))];
     let tagMap = new Map();
@@ -198,6 +239,8 @@ router.get('/', async (req, res, next) => {
       featured: featured.map(enrich),
       latest: latest.map(enrich),
       trending: trending.map(enrich),
+      editorsPick: editorsPick ? enrich(editorsPick) : null,
+      reviews: reviews.map(enrich),
     });
   } catch (err) {
     log.error('homepage query failed', { err: err.message });
