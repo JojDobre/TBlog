@@ -37,6 +37,329 @@ router.use('/', authRouter);
 router.use('/', profileRouter);
 
 // ---------------------------------------------------------------------------
+// SHARED: listing helper
+// ---------------------------------------------------------------------------
+const PER_PAGE_PUBLIC = 12;
+
+async function buildListing(queryBuilder, { page, sort, type }) {
+  const p = Math.max(1, parseInt(page, 10) || 1);
+  const offset = (p - 1) * PER_PAGE_PUBLIC;
+
+  if (type === 'article' || type === 'review') queryBuilder.where('articles.type', type);
+
+  const countQ = queryBuilder.clone().count({ c: '*' }).first();
+  const total = Number((await countQ).c);
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE_PUBLIC));
+
+  const orderCol = sort === 'popular' ? 'articles.view_count' : 'articles.published_at';
+  const rows = await queryBuilder
+    .clone()
+    .leftJoin('users', 'articles.author_id', 'users.id')
+    .leftJoin('media', 'articles.cover_media_id', 'media.id')
+    .select(
+      'articles.id',
+      'articles.title',
+      'articles.slug',
+      'articles.excerpt',
+      'articles.type',
+      'articles.published_at',
+      'articles.view_count',
+      'users.nickname as author_name',
+      'media.thumbnail_path as cover_thumb',
+      'media.original_path as cover_full'
+    )
+    .orderBy(orderCol, 'desc')
+    .limit(PER_PAGE_PUBLIC)
+    .offset(offset);
+
+  // Enrich with tags
+  const ids = rows.map((r) => r.id);
+  let tagMap = new Map();
+  if (ids.length > 0) {
+    const tRows = await db('article_tags')
+      .join('tags', 'article_tags.tag_id', 'tags.id')
+      .whereIn('article_tags.article_id', ids)
+      .select('article_tags.article_id', 'tags.name', 'tags.slug');
+    for (const r of tRows) {
+      if (!tagMap.has(r.article_id)) tagMap.set(r.article_id, []);
+      tagMap.get(r.article_id).push(r);
+    }
+  }
+
+  const articles = rows.map((a) => ({
+    ...a,
+    tags: tagMap.get(a.id) || [],
+    readTime: Math.max(3, Math.round((a.excerpt || '').split(/\s+/).length / 40)) + ' min',
+    viewsFormatted:
+      a.view_count >= 1000
+        ? (a.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+        : String(a.view_count || 0),
+  }));
+
+  return { articles, total, totalPages, currentPage: p };
+}
+
+// ---------------------------------------------------------------------------
+// CATEGORY listing
+// ---------------------------------------------------------------------------
+router.get('/kategorie', async (req, res, next) => {
+  try {
+    // Kategórie s počtom článkov
+    const cats = await db('categories')
+      .leftJoin(
+        db('article_categories')
+          .select('category_id')
+          .count('* as cnt')
+          .groupBy('category_id')
+          .as('ac'),
+        'categories.id',
+        'ac.category_id'
+      )
+      .select(
+        'categories.id',
+        'categories.name',
+        'categories.slug',
+        db.raw('COALESCE(ac.cnt, 0) as count')
+      )
+      .orderBy('categories.name');
+
+    // Články s filtrom a paginaciou
+    const sort = req.query.sort || 'newest';
+    const type = req.query.type || null;
+    const qb = db('articles').where('articles.status', 'published');
+
+    const { articles, total, totalPages, currentPage } = await buildListing(qb, {
+      page: req.query.page,
+      sort,
+      type,
+    });
+
+    res.render('listing/browse', {
+      title: 'Kategórie & Články',
+      currentPath: '/kategorie',
+      categories: cats.map((c) => ({
+        name: c.name,
+        href: '/kategorie/' + c.slug,
+        count: Number(c.count),
+      })),
+      articles,
+      totalArticles: total,
+      totalPages,
+      currentPage,
+      currentSort: sort,
+      currentType: type,
+      baseUrl: '/kategorie',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/kategorie/:slug', async (req, res, next) => {
+  try {
+    const cat = await db('categories').where('slug', req.params.slug).first();
+    if (!cat) return next();
+
+    const sort = req.query.sort || 'newest';
+    const type = req.query.type || null;
+    const qb = db('articles')
+      .join('article_categories', 'articles.id', 'article_categories.article_id')
+      .where('article_categories.category_id', cat.id)
+      .where('articles.status', 'published');
+
+    const { articles, total, totalPages, currentPage } = await buildListing(qb, {
+      page: req.query.page,
+      sort,
+      type,
+    });
+
+    const relatedTags = await db('article_tags')
+      .join('tags', 'article_tags.tag_id', 'tags.id')
+      .join('article_categories', 'article_tags.article_id', 'article_categories.article_id')
+      .where('article_categories.category_id', cat.id)
+      .select('tags.name', 'tags.slug')
+      .groupBy('tags.id', 'tags.name', 'tags.slug')
+      .orderByRaw('COUNT(*) DESC')
+      .limit(10);
+
+    res.render('listing/index', {
+      title: cat.name,
+      currentPath: '/kategorie/' + cat.slug,
+      listingTitle: cat.name,
+      listingName: cat.name,
+      listingTypeLabel: 'Kategória',
+      listingDescription: null,
+      listingParentLabel: 'Kategórie',
+      listingParentHref: '/kategorie',
+      baseUrl: '/kategorie/' + cat.slug,
+      articles,
+      totalArticles: total,
+      totalPages,
+      currentPage,
+      currentSort: sort,
+      currentType: type,
+      relatedTags,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// RUBRIC listing
+// ---------------------------------------------------------------------------
+router.get('/rubriky', async (req, res, next) => {
+  try {
+    const rubs = await db('rubrics')
+      .leftJoin(
+        db('article_rubrics').select('rubric_id').count('* as cnt').groupBy('rubric_id').as('ar'),
+        'rubrics.id',
+        'ar.rubric_id'
+      )
+      .select('rubrics.id', 'rubrics.name', 'rubrics.slug', db.raw('COALESCE(ar.cnt, 0) as count'))
+      .orderBy('rubrics.display_order')
+      .orderBy('rubrics.name');
+
+    res.render('listing/taxonomy', {
+      title: 'Rubriky',
+      currentPath: '/rubriky',
+      pageTitle: 'Rubriky',
+      eyebrow: 'Prehľad',
+      subtitle: 'Obsahové sekcie magazínu.',
+      taxonomyType: 'rubric',
+      items: rubs.map((r) => ({
+        name: r.name,
+        href: '/rubrika/' + r.slug,
+        count: Number(r.count),
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/rubrika/:slug', async (req, res, next) => {
+  try {
+    const rub = await db('rubrics').where('slug', req.params.slug).first();
+    if (!rub) return next();
+
+    const sort = req.query.sort || 'newest';
+    const type = req.query.type || null;
+    const qb = db('articles')
+      .join('article_rubrics', 'articles.id', 'article_rubrics.article_id')
+      .where('article_rubrics.rubric_id', rub.id)
+      .where('articles.status', 'published');
+
+    const { articles, total, totalPages, currentPage } = await buildListing(qb, {
+      page: req.query.page,
+      sort,
+      type,
+    });
+
+    res.render('listing/index', {
+      title: rub.name,
+      currentPath: '/rubrika/' + rub.slug,
+      listingTitle: rub.name,
+      listingName: rub.name,
+      listingTypeLabel: 'Rubrika',
+      listingDescription: null,
+      listingParentLabel: 'Rubriky',
+      listingParentHref: '/rubriky',
+      baseUrl: '/rubrika/' + rub.slug,
+      articles,
+      totalArticles: total,
+      totalPages,
+      currentPage,
+      currentSort: sort,
+      currentType: type,
+      relatedTags: [],
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// TAG listing
+// ---------------------------------------------------------------------------
+router.get('/tagy', async (req, res, next) => {
+  try {
+    const tags = await db('tags')
+      .leftJoin(
+        db('article_tags').select('tag_id').count('* as cnt').groupBy('tag_id').as('at'),
+        'tags.id',
+        'at.tag_id'
+      )
+      .select(
+        'tags.id',
+        'tags.name',
+        'tags.slug',
+        'tags.color',
+        db.raw('COALESCE(at.cnt, 0) as count')
+      )
+      .orderBy('tags.name');
+
+    res.render('listing/taxonomy', {
+      title: 'Tagy',
+      currentPath: '/tagy',
+      pageTitle: 'Tagy',
+      eyebrow: 'Prehľad',
+      subtitle: 'Všetky tematické značky.',
+      taxonomyType: 'tag',
+      items: tags.map((t) => ({
+        name: t.name,
+        href: '/tag/' + t.slug,
+        count: Number(t.count),
+        color: t.color,
+      })),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/tag/:slug', async (req, res, next) => {
+  try {
+    const tag = await db('tags').where('slug', req.params.slug).first();
+    if (!tag) return next();
+
+    const sort = req.query.sort || 'newest';
+    const type = req.query.type || null;
+    const qb = db('articles')
+      .join('article_tags', 'articles.id', 'article_tags.article_id')
+      .where('article_tags.tag_id', tag.id)
+      .where('articles.status', 'published');
+
+    const { articles, total, totalPages, currentPage } = await buildListing(qb, {
+      page: req.query.page,
+      sort,
+      type,
+    });
+
+    res.render('listing/index', {
+      title: '#' + tag.name,
+      currentPath: '/tag/' + tag.slug,
+      listingTitle: '#' + tag.name,
+      listingName: '#' + tag.name,
+      listingTypeLabel: 'Tag',
+      listingDescription: null,
+      listingParentLabel: 'Tagy',
+      listingParentHref: '/tagy',
+      baseUrl: '/tag/' + tag.slug,
+      articles,
+      totalArticles: total,
+      totalPages,
+      currentPage,
+      currentSort: sort,
+      currentType: type,
+      relatedTags: [],
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // ARTICLE DETAIL
 // ---------------------------------------------------------------------------
 router.get('/clanok/:slug', async (req, res, next) => {

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', { title: 'Články', description: 'Všetky články a recenzie.' }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: currentPath }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-current">Články</span>
+      </nav>
+
+      <!-- Header -->
+      <header class="listing-header">
+        <div class="listing-header-left">
+          <span class="eyebrow">Všetky články</span>
+          <h1 class="h-1" style="margin:16px 0 12px;">Články & Recenzie</h1>
+          <p class="lead" style="max-width:600px;">Prechádzaj všetky publikované články. Filtruj podľa typu alebo zoraď podľa obľúbenosti.</p>
+        </div>
+      </header>
+
+      <!-- Category cards -->
+      <% if (categories.length > 0) { %>
+        <div class="browse-cats">
+          <% categories.forEach(c => { %>
+            <a href="<%= c.href %>" class="browse-cat-chip">
+              <span class="browse-cat-name"><%= c.name %></span>
+              <span class="browse-cat-count"><%= c.count %></span>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <!-- Filter bar -->
+      <div class="filterbar">
+        <div class="filterbar-types">
+          <a href="<%= baseUrl %>" class="btn btn-sm <%= !currentType ? 'btn-primary' : '' %>">Všetky</a>
+          <a href="<%= baseUrl %>?type=article" class="btn btn-sm <%= currentType === 'article' ? 'btn-primary' : '' %>">Články</a>
+          <a href="<%= baseUrl %>?type=review" class="btn btn-sm <%= currentType === 'review' ? 'btn-primary' : '' %>">Recenzie</a>
+        </div>
+        <div class="filterbar-spacer"></div>
+        <span class="listing-stat" style="margin-right:8px;"><%= totalArticles %> článkov</span>
+        <a href="<%= baseUrl %>?sort=<%= currentSort === 'newest' ? 'popular' : 'newest' %><%= currentType ? '&type=' + currentType : '' %>"
+           class="btn btn-sm btn-ghost">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13M3 12h9M3 18h5M17 8l3-3 3 3M20 5v14M20 19l3-3"/></svg>
+          <%= currentSort === 'popular' ? 'Najčítanejšie' : 'Najnovšie' %>
+        </a>
+      </div>
+
+      <!-- Bento articles grid -->
+      <% if (articles.length > 0) { %>
+        <div class="browse-bento">
+          <% articles.forEach((a, i) => {
+            // Opakovací vzor po 4 článkoch: a, b, c, d
+            var pattern = i % 4;
+            var cls = ['browse-item-a', 'browse-item-b', 'browse-item-c', 'browse-item-d'][pattern];
+            var hasImage = pattern === 0 || pattern === 1 || pattern === 3;
+            var isTextOnly = pattern === 2;
+          %>
+            <article class="card card-link browse-item <%= cls %>">
+              <a href="/clanok/<%= a.slug %>">
+                <% if (hasImage) { %>
+                  <% if (a.cover_full || a.cover_thumb) { %>
+                    <div class="ph" style="background-image:url('/uploads/<%= a.cover_full || a.cover_thumb %>');background-size:cover;background-position:center;"></div>
+                  <% } else { %>
+                    <div class="ph ph-<%= (a.id % 9) + 1 %>"></div>
+                  <% } %>
+                  <div class="bento-overlay">
+                    <span class="tag <%= a.type === 'review' ? 'tag-accent' : '' %> bento-tag-dark" style="align-self:flex-start;">
+                      <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                    </span>
+                    <% if (pattern === 0) { %>
+                      <h3 class="bento-main-title"><%= a.title %></h3>
+                      <span class="bento-meta-line"><%= a.author_name || 'Redakcia' %> · <%= a.readTime %> · <%= a.viewsFormatted %> pozretí</span>
+                    <% } else { %>
+                      <h3 class="bento-sub-title"><%= a.title %></h3>
+                    <% } %>
+                  </div>
+                <% } %>
+
+                <% if (isTextOnly) { %>
+                  <div class="bento-text-card">
+                    <span class="eyebrow" style="color:var(--accent);">
+                      <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                    </span>
+                    <h3 class="bento-text-title"><%= a.title %></h3>
+                    <p class="bento-text-excerpt"><%= a.excerpt %></p>
+                    <div style="margin-top:auto; display:flex; align-items:center; justify-content:space-between;">
+                      <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                        <%= a.author_name || 'Redakcia' %> · <%= a.readTime %>
+                      </span>
+                      <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                        <%= a.viewsFormatted %> pozretí
+                      </span>
+                    </div>
+                  </div>
+                <% } %>
+              </a>
+            </article>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="listing-empty">
+          <div class="comments-empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          </div>
+          <h4>Žiadne články</h4>
+          <p>Skús zmeniť filter alebo sa vráť neskôr.</p>
+        </div>
+      <% } %>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="listing-pagination">
+          <% if (currentPage > 1) { %>
+            <a href="<%= baseUrl %>?page=<%= currentPage - 1 %><%= currentType ? '&type=' + currentType : '' %><%= currentSort !== 'newest' ? '&sort=' + currentSort : '' %>"
+               class="btn btn-sm">← Predošlá</a>
+          <% } else { %>
+            <span class="btn btn-sm" style="opacity:0.4; pointer-events:none;">← Predošlá</span>
+          <% } %>
+
+          <% for (var p = 1; p <= totalPages; p++) {
+            if (p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2)) { %>
+              <a href="<%= baseUrl %>?page=<%= p %><%= currentType ? '&type=' + currentType : '' %><%= currentSort !== 'newest' ? '&sort=' + currentSort : '' %>"
+                 class="btn btn-sm <%= p === currentPage ? 'btn-primary' : 'btn-ghost' %>"
+                 style="min-width:36px; justify-content:center;"><%= p %></a>
+            <% } else if (p === currentPage - 3 || p === currentPage + 3) { %>
+              <span style="color:var(--text-subtle); padding:0 8px;">…</span>
+            <% }
+          } %>
+
+          <% if (currentPage < totalPages) { %>
+            <a href="<%= baseUrl %>?page=<%= currentPage + 1 %><%= currentType ? '&type=' + currentType : '' %><%= currentSort !== 'newest' ? '&sort=' + currentSort : '' %>"
+               class="btn btn-sm">Ďalšia →</a>
+          <% } else { %>
+            <span class="btn btn-sm" style="opacity:0.4; pointer-events:none;">Ďalšia →</span>
+          <% } %>
+        </div>
+      <% } %>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+</body>
+</html>
