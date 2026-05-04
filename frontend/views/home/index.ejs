@@ -1,34 +1,302 @@
 <!doctype html>
-<html lang="sk">
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
 <head>
-  <%- include('../partials/head', { title: 'Domov', description: 'Tech blog so zameraním na recenzie technológií.' }) %>
+  <%- include('../partials/head', { title: null, description: 'Nezávislý tech magazín. Recenzie, rebríčky a návody.' }) %>
 </head>
 <body>
+  <div class="page-home-bg"></div>
+
   <%- include('../partials/header', { currentPath: currentPath }) %>
 
-  <main class="site-main">
-    <div class="site-container">
-      <section class="hero">
-        <h1>Vitaj na <%= appName %></h1>
-        <p class="lead">
-          Toto je kostra verejnej časti webu. Vlastné CSS si pridáš do
-          <code>frontend/public/css/site.css</code>.
-        </p>
+  <main class="page">
+    <div class="container">
+
+      <!-- ============================================================
+           1. HERO SLIDER — posledné 4 featured články
+           ============================================================ -->
+      <% if (featured.length > 0) { %>
+        <section class="hero-banner" data-hero-slider>
+          <div class="hero-banner-bg">
+            <div class="hero-banner-glow"></div>
+            <div class="hero-banner-grid"></div>
+          </div>
+
+          <% featured.forEach((a, idx) => { %>
+            <div class="hero-banner-inner hero-slide <%= idx === 0 ? 'hero-slide--active' : '' %>"
+                 data-slide-index="<%= idx %>">
+              <div class="hero-banner-text">
+                <div class="hero-tags">
+                  <span class="tag tag-accent">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 1-3s-3 2-3 6a6 6 0 0 0 12 0c0-6-6-11-6-11z"/></svg>
+                    Hlavný príbeh
+                  </span>
+                  <% if (a.type === 'review') { %><span class="tag">Recenzia</span><% } %>
+                  <% if (a.category) { %><span class="tag"><%= a.category.name %></span><% } %>
+                </div>
+                <h1 class="h-1 hero-banner-title"><%= a.title %></h1>
+                <p class="lead hero-banner-lead"><%= a.excerpt %></p>
+                <div class="hero-banner-meta">
+                  <a href="/clanok/<%= a.slug %>" class="btn btn-accent btn-lg">
+                    Čítať článok
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                  </a>
+                  <div class="hero-author-info">
+                    <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                    <div class="hero-author-text">
+                      <span class="hero-author-name"><%= a.author_name || 'Redakcia' %></span>
+                      <span class="hero-author-date">
+                        <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' }) : '' %>
+                        · <%= a.readTime %> čítania
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="hero-banner-visual">
+                <div class="hero-banner-shadow"></div>
+                <div class="hero-banner-img">
+                  <% if (a.cover_full) { %>
+                    <img src="/uploads/<%= a.cover_full %>" alt="<%= a.title %>" loading="<%= idx === 0 ? 'eager' : 'lazy' %>">
+                  <% } else { %>
+                    <div class="ph ph-<%= (a.id % 9) + 1 %>"></div>
+                  <% } %>
+                  <div class="hero-banner-shine"></div>
+                </div>
+                <div class="hero-banner-floater hero-banner-floater-1">
+                  <span class="eyebrow">Pozretia</span>
+                  <span class="hero-floater-val"><%= a.viewsFormatted %></span>
+                </div>
+                <div class="hero-banner-floater hero-banner-floater-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8 8-4-4-7 7M16 7h6v6"/></svg>
+                  <span class="hero-floater-stat"><%= a.viewsFormatted %></span>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+
+          <div class="hero-banner-controls">
+            <div class="hero-banner-dots">
+              <% featured.forEach((_, i) => { %>
+                <button class="hero-banner-dot <%= i === 0 ? 'active' : '' %>"
+                        data-slide-dot="<%= i %>" aria-label="Slide <%= i + 1 %>"></button>
+              <% }) %>
+            </div>
+            <div class="hero-banner-arrows">
+              <button class="icon-btn" data-slide-prev aria-label="Predošlý">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </button>
+              <button class="icon-btn" data-slide-next aria-label="Ďalší">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+      <% } %>
+
+
+      <!-- ============================================================
+           2. NOVINKY — bento mosaic
+           ============================================================ -->
+      <% if (latest.length > 0) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Najaktualnejšie · Články</span>
+            <h2>Novinky</h2>
+          </div>
+        </div>
+
+        <div class="bento">
+          <% if (latest[0]) { %>
+            <article class="card card-link bento-a">
+              <a href="/clanok/<%= latest[0].slug %>">
+                <% if (latest[0].cover_full) { %>
+                  <div class="ph" style="background-image: url('/uploads/<%= latest[0].cover_full %>'); background-size: cover; background-position: center;"></div>
+                <% } else { %>
+                  <div class="ph ph-<%= (latest[0].id % 9) + 1 %>"></div>
+                <% } %>
+                <div class="bento-overlay">
+                  <% if (latest[0].tags[0]) { %><span class="tag tag-accent" style="align-self:flex-start;"><%= latest[0].tags[0].name %></span><% } %>
+                  <h3 class="bento-main-title"><%= latest[0].title %></h3>
+                  <span class="bento-meta-line"><%= latest[0].author_name %> · <%= latest[0].readTime %></span>
+                </div>
+              </a>
+            </article>
+          <% } %>
+
+          <% if (latest[1]) { %>
+            <article class="card card-link bento-b">
+              <a href="/clanok/<%= latest[1].slug %>">
+                <% if (latest[1].cover_full) { %>
+                  <div class="ph" style="background-image: url('/uploads/<%= latest[1].cover_full %>'); background-size: cover; background-position: center;"></div>
+                <% } else { %>
+                  <div class="ph ph-<%= (latest[1].id % 9) + 1 %>"></div>
+                <% } %>
+                <div class="bento-overlay">
+                  <% if (latest[1].category) { %><span class="tag bento-tag-dark"><%= latest[1].category.name %></span><% } %>
+                  <h3 class="bento-sub-title"><%= latest[1].title %></h3>
+                  <span class="bento-meta-line"><%= latest[1].author_name %> · <%= latest[1].readTime %></span>
+                </div>
+              </a>
+            </article>
+          <% } %>
+
+          <% if (latest[2]) { %>
+            <article class="card card-link bento-c">
+              <a href="/clanok/<%= latest[2].slug %>" class="bento-text-card">
+                <span class="eyebrow" style="color:var(--accent);"><%= latest[2].type === 'review' ? 'Recenzia' : (latest[2].tags[0] ? latest[2].tags[0].name : 'Článok') %></span>
+                <h3 class="bento-text-title"><%= latest[2].title %></h3>
+                <p class="bento-text-excerpt"><%= latest[2].excerpt %></p>
+              </a>
+            </article>
+          <% } %>
+
+          <% if (latest[3]) { %>
+            <article class="card card-link bento-d">
+              <a href="/clanok/<%= latest[3].slug %>">
+                <% if (latest[3].cover_full) { %>
+                  <div class="ph" style="background-image: url('/uploads/<%= latest[3].cover_full %>'); background-size: cover; background-position: center;"></div>
+                <% } else { %>
+                  <div class="ph ph-<%= (latest[3].id % 9) + 1 %>"></div>
+                <% } %>
+                <div class="bento-overlay">
+                  <h3 class="bento-sm-title"><%= latest[3].title %></h3>
+                  <span class="bento-meta-line"><%= latest[3].author_name %> · <%= latest[3].readTime %></span>
+                </div>
+              </a>
+            </article>
+          <% } %>
+
+          <% if (latest[4]) { %>
+            <article class="card card-link bento-c">
+              <a href="/clanok/<%= latest[4].slug %>" class="bento-text-card">
+                <span class="eyebrow" style="color:var(--accent);"><%= latest[4].type === 'review' ? 'Recenzia' : (latest[4].tags[0] ? latest[4].tags[0].name : 'Článok') %></span>
+                <h3 class="bento-text-title"><%= latest[4].title %></h3>
+                <p class="bento-text-excerpt"><%= latest[4].excerpt %></p>
+              </a>
+            </article>
+          <% } %>
+
+          <% if (latest[5]) { %>
+            <article class="card card-link bento-b">
+              <a href="/clanok/<%= latest[5].slug %>">
+                <% if (latest[5].cover_full) { %>
+                  <div class="ph" style="background-image: url('/uploads/<%= latest[5].cover_full %>'); background-size: cover; background-position: center;"></div>
+                <% } else { %>
+                  <div class="ph ph-<%= (latest[5].id % 9) + 1 %>"></div>
+                <% } %>
+                <div class="bento-overlay">
+                  <% if (latest[5].category) { %><span class="tag bento-tag-dark"><%= latest[5].category.name %></span><% } %>
+                  <h3 class="bento-sub-title"><%= latest[5].title %></h3>
+                  <span class="bento-meta-line"><%= latest[5].author_name %> · <%= latest[5].readTime %></span>
+                </div>
+              </a>
+            </article>
+          <% } %>
+
+          <% if (latest[6]) { %>
+              <article class="card card-link bento-c">
+                <a href="/clanok/<%= latest[6].slug %>" class="bento-text-card">
+                  <span class="eyebrow" style="color:var(--accent);"><%= latest[6].type === 'review' ? 'Recenzia' : (latest[6].tags[0] ? latest[6].tags[0].name : 'Článok') %></span>
+                  <h3 class="bento-text-title"><%= latest[6].title %></h3>
+                  <p class="bento-text-excerpt"><%= latest[6].excerpt %></p>
+                </a>
+              </article>
+            <% } %>
+          </div>
+        <% } %>
+
+
+      <!-- ============================================================
+           3. TRENDY — TOP 6 najčítanejších
+           ============================================================ -->
+      <% if (trending.length > 0) { %>
+        <div class="sec-head">
+          <div class="sec-head-l">
+            <span class="eyebrow">Trendy · Posledných 7 dní</span>
+            <h2>TOP<%= trending.length %>, ktoré najviac hýbu redakciou</h2>
+          </div>
+          <a class="sec-head-link" href="/kategorie">
+            Všetko
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <div class="trending-list">
+          <% trending.forEach((a, i) => { %>
+            <a href="/clanok/<%= a.slug %>" class="trending-item">
+              <span class="trending-num"><%= String(i + 1).padStart(2, '0') %></span>
+              <div class="trending-body">
+                <div class="trending-meta">
+                  <span class="tag tag-accent" style="padding:2px 8px; font-size:10px;">
+                    <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                  </span>
+                  <span class="trending-meta-text">
+                    <%= a.category ? a.category.name : '' %>
+                    · <%= a.readTime %>
+                  </span>
+                </div>
+                <h3 class="trending-title"><%= a.title %></h3>
+              </div>
+              <div class="trending-stats">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8 8-4-4-7 7M16 7h6v6"/></svg>
+                <span class="trending-views"><%= a.viewsFormatted %></span>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+
+
+      <!-- ============================================================
+           4. PROMO BANNER — placeholder
+           ============================================================ -->
+      <section class="promo-banner promo-cross">
+        <div class="promo-cross-pattern"></div>
+        <div style="position:relative; z-index:1; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <span class="promo-badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M8 7h9v9"/></svg>
+            Externý odkaz
+          </span>
+          <span class="promo-meta-text">bytezone.sk/podcast</span>
+        </div>
+        <h2 class="h-2" style="margin:16px 0; max-width:680px; position:relative; z-index:1;">Náš podcast: Týždeň v techu, každú nedeľu o 19:00.</h2>
+        <p class="lead" style="max-width:540px; position:relative; z-index:1;">45 minút diskusie o tom, čo sa stalo a čo z toho ostane. Dostupné na Spotify, Apple a YouTube.</p>
+        <div style="display:flex; gap:10px; margin-top:24px; position:relative; z-index:1; flex-wrap:wrap;">
+          <a href="#" class="btn btn-accent">Spotify</a>
+          <a href="#" class="btn">Apple Podcasts</a>
+          <a href="#" class="btn">YouTube</a>
+        </div>
       </section>
 
-      <section class="dev-note">
-        <h2>Stav vývoja</h2>
-        <p>Aktuálne v <strong>Phase 1.4</strong>. Obsah sem začneme plniť od <strong>Phase 6</strong> (frontend článkov).</p>
-        <ul>
-          <li><a href="/admin/dashboard">Admin dashboard</a> (kostra)</li>
-          <li><a href="/admin/login">Admin login</a> (kostra)</li>
-          <li><a href="/health">/health</a> (JSON)</li>
-          <li><a href="/dev">/dev</a> (debug welcome stránka)</li>
-        </ul>
+
+      <!-- ============================================================
+           5. NEWSLETTER CTA — placeholder
+           ============================================================ -->
+      <section class="newsletter-section">
+        <div class="newsletter-mesh"></div>
+        <div class="newsletter-content">
+          <span class="eyebrow">Newsletter · Každý piatok</span>
+          <h2 class="h-2" style="margin:12px 0;">Šum sme odfiltrovali za teba.</h2>
+          <p class="lead" style="max-width:520px;">5 noviniek, 1 hĺbková analýza a žiadne tlačové správy.</p>
+        </div>
+        <div class="newsletter-form">
+          <div class="search" style="min-width:0; height:52px; border-radius:var(--r-lg);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <input type="email" placeholder="tvoj@email.sk" style="font-size:15px;">
+          </div>
+          <button class="btn btn-accent btn-lg" style="justify-content:center; width:100%;">
+            Prihlásiť sa
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+          <span class="newsletter-note">Žiadny spam. Odhlásiť sa môžeš jedným klikom.</span>
+        </div>
       </section>
+
     </div>
   </main>
 
   <%- include('../partials/footer') %>
+
+  <script src="/js/site.js" defer></script>
 </body>
 </html>

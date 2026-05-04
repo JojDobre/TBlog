@@ -1,42 +1,51 @@
-<%#
-  Verejný footer — kostra bez štýlov.
-  Triedy:
-    .site-footer            — wrap
-    .site-footer__inner     — kontajner
-    .site-footer__columns   — grid stĺpcov
-    .site-footer__col       — stĺpec
-    .site-footer__bottom    — copyright riadok
-%>
-<footer class="site-footer">
-  <div class="site-footer__inner">
-    <div class="site-footer__columns">
-      <div class="site-footer__col">
-        <h3 class="site-footer__heading"><%= appName %></h3>
-        <p class="site-footer__text">Tech blog so zameraním na recenzie technológií.</p>
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div class="bz-logo">BZ</div>
+          <div>
+            <div class="bz-brand-name"><%= appName %></div>
+            <div class="footer-tagline">tech bez kompromisu</div>
+          </div>
+        </div>
+        <p class="footer-desc">
+          Nezávislý tech magazín. Recenzie, rebríčky a návody, ktoré píšu ľudia,
+          čo techniku skutočne používajú.
+        </p>
+        <div class="footer-actions">
+          <a href="/newsletter" class="btn btn-sm">Newsletter</a>
+          <a href="/rss" class="btn btn-sm btn-ghost">RSS</a>
+        </div>
       </div>
-
-      <div class="site-footer__col">
-        <h3 class="site-footer__heading">Sekcie</h3>
-        <ul class="site-footer__list">
-          <li><a href="/recenzie">Recenzie</a></li>
-          <li><a href="/navody">Návody</a></li>
-          <li><a href="/aktuality">Aktuality</a></li>
-          <li><a href="/rebricky">Rebríčky</a></li>
-        </ul>
+      <div class="footer-col">
+        <h6>Sekcie</h6>
+        <a href="/recenzie">Recenzie</a>
+        <a href="/rebricky">Rebríčky</a>
+        <a href="/navody">Návody</a>
+        <a href="/porovnania">Porovnania</a>
+        <a href="/novinky">Novinky</a>
       </div>
-
-      <div class="site-footer__col">
-        <h3 class="site-footer__heading">Web</h3>
-        <ul class="site-footer__list">
-          <li><a href="/o-nas">O nás</a></li>
-          <li><a href="/kontakt">Kontakt</a></li>
-          <li><a href="/gdpr">Ochrana osobných údajov</a></li>
-        </ul>
+      <div class="footer-col">
+        <h6>Kategórie</h6>
+        <a href="/kategorie/mobily">Mobily</a>
+        <a href="/kategorie/notebooky">Notebooky</a>
+        <a href="/kategorie/hardware">Hardware</a>
+        <a href="/kategorie/software">Software</a>
+        <a href="/kategorie/audio">Audio</a>
+      </div>
+      <div class="footer-col">
+        <h6>Magazín</h6>
+        <a href="/o-nas">O nás</a>
+        <a href="/redakcia">Redakcia</a>
+        <a href="/inzercia">Inzercia</a>
+        <a href="/kontakt">Kontakt</a>
+        <a href="/eticky-kodex">Etický kódex</a>
       </div>
     </div>
-
-    <div class="site-footer__bottom">
-      <small>© <%= new Date().getFullYear() %> <%= appName %>. Všetky práva vyhradené.</small>
+    <div class="footer-bottom">
+      <span>© <%= new Date().getFullYear() %> <%= appName %> · Všetky práva vyhradené</span>
+      <span>SK · v1.0</span>
     </div>
   </div>
 </footer>

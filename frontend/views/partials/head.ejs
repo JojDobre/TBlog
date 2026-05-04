@@ -1,11 +1,10 @@
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title><%= typeof title !== 'undefined' ? title + ' — ' : '' %><%= appName %></title>
-
-<%# SEO meta tags — vyplnia sa konkrétne v Phase 14 %>
-<% if (typeof description !== 'undefined' && description) { %>
-  <meta name="description" content="<%= description %>" />
-<% } %>
-
-<link rel="stylesheet" href="/css/site.css" />
-<script src="/js/site.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= (typeof title !== 'undefined' && title) ? title + ' · ' + appName : appName %></title>
+  <% if (typeof description !== 'undefined' && description) { %>
+    <meta name="description" content="<%= description %>">
+  <% } %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/site.css">
