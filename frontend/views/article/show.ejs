@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', {
+    title: article.seo_title || article.title,
+    description: article.seo_description || article.excerpt || ''
+  }) %>
+  <% if (ogImage) { %>
+    <meta property="og:image" content="<%= ogImage %>">
+  <% } %>
+  <meta property="og:title" content="<%= article.seo_title || article.title %>">
+  <meta property="og:description" content="<%= article.seo_description || article.excerpt || '' %>">
+  <meta property="og:type" content="article">
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/clanok/' + article.slug }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+        </span>
+        <% if (category) { %>
+          <a href="/kategorie/<%= category.slug %>"><%= category.name %></a>
+          <span class="bc-sep">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </span>
+        <% } %>
+        <span class="bc-current"><%= article.type === 'review' ? 'Recenzia' : 'Článok' %></span>
+      </nav>
+
+      <!-- Article header -->
+      <header class="article-header">
+        <div class="article-header-tags">
+          <% if (article.type === 'review') { %><span class="tag tag-accent">Recenzia</span><% } %>
+          <% if (category) { %><span class="tag"><%= category.name %></span><% } %>
+          <% tags.slice(0, 3).forEach(t => { %>
+            <span class="tag">#<%= t.name %></span>
+          <% }) %>
+        </div>
+        <h1 class="h-1"><%= article.title %></h1>
+        <% if (article.excerpt) { %>
+          <p class="lead article-header-lead"><%= article.excerpt %></p>
+        <% } %>
+      </header>
+
+      <!-- Cover image -->
+      <% if (coverImage) { %>
+        <figure class="article-cover">
+          <img src="/uploads/<%= coverImage %>" alt="<%= article.title %>" loading="eager">
+        </figure>
+      <% } %>
+
+      <!-- Author bar -->
+      <div class="article-authorbar">
+        <span class="avatar article-avatar"><%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+        <div class="article-authorbar-meta">
+          <strong><%= article.author_name || 'Redakcia' %></strong>
+          <span class="article-authorbar-sub">
+            <%= article.published_at ? new Date(article.published_at).toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' }) : '' %>
+            · <%= readTime %> čítania
+            · <%= viewsFormatted %> pozretí
+          </span>
+        </div>
+        <div class="article-authorbar-actions">
+          <button class="btn btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            Uložiť
+          </button>
+          <button class="btn btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5"/></svg>
+            Zdieľať
+          </button>
+        </div>
+      </div>
+
+      <!-- Content + Sidebar layout -->
+      <div class="article-layout">
+
+        <!-- Main content -->
+        <article class="article-prose">
+          <%- contentHtml %>
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="article-sidebar">
+
+          <!-- TOC -->
+          <% if (toc.length > 0) { %>
+            <div class="sidebar-card" data-toc>
+              <h3 class="sidebar-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                Obsah článku
+              </h3>
+              <nav class="toc-list">
+                <% toc.forEach(item => { %>
+                  <a href="#<%= item.id %>"
+                     class="toc-link <%= item.level === 3 ? 'toc-link--sub' : '' %>">
+                    <%= item.text %>
+                  </a>
+                <% }) %>
+              </nav>
+            </div>
+          <% } %>
+
+          <!-- Author -->
+          <div class="sidebar-card">
+            <h3 class="sidebar-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              Autor
+            </h3>
+            <div class="sidebar-author">
+              <span class="avatar sidebar-author-avatar"><%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+              <div>
+                <div class="sidebar-author-name"><%= article.author_name || 'Redakcia' %></div>
+                <div class="sidebar-author-role">Editor</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <% if (tags.length > 0) { %>
+            <div class="sidebar-card">
+              <h3 class="sidebar-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12l-8 8a2 2 0 0 1-2.8 0L3 13.8a2 2 0 0 1 0-2.8L11 3h9v9z"/><circle cx="16" cy="8" r="1.5"/></svg>
+                Tagy
+              </h3>
+              <div class="sidebar-tags">
+                <% tags.forEach(t => { %>
+                  <a href="/tag/<%= t.slug %>" class="tag">#<%= t.name %></a>
+                <% }) %>
+              </div>
+            </div>
+          <% } %>
+
+          <!-- Related -->
+          <% if (relatedArticles.length > 0) { %>
+            <div class="sidebar-card">
+              <h3 class="sidebar-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12l-8 8a2 2 0 0 1-2.8 0L3 13.8a2 2 0 0 1 0-2.8L11 3h9v9z"/><circle cx="16" cy="8" r="1.5"/></svg>
+                Súvisiace články
+              </h3>
+              <div class="sidebar-related">
+                <% relatedArticles.forEach(r => { %>
+                  <a href="/clanok/<%= r.slug %>" class="sidebar-related-item">
+                    <% if (r.cover_thumb) { %>
+                      <img src="/uploads/<%= r.cover_thumb %>" alt="" class="sidebar-related-thumb" loading="lazy">
+                    <% } else { %>
+                      <div class="sidebar-related-thumb ph ph-<%= (r.id % 9) + 1 %>"></div>
+                    <% } %>
+                    <div class="sidebar-related-body">
+                      <h4><%= r.title %></h4>
+                      <span class="sidebar-related-date">
+                        <%= r.published_at ? new Date(r.published_at).toLocaleDateString('sk-SK') : '' %>
+                      </span>
+                    </div>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          <% } %>
+
+        </aside>
+      </div>
+
+    </div>
+  </main>
+
+
+
+<!-- ============================================================
+           KOMENTÁRE
+           ============================================================ -->
+      <section class="article-comments">
+        <div class="container">
+          <div class="comments-header">
+            <h2 class="comments-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Diskusia
+            </h2>
+            <span class="comments-count">0 komentárov</span>
+          </div>
+
+          <!-- Comment form -->
+          <div class="comment-form-wrap">
+            <% if (typeof user !== 'undefined' && user) { %>
+              <div class="comment-form">
+                <span class="avatar comment-form-avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                <div class="comment-form-body">
+                  <textarea class="comment-textarea" placeholder="Napíš komentár..." rows="3"></textarea>
+                  <div class="comment-form-footer">
+                    <span class="comment-form-hint">Markdown nie je podporovaný. Buď slušný.</span>
+                    <button class="btn btn-sm btn-accent" disabled>Odoslať</button>
+                  </div>
+                </div>
+              </div>
+            <% } else { %>
+              <div class="comment-login-prompt">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <div>
+                  <strong>Chceš sa zapojiť do diskusie?</strong>
+                  <p>Pre písanie komentárov sa musíš prihlásiť.</p>
+                </div>
+                <a href="/admin/login" class="btn btn-sm btn-primary">Prihlásiť sa</a>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- Empty state -->
+          <div class="comments-empty">
+            <div class="comments-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h4>Zatiaľ žiadne komentáre</h4>
+            <p>Buď prvý, kto sa vyjadrí k tomuto článku.</p>
+          </div>
+
+        </div>
+      </section>
+
+
+
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+</body>
+</html>

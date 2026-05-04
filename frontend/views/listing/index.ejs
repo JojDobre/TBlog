@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', {
+    title: listingTitle,
+    description: listingDescription || (listingTitle + ' — ' + appName)
+  }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: currentPath }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <% if (listingParentLabel) { %>
+          <a href="<%= listingParentHref %>"><%= listingParentLabel %></a>
+          <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <% } %>
+        <span class="bc-current"><%= listingName %></span>
+      </nav>
+
+      <!-- Header -->
+      <header class="listing-header">
+        <div class="listing-header-left">
+          <span class="eyebrow"><%= listingTypeLabel %></span>
+          <h1 class="h-1" style="margin:16px 0 12px;"><%= listingName %></h1>
+          <% if (listingDescription) { %>
+            <p class="lead" style="max-width:600px;"><%= listingDescription %></p>
+          <% } %>
+          <div class="listing-header-stats">
+            <span class="listing-stat"><%= totalArticles %> článkov</span>
+          </div>
+        </div>
+        <% if (typeof relatedTags !== 'undefined' && relatedTags.length > 0) { %>
+          <div class="listing-header-tags">
+            <% relatedTags.forEach(t => { %>
+              <a href="/tag/<%= t.slug %>" class="tag">#<%= t.name %></a>
+            <% }) %>
+          </div>
+        <% } %>
+      </header>
+
+      <!-- Filter bar -->
+      <div class="filterbar">
+        <div class="filterbar-types">
+          <a href="<%= baseUrl %>" class="btn btn-sm <%= !currentType ? 'btn-primary' : '' %>">Všetky</a>
+          <a href="<%= baseUrl %>?type=article" class="btn btn-sm <%= currentType === 'article' ? 'btn-primary' : '' %>">Články</a>
+          <a href="<%= baseUrl %>?type=review" class="btn btn-sm <%= currentType === 'review' ? 'btn-primary' : '' %>">Recenzie</a>
+        </div>
+        <div class="filterbar-spacer"></div>
+        <a href="<%= baseUrl %>?sort=<%= currentSort === 'newest' ? 'popular' : 'newest' %><%= currentType ? '&type=' + currentType : '' %>"
+           class="btn btn-sm btn-ghost">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13M3 12h9M3 18h5M17 8l3-3 3 3M20 5v14M20 19l3-3"/></svg>
+          <%= currentSort === 'popular' ? 'Najčítanejšie' : 'Najnovšie' %>
+        </a>
+      </div>
+
+      <!-- Featured article (first one, if exists) -->
+      <% if (articles.length > 0 && currentPage === 1 && !currentType) { %>
+        <% var feat = articles[0]; %>
+        <a href="/clanok/<%= feat.slug %>" class="listing-featured card card-link">
+          <div class="listing-featured-content">
+            <span class="tag tag-accent" style="align-self:flex-start;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 1-3s-3 2-3 6a6 6 0 0 0 12 0c0-6-6-11-6-11z"/></svg>
+              Najčítanejšie
+            </span>
+            <h2 class="h-2" style="margin:0;"><%= feat.title %></h2>
+            <p style="color:var(--text-muted); font-size:15px; line-height:1.55; margin:0;"><%= feat.excerpt %></p>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                <%= feat.viewsFormatted %> pozretí · <%= feat.readTime %>
+              </span>
+            </div>
+          </div>
+          <div class="listing-featured-img">
+            <% if (feat.cover_full) { %>
+              <img src="/uploads/<%= feat.cover_full %>" alt="<%= feat.title %>" loading="eager">
+            <% } else { %>
+              <div class="ph ph-<%= (feat.id % 9) + 1 %>"></div>
+            <% } %>
+          </div>
+        </a>
+      <% } %>
+
+      <!-- Article grid -->
+      <% var gridArticles = (currentPage === 1 && !currentType) ? articles.slice(1) : articles; %>
+      <% if (gridArticles.length > 0) { %>
+        <div class="grid-3" style="margin-top:var(--s-8);">
+          <% gridArticles.forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="card card-link acard">
+              <div class="ph">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+              </div>
+              <div class="acard-body">
+                <div class="acard-meta">
+                  <span class="tag tag-accent" style="padding:2px 8px; font-size:11px;">
+                    <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                  </span>
+                  <span class="dot"></span>
+                  <span><%= a.readTime %></span>
+                  <span class="dot"></span>
+                  <span><%= a.viewsFormatted %> pozretí</span>
+                </div>
+                <h3 class="acard-title"><%= a.title %></h3>
+                <p class="acard-excerpt"><%= a.excerpt %></p>
+                <div class="acard-foot">
+                  <div class="acard-author">
+                    <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                    <span><%= a.author_name || 'Redakcia' %></span>
+                  </div>
+                  <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">
+                    <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %>
+                  </span>
+                </div>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="listing-empty">
+          <div class="comments-empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>
+          </div>
+          <h4>Žiadne články</h4>
+          <p>V tejto sekcii zatiaľ nie sú žiadne publikované články.</p>
+        </div>
+      <% } %>
+
+      <!-- Pagination -->
+      <% if (totalPages > 1) { %>
+        <div class="listing-pagination">
+          <% if (currentPage > 1) { %>
+            <a href="<%= baseUrl %>?page=<%= currentPage - 1 %><%= currentType ? '&type=' + currentType : '' %><%= currentSort !== 'newest' ? '&sort=' + currentSort : '' %>"
+               class="btn btn-sm">← Predošlá</a>
+          <% } else { %>
+            <span class="btn btn-sm" style="opacity:0.4; pointer-events:none;">← Predošlá</span>
+          <% } %>
+
+          <% for (var p = 1; p <= totalPages; p++) {
+            if (p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2)) { %>
+              <a href="<%= baseUrl %>?page=<%= p %><%= currentType ? '&type=' + currentType : '' %><%= currentSort !== 'newest' ? '&sort=' + currentSort : '' %>"
+                 class="btn btn-sm <%= p === currentPage ? 'btn-primary' : 'btn-ghost' %>"
+                 style="min-width:36px; justify-content:center;"><%= p %></a>
+            <% } else if (p === currentPage - 3 || p === currentPage + 3) { %>
+              <span style="color:var(--text-subtle); padding:0 8px;">…</span>
+            <% }
+          } %>
+
+          <% if (currentPage < totalPages) { %>
+            <a href="<%= baseUrl %>?page=<%= currentPage + 1 %><%= currentType ? '&type=' + currentType : '' %><%= currentSort !== 'newest' ? '&sort=' + currentSort : '' %>"
+               class="btn btn-sm">Ďalšia →</a>
+          <% } else { %>
+            <span class="btn btn-sm" style="opacity:0.4; pointer-events:none;">Ďalšia →</span>
+          <% } %>
+        </div>
+      <% } %>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+</body>
+</html>

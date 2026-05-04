@@ -14,6 +14,7 @@ const adminRubricsRouter = require('./admin-rubrics');
 const adminTagsRouter = require('./admin-tags');
 const adminCategoriesRouter = require('./admin-categories');
 const adminArticlesRouter = require('./admin-articles');
+const blockRenderer = require('../utils/block-renderer');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
 const healthRouter = require('./health');
@@ -34,6 +35,153 @@ router.use('/admin', adminRouter);
 router.use('/health', healthRouter);
 router.use('/', authRouter);
 router.use('/', profileRouter);
+
+// ---------------------------------------------------------------------------
+// ARTICLE DETAIL
+// ---------------------------------------------------------------------------
+router.get('/clanok/:slug', async (req, res, next) => {
+  try {
+    const slug = req.params.slug;
+
+    const article = await db('articles')
+      .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as cover', 'articles.cover_media_id', 'cover.id')
+      .leftJoin('media as og', 'articles.og_image_media_id', 'og.id')
+      .where('articles.slug', slug)
+      .where('articles.status', 'published')
+      .select(
+        'articles.*',
+        'users.nickname as author_name',
+        'cover.thumbnail_path as cover_thumb',
+        'cover.original_path as cover_full',
+        'og.original_path as og_path'
+      )
+      .first();
+
+    if (!article) return next(); // 404
+
+    // Increment view count (fire-and-forget)
+    db('articles')
+      .where('id', article.id)
+      .increment('view_count', 1)
+      .catch(() => {});
+
+    // Parse content
+    let content = [];
+    try {
+      content =
+        typeof article.content === 'string' ? JSON.parse(article.content) : article.content || [];
+      if (!Array.isArray(content)) content = [];
+    } catch {
+      content = [];
+    }
+
+    // Load media for image/gallery blocks
+    const mediaIds = [];
+    for (const b of content) {
+      if (b.type === 'image' && b.media_id) mediaIds.push(b.media_id);
+      if (b.type === 'gallery' && Array.isArray(b.items)) {
+        for (const it of b.items) {
+          if (it.media_id) mediaIds.push(it.media_id);
+        }
+      }
+    }
+    let mediaMap = new Map();
+    if (mediaIds.length > 0) {
+      const rows = await db('media')
+        .whereIn('id', [...new Set(mediaIds)])
+        .select('id', 'thumbnail_path', 'original_path');
+      mediaMap = new Map(rows.map((r) => [r.id, r]));
+    }
+
+    // Render blocks to HTML
+    const contentHtml = blockRenderer.renderBlocks(content, { mediaMap });
+    const toc = blockRenderer.extractToc(content);
+
+    // Primary category
+    const catRow = await db('article_categories')
+      .join('categories', 'article_categories.category_id', 'categories.id')
+      .where('article_categories.article_id', article.id)
+      .where('article_categories.is_primary', 1)
+      .select('categories.name', 'categories.slug')
+      .first();
+
+    // Tags
+    const tags = await db('article_tags')
+      .join('tags', 'article_tags.tag_id', 'tags.id')
+      .where('article_tags.article_id', article.id)
+      .select('tags.name', 'tags.slug', 'tags.color');
+
+    // Related articles (manuálne)
+    const relatedArticles = await db('article_related')
+      .join('articles as ra', 'article_related.related_article_id', 'ra.id')
+      .leftJoin('media as rm', 'ra.cover_media_id', 'rm.id')
+      .where('article_related.article_id', article.id)
+      .where('ra.status', 'published')
+      .select('ra.id', 'ra.title', 'ra.slug', 'ra.published_at', 'rm.thumbnail_path as cover_thumb')
+      .orderBy('article_related.display_order', 'asc')
+      .limit(5);
+
+    // Ak nemá manuálne related, doplň auto (rovnaká kategória)
+    if (relatedArticles.length === 0 && catRow) {
+      const auto = await db('article_categories')
+        .join('articles as ra', 'article_categories.article_id', 'ra.id')
+        .leftJoin('media as rm', 'ra.cover_media_id', 'rm.id')
+        .where('article_categories.category_id', function () {
+          this.select('id').from('categories').where('slug', catRow.slug).first();
+        })
+        .where('ra.status', 'published')
+        .where('ra.id', '!=', article.id)
+        .select(
+          'ra.id',
+          'ra.title',
+          'ra.slug',
+          'ra.published_at',
+          'rm.thumbnail_path as cover_thumb'
+        )
+        .orderBy('ra.published_at', 'desc')
+        .limit(5);
+      relatedArticles.push(...auto);
+    }
+
+    // Read time estimate from content
+    let wordCount = 0;
+    for (const b of content) {
+      if (b.text) wordCount += b.text.split(/\s+/).length;
+      if (b.type === 'list' && Array.isArray(b.items)) {
+        for (const it of b.items) wordCount += String(it).split(/\s+/).length;
+      }
+    }
+    const readTime = Math.max(3, Math.round(wordCount / 200)) + ' min';
+    const viewsFormatted =
+      article.view_count >= 1000
+        ? (article.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+        : String(article.view_count || 0);
+
+    // OG image URL
+    let ogImage = null;
+    if (article.og_path) ogImage = '/uploads/' + article.og_path;
+    else if (article.cover_full) ogImage = '/uploads/' + article.cover_full;
+
+    res.render('article/show', {
+      title: article.seo_title || article.title,
+      currentPath: '/clanok/' + article.slug,
+      article,
+      contentHtml,
+      toc,
+      coverImage: article.cover_full || null,
+      ogImage,
+      category: catRow || null,
+      tags,
+      relatedArticles,
+      readTime,
+      viewsFormatted,
+    });
+  } catch (err) {
+    log.error('article detail failed', { err: err.message });
+    next(err);
+  }
+});
 
 // ---------------------------------------------------------------------------
 // HOMEPAGE
