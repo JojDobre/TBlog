@@ -1,16 +1,20 @@
 /**
- * Article blocks  (Phase 5.4)
+ * Article blocks  (Phase 5.6 — final)
  *
- * Pridané typy:
- *   - youtube:  { type: 'youtube', video_id: string, caption?: string }
- *   - quote:    { type: 'quote', text: string, author?: string }
- *
- * Phase 5.5+ pridá: video (vlastný), gallery, list, embed.
+ * Všetky podporované typy:
+ *   - paragraph    { type, text }
+ *   - heading      { type, level: 2|3, text }
+ *   - image        { type, media_id, caption?, alt? }
+ *   - divider      { type }
+ *   - youtube      { type, video_id, caption? }
+ *   - quote        { type, text, author? }
+ *   - gallery      { type, items: [{ media_id, caption? }, ...] }    NOVÉ 5.6
+ *   - list         { type, ordered: bool, items: [string, ...] }     NOVÉ 5.6
  */
 
 'use strict';
 
-const BLOCK_TYPES = ['paragraph', 'heading', 'image', 'divider', 'youtube', 'quote'];
+const BLOCK_TYPES = ['paragraph', 'heading', 'image', 'divider', 'youtube', 'quote', 'gallery', 'list'];
 const HEADING_LEVELS = [2, 3];
 
 const MAX_PARAGRAPH_LEN = 20000;
@@ -19,42 +23,23 @@ const MAX_CAPTION_LEN = 500;
 const MAX_ALT_LEN = 255;
 const MAX_QUOTE_LEN = 5000;
 const MAX_QUOTE_AUTHOR_LEN = 160;
+const MAX_LIST_ITEMS = 100;
+const MAX_LIST_ITEM_LEN = 1000;
+const MAX_GALLERY_ITEMS = 30;
 
-// YouTube video ID: 11 znakov, [a-zA-Z0-9_-]
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
 
-/**
- * Extrahuje YouTube video ID z rôznych formátov URL alebo holého ID.
- * Podporuje:
- *   - https://www.youtube.com/watch?v=VIDEO_ID
- *   - https://youtu.be/VIDEO_ID
- *   - https://www.youtube.com/embed/VIDEO_ID
- *   - https://www.youtube.com/shorts/VIDEO_ID
- *   - holé VIDEO_ID (11 znakov)
- *
- * Vráti video_id alebo null ak nie je validný.
- */
 function extractYoutubeId(input) {
   if (!input || typeof input !== 'string') return null;
   const s = input.trim();
   if (!s) return null;
-
-  // Holé ID
   if (YOUTUBE_ID_RE.test(s)) return s;
-
-  // URL formáty — vytiahni ID
-  // youtu.be/ID
   let m = s.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
   if (m) return m[1];
-
-  // youtube.com/watch?v=ID
   m = s.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
   if (m) return m[1];
-
-  // youtube.com/embed/ID, /shorts/ID, /v/ID
   m = s.match(/youtube\.com\/(?:embed|shorts|v)\/([a-zA-Z0-9_-]{11})/);
   if (m) return m[1];
-
   return null;
 }
 
@@ -99,14 +84,9 @@ function sanitizeBlocks(raw) {
         break;
       }
       case 'youtube': {
-        // Akceptujeme video_id ALEBO url (frontend posiela video_id po normalizácii,
-        // ale tolerantne berieme aj URL pre prípad).
         const candidate = b.video_id || b.url || '';
         const videoId = extractYoutubeId(candidate);
-        if (!videoId) {
-          errors.push(`block[${i}]_youtube_invalid`);
-          return;
-        }
+        if (!videoId) { errors.push(`block[${i}]_youtube_invalid`); return; }
         const block = { type: 'youtube', video_id: videoId };
         if (b.caption) block.caption = String(b.caption).slice(0, MAX_CAPTION_LEN).trim();
         blocks.push(block);
@@ -118,6 +98,33 @@ function sanitizeBlocks(raw) {
         const block = { type: 'quote', text };
         if (b.author) block.author = String(b.author).slice(0, MAX_QUOTE_AUTHOR_LEN).trim();
         blocks.push(block);
+        break;
+      }
+      case 'gallery': {
+        if (!Array.isArray(b.items)) { errors.push(`block[${i}]_gallery_no_items`); return; }
+        const items = [];
+        for (const item of b.items.slice(0, MAX_GALLERY_ITEMS)) {
+          if (!item || typeof item !== 'object') continue;
+          const mediaId = Number(item.media_id);
+          if (!Number.isInteger(mediaId) || mediaId < 1) continue;
+          const out = { media_id: mediaId };
+          if (item.caption) out.caption = String(item.caption).slice(0, MAX_CAPTION_LEN).trim();
+          items.push(out);
+        }
+        if (items.length === 0) return; // prázdna galéria — vyhodíme
+        blocks.push({ type: 'gallery', items });
+        break;
+      }
+      case 'list': {
+        if (!Array.isArray(b.items)) { errors.push(`block[${i}]_list_no_items`); return; }
+        const ordered = !!b.ordered;
+        const items = [];
+        for (const item of b.items.slice(0, MAX_LIST_ITEMS)) {
+          const text = String(item || '').slice(0, MAX_LIST_ITEM_LEN).trim();
+          if (text) items.push(text);
+        }
+        if (items.length === 0) return;
+        blocks.push({ type: 'list', ordered, items });
         break;
       }
       default:
@@ -143,6 +150,12 @@ function extractSearchText(blocks) {
     } else if (b.type === 'quote') {
       if (b.text) parts.push(b.text);
       if (b.author) parts.push(b.author);
+    } else if (b.type === 'gallery' && Array.isArray(b.items)) {
+      for (const it of b.items) {
+        if (it && it.caption) parts.push(it.caption);
+      }
+    } else if (b.type === 'list' && Array.isArray(b.items)) {
+      for (const it of b.items) parts.push(String(it || ''));
     }
   }
   return parts.join('\n').slice(0, 5_000_000);
@@ -152,15 +165,15 @@ function extractFirstImageId(blocks) {
   if (!Array.isArray(blocks)) return null;
   for (const b of blocks) {
     if (b && b.type === 'image' && Number.isInteger(b.media_id)) return b.media_id;
+    if (b && b.type === 'gallery' && Array.isArray(b.items) && b.items[0]) {
+      const m = Number(b.items[0].media_id);
+      if (Number.isInteger(m)) return m;
+    }
   }
   return null;
 }
 
 module.exports = {
-  BLOCK_TYPES,
-  HEADING_LEVELS,
-  sanitizeBlocks,
-  extractSearchText,
-  extractFirstImageId,
-  extractYoutubeId,
+  BLOCK_TYPES, HEADING_LEVELS,
+  sanitizeBlocks, extractSearchText, extractFirstImageId, extractYoutubeId,
 };

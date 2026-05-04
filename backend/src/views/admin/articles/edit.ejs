@@ -46,7 +46,7 @@
               data-article-form>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="content_json" data-content-json
-                 value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c") %>'>
+                 value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c").replace(/'/g, "&#39;") %>'>
 
           <div class="row g-4">
             <div class="col-lg-8">
@@ -154,7 +154,7 @@
                   </div>
 
                   <div class="mb-0">
-                    <label class="form-label">OG Image (pre Facebook / Twitter)</label>
+                    <label class="form-label">OG Image</label>
                     <div class="mb-2">
                       <% if (typeof ogMedia !== 'undefined' && ogMedia && ogMedia.thumbnail_path) { %>
                         <img src="/uploads/<%= ogMedia.thumbnail_path %>"
@@ -283,7 +283,7 @@
                   <% } else { %>
                     <% taxonomy.rubrics.forEach(r => { %>
                       <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="rubric_ids[]"
+                        <input class="form-check-input" type="checkbox" name="rubric_ids"
                                value="<%= r.id %>" id="rub_<%= r.id %>"
                                <%= relations.rubric_ids.includes(r.id) ? 'checked' : '' %>>
                         <label class="form-check-label" for="rub_<%= r.id %>"><%= r.name %></label>
@@ -302,7 +302,7 @@
                     <div class="bz-checklist mb-2">
                       <% taxonomy.categories.forEach(c => { %>
                         <div class="form-check" style="padding-left: calc(1.5em + <%= c.depth %> * 1rem);">
-                          <input class="form-check-input" type="checkbox" name="category_ids[]"
+                          <input class="form-check-input" type="checkbox" name="category_ids"
                                  value="<%= c.id %>" id="cat_<%= c.id %>"
                                  <%= relations.category_ids.includes(c.id) ? 'checked' : '' %>>
                           <label class="form-check-label" for="cat_<%= c.id %>"><%= c.name %></label>
@@ -323,7 +323,7 @@
                 </div>
               </div>
 
-              <div class="card border-0 shadow-sm">
+              <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white"><h3 class="h6 mb-0">Tagy</h3></div>
                 <div class="card-body">
                   <% if (taxonomy.tags.length === 0) { %>
@@ -331,7 +331,7 @@
                   <% } else { %>
                     <% taxonomy.tags.forEach(t => { %>
                       <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="tag_ids[]"
+                        <input class="form-check-input" type="checkbox" name="tag_ids"
                                value="<%= t.id %>" id="tag_<%= t.id %>"
                                <%= relations.tag_ids.includes(t.id) ? 'checked' : '' %>>
                         <label class="form-check-label" for="tag_<%= t.id %>">
@@ -345,17 +345,54 @@
                 </div>
               </div>
 
+              <!-- =================================================================
+                   SÚVISIACE ČLÁNKY — Phase 5.6
+                   Strategy select je vykreslený server-side (zachová pôvodnú hodnotu).
+                   Zoznam manuálne vybraných sa generuje JS-om z initial dát nižšie.
+                   ================================================================ -->
+              <div class="card border-0 shadow-sm mb-4" data-related-panel-server>
+                <div class="card-header bg-white">
+                  <h3 class="h6 mb-0"><i class="bi bi-link-45deg me-1"></i>Súvisiace články</h3>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label class="form-label small mb-1">Stratégia</label>
+                    <select class="form-select form-select-sm" name="default_related_strategy">
+                      <% var curStrat = article.default_related_strategy || 'both'; %>
+                      <option value="both"   <%= curStrat === 'both'   ? 'selected' : '' %>>Manuálne + auto (oboje)</option>
+                      <option value="manual" <%= curStrat === 'manual' ? 'selected' : '' %>>Iba manuálne</option>
+                      <option value="auto"   <%= curStrat === 'auto'   ? 'selected' : '' %>>Iba automatické</option>
+                    </select>
+                  </div>
+
+                  <div class="mb-2">
+                    <label class="form-label small mb-1">Manuálne vybrané</label>
+                    <div class="bz-related-list" data-related-list></div>
+                    <div class="text-muted small fst-italic mt-2 d-none" data-related-empty>
+                      Žiadne manuálne vybrané. Vyhľadaj nižšie.
+                    </div>
+                  </div>
+
+                  <div class="mt-3">
+                    <label class="form-label small mb-1">Hľadať a pridať</label>
+                    <div class="position-relative">
+                      <input type="search" class="form-control form-control-sm" data-related-search
+                             placeholder="Začni písať názov článku...">
+                      <div class="bz-related-results d-none" data-related-results></div>
+                    </div>
+                    <div class="form-text small">Min 2 znaky. Klik na článok pridá do zoznamu.</div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </form>
 
-        <!-- ===================================================================
+        <!-- ========================================================================
              REVÍZIE — MIMO hlavného formulára!
-             Každá revízia má vlastný malý form. Nesmú byť nested vo
-             vonkajšom <form>, lebo HTML nested forms sú neplatné a
-             prehliadač ich „flattenne", čím vznikne dvojitý _csrf input
-             a CSRF validácia zlyhá.
-             ================================================================ -->
+             (HTML neumožňuje nested forms; každá revízia má vlastný malý form)
+             ===================================================================== -->
         <% if (!isNew && revisionsList.length > 0) { %>
           <div class="row g-4 mt-2">
             <div class="col-lg-8">
@@ -400,7 +437,8 @@
           </div>
         <% } %>
 
-        <!-- Block templates -->
+        <!-- Block templates pre paragraph/heading/image/divider (zvyšné typy
+             pridáva admin-article-extra-blocks.js dynamicky.) -->
         <template data-block-template="paragraph">
           <div class="bz-block" data-block-type="paragraph">
             <div class="bz-block-header">
@@ -462,12 +500,24 @@
           </div>
         </template>
 
+        <!-- =================================================================
+             INIT DATA pre súvisiace články.
+             Použitie <script type="application/json"> namiesto data-attribute,
+             pretože attribute by sa rozbil pri apostrofe v title článku.
+             ================================================================ -->
+        <% if (typeof relatedArticles !== 'undefined' && relatedArticles.length > 0) { %>
+          <script type="application/json" data-related-init>
+            <%- JSON.stringify(relatedArticles).replace(/</g, "\\u003c") %>
+          </script>
+        <% } %>
+
       </div>
     </main>
   </div>
 
   <%- include('../partials/scripts') %>
   <script src="/admin/static/js/admin-taxonomy.js" defer></script>
+  <script src="/admin/static/js/admin-media-picker.js" defer></script>
   <script src="/admin/static/js/admin-article-extra-blocks.js" defer></script>
   <script src="/admin/static/js/admin-article-editor.js" defer></script>
   <script src="/admin/static/js/admin-article-status.js" defer></script>

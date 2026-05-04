@@ -1,7 +1,7 @@
 /**
- * Article utility funkcie  (Phase 5.3)
+ * Article utility funkcie  (Phase 5.6 — final)
  *
- * Pridané: SEO polia (seo_title, seo_description, og_image_media_id).
+ * Pridané: default_related_strategy validácia.
  */
 
 'use strict';
@@ -11,12 +11,10 @@ const taxonomy = require('./taxonomy');
 const TYPES = ['article', 'review'];
 const STATUSES = ['draft', 'scheduled', 'published', 'archived', 'trash'];
 const ALLOWED_STATUS_TRANSITIONS = ['draft', 'scheduled', 'published', 'archived'];
+const RELATED_STRATEGIES = ['manual', 'auto', 'both'];
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-function slugifyArticle(name) {
-  return taxonomy.slugifyName(name, { maxLen: 255 });
-}
-
+function slugifyArticle(name) { return taxonomy.slugifyName(name, { maxLen: 255 }); }
 async function ensureUniqueArticleSlug(knex, baseSlug, excludeId = null) {
   return taxonomy.ensureUniqueSlug('articles', baseSlug, excludeId);
 }
@@ -33,13 +31,11 @@ function validateArticleMeta(input, { isNew = true } = {}) {
   const errors = {};
   const value = {};
 
-  // title
   const title = String(input.title || '').trim();
   if (!title) errors.title = 'Názov je povinný.';
   else if (title.length > 255) errors.title = 'Názov môže mať max 255 znakov.';
   value.title = title;
 
-  // slug
   const slugRaw = String(input.slug || '').trim().toLowerCase();
   if (slugRaw) {
     if (!SLUG_RE.test(slugRaw)) errors.slug = 'Slug môže obsahovať len a-z, 0-9 a pomlčky.';
@@ -47,17 +43,14 @@ function validateArticleMeta(input, { isNew = true } = {}) {
   }
   value.slug = slugRaw;
 
-  // type
   const type = String(input.type || 'article').trim();
   if (!TYPES.includes(type)) errors.type = 'Neplatný typ.';
   value.type = type;
 
-  // status
   const status = String(input.status || 'draft').trim();
   if (!ALLOWED_STATUS_TRANSITIONS.includes(status)) errors.status = 'Neplatný stav.';
   value.status = status;
 
-  // scheduled_at
   if (status === 'scheduled') {
     const d = parseLocalDatetime(input.scheduled_at);
     if (!d) errors.scheduled_at = 'Pri stave „Naplánovaný" musí byť dátum a čas vyplnený.';
@@ -67,15 +60,12 @@ function validateArticleMeta(input, { isNew = true } = {}) {
     value.scheduled_at = null;
   }
 
-  // is_featured
   value.is_featured = input.is_featured ? 1 : 0;
 
-  // excerpt
   const excerpt = String(input.excerpt || '').trim();
   if (excerpt.length > 5000) errors.excerpt = 'Krátky popis môže mať max 5000 znakov.';
   value.excerpt = excerpt || null;
 
-  // cover_media_id
   if (input.cover_media_id === '' || input.cover_media_id === null || input.cover_media_id === undefined) {
     value.cover_media_id = null;
   } else {
@@ -84,7 +74,7 @@ function validateArticleMeta(input, { isNew = true } = {}) {
     else value.cover_media_id = cm;
   }
 
-  // ---- SEO polia (Phase 5.3) ----
+  // SEO
   const seoTitle = String(input.seo_title || '').trim();
   if (seoTitle.length > 255) errors.seo_title = 'SEO title max 255 znakov.';
   value.seo_title = seoTitle || null;
@@ -100,6 +90,13 @@ function validateArticleMeta(input, { isNew = true } = {}) {
     if (!Number.isInteger(og) || og < 1) errors.og_image_media_id = 'Neplatné ID OG obrázka.';
     else value.og_image_media_id = og;
   }
+
+  // Phase 5.6 — default_related_strategy
+  const strategy = String(input.default_related_strategy || 'both').trim();
+  if (!RELATED_STRATEGIES.includes(strategy)) {
+    errors.default_related_strategy = 'Neplatná stratégia súvisiacich článkov.';
+  }
+  value.default_related_strategy = strategy;
 
   return { value, errors };
 }
@@ -124,6 +121,26 @@ function parseIdList(raw) {
   return out;
 }
 
+/**
+ * Parse related articles z form-u: pole id-iek v poradí.
+ * Form posiela `related_ids` ako pole: ['5', '12', '3', ...].
+ *
+ * Vráti pole čísel v poradí (display_order = index).
+ */
+function parseRelatedIds(raw, ownArticleId) {
+  if (raw === undefined || raw === null) return [];
+  const arr = Array.isArray(raw) ? raw : [raw];
+  const out = [];
+  for (const v of arr) {
+    const n = Number(v);
+    if (Number.isInteger(n) && n > 0 && n !== ownArticleId && !out.includes(n)) {
+      out.push(n);
+    }
+    if (out.length >= 20) break; // hard cap
+  }
+  return out;
+}
+
 function toDatetimeLocalString(date) {
   if (!date) return '';
   const d = date instanceof Date ? date : new Date(date);
@@ -134,8 +151,8 @@ function toDatetimeLocalString(date) {
 }
 
 module.exports = {
-  TYPES, STATUSES, ALLOWED_STATUS_TRANSITIONS,
+  TYPES, STATUSES, ALLOWED_STATUS_TRANSITIONS, RELATED_STRATEGIES,
   slugifyArticle, ensureUniqueArticleSlug,
-  validateArticleMeta, parseContentJson, parseIdList,
+  validateArticleMeta, parseContentJson, parseIdList, parseRelatedIds,
   parseLocalDatetime, toDatetimeLocalString,
 };

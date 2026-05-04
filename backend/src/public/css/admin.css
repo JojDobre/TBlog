@@ -399,3 +399,232 @@
 .bz-block[data-block-type='quote'] input[data-field='author']::before {
   content: '— ';
 }
+
+/* Media picker grid */
+.bz-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.bz-picker-card {
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
+  display: flex;
+  flex-direction: column;
+}
+.bz-picker-card:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+}
+.bz-picker-card:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.bz-picker-thumb {
+  background: #f3f4f6;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.bz-picker-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bz-picker-thumb .bi {
+  font-size: 2.5rem;
+}
+
+.bz-picker-meta {
+  padding: 0.4rem 0.55rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.bz-picker-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #1f2937;
+}
+
+.bz-picker-dim {
+  font-size: 0.7rem;
+}
+
+/* ---- Gallery block items ---- */
+.bz-gallery-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bz-gallery-item {
+  display: flex;
+  gap: 0.6rem;
+  align-items: stretch;
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.bz-gallery-item-thumb {
+  width: 90px;
+  height: 70px;
+  flex-shrink: 0;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.bz-gallery-item-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bz-gallery-item-fields {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bz-gallery-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+.bz-gallery-item-actions .btn {
+  padding: 0.15rem 0.35rem;
+}
+
+/* ---- List block items ---- */
+.bz-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bz-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bz-list-bullet {
+  display: inline-block;
+  min-width: 1.5rem;
+  text-align: right;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.bz-list-actions {
+  display: flex;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+.bz-list-actions .btn {
+  padding: 0.15rem 0.35rem;
+}
+
+/* ---- Related articles panel ---- */
+.bz-related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bz-related-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.bz-related-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bz-related-actions {
+  display: flex;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+.bz-related-actions .btn {
+  padding: 0.1rem 0.3rem;
+}
+
+.bz-related-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 2px;
+}
+
+.bz-related-result {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #f3f4f6;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.bz-related-result:last-child {
+  border-bottom: 0;
+}
+.bz-related-result:hover:not(:disabled) {
+  background: #f9fafb;
+}
+.bz-related-result.is-added {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.bz-related-result-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1f2937;
+}

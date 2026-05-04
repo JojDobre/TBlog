@@ -1,8 +1,11 @@
 /**
- * Admin articles routes  (Phase 5.3)
+ * Admin articles routes  (Phase 5.6 — final)
  *
- * Pridané: SEO polia, revízie (auto-save pri update, max 5 FIFO).
- * Revízie sa vytvárajú zo STARÉHO stavu pred prepísaním.
+ * Pridané:
+ *   - GET /search — JSON search articles (pre related picker)
+ *   - default_related_strategy v save
+ *   - article_related sync
+ *   - loadRelatedArticles helper
  */
 
 'use strict';
@@ -16,10 +19,15 @@ const { generateToken } = require('../middleware/csrf');
 const articles = require('../utils/articles');
 const blocks = require('../utils/blocks');
 const revisions = require('../utils/revisions');
+const mediaUsages = require('../utils/media-usages');
 
 const router = express.Router();
 router.use(requireAuth());
 router.use(requireRole('admin', 'editor'));
+
+// ---------------------------------------------------------------------------
+// API endpoints
+// ---------------------------------------------------------------------------
 
 router.get('/media-thumb/:id', async (req, res, next) => {
   try {
@@ -29,6 +37,68 @@ router.get('/media-thumb/:id', async (req, res, next) => {
       .select('id', 'thumbnail_path', 'original_filename', 'alt_text').first();
     if (!m) return res.status(404).json({ error: 'not found' });
     res.json(m);
+  } catch (err) { next(err); }
+});
+
+router.get('/media-picker', async (req, res, next) => {
+  try {
+    const PER_PAGE = 24;
+    const q = String(req.query.q || '').trim();
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const offset = (page - 1) * PER_PAGE;
+    const type = req.query.type === 'all' ? null : 'image';
+
+    const buildWhere = (qb) => {
+      if (type) qb.where('type', type);
+      if (q) {
+        qb.where(function () {
+          this.where('original_filename', 'like', `%${q}%`)
+            .orWhere('alt_text', 'like', `%${q}%`)
+            .orWhere('caption', 'like', `%${q}%`);
+        });
+      }
+      return qb;
+    };
+
+    const totalRow = await buildWhere(db('media')).count({ c: '*' }).first();
+    const total = Number(totalRow.c);
+    const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+
+    const items = await buildWhere(
+      db('media').select('id', 'thumbnail_path', 'original_filename', 'alt_text', 'type', 'width', 'height')
+        .orderBy('id', 'desc').limit(PER_PAGE).offset(offset)
+    );
+
+    res.json({
+      items, total, page, per_page: PER_PAGE, total_pages: totalPages,
+      query: { q, type },
+    });
+  } catch (err) { next(err); }
+});
+
+/**
+ * Article search — pre related articles picker.
+ *
+ * Query: q (text), exclude (article_id ktorý vylúčiť — vlastné ID)
+ * Vráti max 20 publikovaných alebo draft článkov, podľa title LIKE.
+ */
+router.get('/search', async (req, res, next) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    const exclude = Number(req.query.exclude) || 0;
+    if (!q || q.length < 2) {
+      return res.json({ items: [] });
+    }
+
+    const rows = await db('articles')
+      .whereNot('status', 'trash')
+      .where('id', '!=', exclude)
+      .where('title', 'like', `%${q}%`)
+      .select('id', 'title', 'slug', 'status', 'type')
+      .orderBy('updated_at', 'desc')
+      .limit(20);
+
+    res.json({ items: rows });
   } catch (err) { next(err); }
 });
 
@@ -70,6 +140,19 @@ async function loadRelations(articleId) {
   };
 }
 
+/**
+ * Načíta súvisiace články pre danú článok ID s plnou title/slug informáciou.
+ * Vráti pole v poradí display_order.
+ */
+async function loadRelatedArticles(articleId) {
+  if (!articleId) return [];
+  return await db('article_related as ar')
+    .join('articles as a', 'ar.related_article_id', 'a.id')
+    .where('ar.article_id', articleId)
+    .select('a.id', 'a.title', 'a.slug', 'a.status', 'a.type', 'ar.display_order')
+    .orderBy('ar.display_order', 'asc');
+}
+
 async function loadTaxonomyForForm() {
   const [rubs, cats, tagRows] = await Promise.all([
     db('rubrics').orderBy('display_order').orderBy('name').select('id', 'name'),
@@ -99,6 +182,38 @@ async function syncRelations(trx, articleId, { categoryIds, primaryCategoryId, r
   }
   if (tagIds.length > 0) {
     await trx('article_tags').insert(tagIds.map((tid) => ({ article_id: articleId, tag_id: tid })));
+  }
+}
+
+/**
+ * Sync `article_related` — replace strategy.
+ * relatedIds je pole v poradí ktoré chce admin (display_order = index).
+ */
+async function syncRelatedArticles(trx, articleId, relatedIds) {
+  await trx('article_related').where('article_id', articleId).del();
+  if (relatedIds.length === 0) return;
+
+  // Verify že target articles existujú a nie sú v koši
+  const validIds = await trx('articles')
+    .whereIn('id', relatedIds)
+    .whereNot('status', 'trash')
+    .where('id', '!=', articleId)  // safety
+    .pluck('id');
+
+  const validSet = new Set(validIds);
+  const rows = [];
+  let order = 0;
+  for (const rid of relatedIds) {
+    if (validSet.has(rid)) {
+      rows.push({
+        article_id: articleId,
+        related_article_id: rid,
+        display_order: order++,
+      });
+    }
+  }
+  if (rows.length > 0) {
+    await trx('article_related').insert(rows);
   }
 }
 
@@ -162,9 +277,11 @@ router.get('/new', async (req, res, next) => {
         title: '', slug: '', excerpt: '', cover_media_id: null,
         scheduled_at: null, is_featured: 0, published_at: null,
         seo_title: '', seo_description: '', og_image_media_id: null,
+        default_related_strategy: 'both',
       },
       content: [], mediaMap: new Map(), coverMedia: null, ogMedia: null,
       relations: { category_ids: [], primary_category_id: null, rubric_ids: [], tag_ids: [] },
+      relatedArticles: [],
       taxonomy: taxo, errors: {}, csrfToken: generateToken(req, res),
       isNew: true, utils: articles, revisionsList: [],
     });
@@ -182,6 +299,7 @@ router.post('/', async (req, res, next) => {
     const rubricIds = articles.parseIdList(req.body.rubric_ids);
     const tagIds = articles.parseIdList(req.body.tag_ids);
     const primaryCategoryId = req.body.primary_category_id ? Number(req.body.primary_category_id) : null;
+    const relatedIds = articles.parseRelatedIds(req.body.related_ids, 0);
 
     const renderAgain = async (errs) => {
       const taxo = await loadTaxonomyForForm();
@@ -190,6 +308,14 @@ router.post('/', async (req, res, next) => {
       if (value.cover_media_id) mediaIds.push(value.cover_media_id);
       if (value.og_image_media_id) mediaIds.push(value.og_image_media_id);
       const mediaMap = await loadMediaMap(mediaIds);
+      // re-load related preview pri error
+      let relatedPreview = [];
+      if (relatedIds.length > 0) {
+        const rows = await db('articles').whereIn('id', relatedIds)
+          .select('id', 'title', 'slug', 'status', 'type');
+        const map = new Map(rows.map((r) => [r.id, r]));
+        relatedPreview = relatedIds.map((id) => map.get(id)).filter(Boolean);
+      }
       return res.status(400).render('admin/articles/edit', {
         title: 'Nový článok', currentPath: '/admin/articles', pageTitle: 'Nový článok',
         article: { id: null, ...value, published_at: null },
@@ -197,6 +323,7 @@ router.post('/', async (req, res, next) => {
         coverMedia: value.cover_media_id ? mediaMap.get(value.cover_media_id) : null,
         ogMedia: value.og_image_media_id ? mediaMap.get(value.og_image_media_id) : null,
         relations: { category_ids: categoryIds, primary_category_id: primaryCategoryId, rubric_ids: rubricIds, tag_ids: tagIds },
+        relatedArticles: relatedPreview,
         taxonomy: taxo, errors: errs, csrfToken: generateToken(req, res),
         isNew: true, utils: articles, revisionsList: [],
       });
@@ -246,6 +373,7 @@ router.post('/', async (req, res, next) => {
         content: JSON.stringify(cleanBlocks), search_text: searchText,
         seo_title: value.seo_title, seo_description: value.seo_description,
         og_image_media_id: value.og_image_media_id,
+        default_related_strategy: value.default_related_strategy,
       });
       articleId = Array.isArray(inserted) ? inserted[0] : inserted;
       await syncRelations(trx, articleId, {
@@ -253,6 +381,12 @@ router.post('/', async (req, res, next) => {
         primaryCategoryId: categoryIds.includes(primaryCategoryId) ? primaryCategoryId : (categoryIds[0] || null),
         rubricIds, tagIds,
       });
+      await mediaUsages.syncArticleMediaUsages(trx, articleId, {
+        coverMediaId: value.cover_media_id,
+        ogImageMediaId: value.og_image_media_id,
+        blocks: cleanBlocks,
+      });
+      await syncRelatedArticles(trx, articleId, relatedIds);
     });
 
     log.info('article created', { id: articleId, slug: finalSlug, userId: req.user.id });
@@ -284,11 +418,12 @@ router.get('/:id/edit', async (req, res, next) => {
     const coverMedia = article.cover_media_id ? mediaMap.get(article.cover_media_id) || null : null;
     const ogMedia = article.og_image_media_id ? mediaMap.get(article.og_image_media_id) || null : null;
     const revisionsList = await revisions.listRevisions(db, id);
+    const relatedArticles = await loadRelatedArticles(id);
 
     res.render('admin/articles/edit', {
       title: 'Upraviť: ' + article.title,
       currentPath: '/admin/articles', pageTitle: article.title,
-      article, content, mediaMap, coverMedia, ogMedia, relations,
+      article, content, mediaMap, coverMedia, ogMedia, relations, relatedArticles,
       taxonomy: taxo, errors: {},
       csrfToken: generateToken(req, res),
       isNew: false,
@@ -315,6 +450,7 @@ router.post('/:id', async (req, res, next) => {
     const rubricIds = articles.parseIdList(req.body.rubric_ids);
     const tagIds = articles.parseIdList(req.body.tag_ids);
     const primaryCategoryId = req.body.primary_category_id ? Number(req.body.primary_category_id) : null;
+    const relatedIds = articles.parseRelatedIds(req.body.related_ids, id);
 
     const renderAgain = async (errs) => {
       const taxo = await loadTaxonomyForForm();
@@ -324,6 +460,13 @@ router.post('/:id', async (req, res, next) => {
       if (value.og_image_media_id) mediaIds.push(value.og_image_media_id);
       const mediaMap = await loadMediaMap(mediaIds);
       const revisionsList = await revisions.listRevisions(db, id);
+      let relatedPreview = [];
+      if (relatedIds.length > 0) {
+        const rows = await db('articles').whereIn('id', relatedIds)
+          .select('id', 'title', 'slug', 'status', 'type');
+        const map = new Map(rows.map((r) => [r.id, r]));
+        relatedPreview = relatedIds.map((id) => map.get(id)).filter(Boolean);
+      }
       return res.status(400).render('admin/articles/edit', {
         title: 'Upraviť: ' + existing.title,
         currentPath: '/admin/articles', pageTitle: existing.title,
@@ -332,6 +475,7 @@ router.post('/:id', async (req, res, next) => {
         coverMedia: value.cover_media_id ? mediaMap.get(value.cover_media_id) : null,
         ogMedia: value.og_image_media_id ? mediaMap.get(value.og_image_media_id) : null,
         relations: { category_ids: categoryIds, primary_category_id: primaryCategoryId, rubric_ids: rubricIds, tag_ids: tagIds },
+        relatedArticles: relatedPreview,
         taxonomy: taxo, errors: errs, csrfToken: generateToken(req, res),
         isNew: false, flash: {}, utils: articles, revisionsList,
       });
@@ -362,7 +506,7 @@ router.post('/:id', async (req, res, next) => {
     }
     if (rubricIds.length > 0) {
       const f = await db('rubrics').whereIn('id', rubricIds).pluck('id');
-      if (f.length !== rubricIds.length) return renderAgain({ rubric_ids: 'Niektorá rubrika neexistuje.' });
+      if (f.length !== rubricIds.length) return renderAgain({ rubric_ids: 'Niektorý rubrika neexistuje.' });
     }
     if (tagIds.length > 0) {
       const f = await db('tags').whereIn('id', tagIds).pluck('id');
@@ -374,10 +518,8 @@ router.post('/:id', async (req, res, next) => {
     else if (value.status === 'published' && !publishedAt) publishedAt = new Date();
 
     await db.transaction(async (trx) => {
-      // 1. Snapshot starého stavu DO revízií (PRED prepísaním)
       await revisions.saveRevision(trx, existing, req.user.id);
 
-      // 2. Update articles
       await trx('articles').where('id', id).update({
         type: value.type, title: value.title, slug: finalSlug,
         excerpt: value.excerpt, cover_media_id: value.cover_media_id,
@@ -386,14 +528,22 @@ router.post('/:id', async (req, res, next) => {
         content: JSON.stringify(cleanBlocks), search_text: searchText,
         seo_title: value.seo_title, seo_description: value.seo_description,
         og_image_media_id: value.og_image_media_id,
+        default_related_strategy: value.default_related_strategy,
       });
 
-      // 3. Sync M:N
       await syncRelations(trx, id, {
         categoryIds,
         primaryCategoryId: categoryIds.includes(primaryCategoryId) ? primaryCategoryId : (categoryIds[0] || null),
         rubricIds, tagIds,
       });
+
+      await mediaUsages.syncArticleMediaUsages(trx, id, {
+        coverMediaId: value.cover_media_id,
+        ogImageMediaId: value.og_image_media_id,
+        blocks: cleanBlocks,
+      });
+
+      await syncRelatedArticles(trx, id, relatedIds);
     });
 
     log.info('article updated + revision saved', { id, slug: finalSlug, userId: req.user.id });
@@ -401,7 +551,7 @@ router.post('/:id', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// REVISION restore — vráti title/content/excerpt zo zvolenej revízie
+// REVISION restore
 router.post('/:id/revisions/:revisionId/restore', async (req, res, next) => {
   try {
     const id = Number(req.params.id);
@@ -411,11 +561,9 @@ router.post('/:id/revisions/:revisionId/restore', async (req, res, next) => {
     const article = await db('articles').where('id', id).first();
     if (!article) return res.redirect('/admin/articles');
 
-    const rev = await db('article_revisions')
-      .where('id', revId).where('article_id', id).first();
+    const rev = await db('article_revisions').where('id', revId).where('article_id', id).first();
     if (!rev) return res.redirect(`/admin/articles/${id}/edit?err=` + encodeURIComponent('Revízia nenájdená.'));
 
-    // Re-extract search text z obnoveného contentu
     let revContent = [];
     try {
       revContent = typeof rev.content === 'string' ? JSON.parse(rev.content) : (rev.content || []);
@@ -425,14 +573,17 @@ router.post('/:id/revisions/:revisionId/restore', async (req, res, next) => {
     const searchText = blocks.extractSearchText(cleanBlocks);
 
     await db.transaction(async (trx) => {
-      // Najprv ulož aktuálny stav ako revíziu (aby sa restore dal vrátiť)
       await revisions.saveRevision(trx, article, req.user.id);
-      // Potom prepíš
       await trx('articles').where('id', id).update({
         title: rev.title,
         content: JSON.stringify(cleanBlocks),
         excerpt: rev.excerpt,
         search_text: searchText,
+      });
+      await mediaUsages.syncArticleMediaUsages(trx, id, {
+        coverMediaId: article.cover_media_id,
+        ogImageMediaId: article.og_image_media_id,
+        blocks: cleanBlocks,
       });
     });
 
