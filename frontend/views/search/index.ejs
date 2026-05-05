@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', { title: q ? 'Hľadanie: ' + q : 'Vyhľadávanie' }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/hladaj' }) %>
+
+  <main class="page">
+    <div class="container" style="padding-top:var(--s-12); padding-bottom:var(--s-12);">
+
+      <div class="search-hero">
+        <span class="eyebrow">Vyhľadávanie</span>
+        <h1 class="h-2" style="margin:12px 0 32px;">Čo dnes hľadáš?</h1>
+
+        <form method="GET" action="/hladaj" class="search-form">
+          <div class="search-input-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="text" name="q" value="<%= q || '' %>"
+                   placeholder="Hľadaj názvom, autorom, kategóriou…"
+                   autofocus autocomplete="off">
+            <% if (q) { %>
+              <a href="/hladaj" class="icon-btn" style="width:28px;height:28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+              </a>
+            <% } %>
+            <button type="submit" class="btn btn-accent btn-sm">Hľadať</button>
+          </div>
+        </form>
+
+        <% if (q) { %>
+          <div class="search-filter-bar">
+            <a href="/hladaj?q=<%= encodeURIComponent(q) %>" class="btn btn-sm <%= !type ? 'btn-primary' : '' %>">
+              Všetko <% if (!type && results.length > 0) { %><span style="opacity:0.6;">· <%= totalResults %></span><% } %>
+            </a>
+            <a href="/hladaj?q=<%= encodeURIComponent(q) %>&type=article" class="btn btn-sm <%= type === 'article' ? 'btn-primary' : '' %>">Články</a>
+            <a href="/hladaj?q=<%= encodeURIComponent(q) %>&type=review" class="btn btn-sm <%= type === 'review' ? 'btn-primary' : '' %>">Recenzie</a>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- No query — suggestions -->
+      <% if (!q) { %>
+        <div class="search-suggestions">
+          <div class="search-suggest-col">
+            <h4 class="search-suggest-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7l-8 8-4-4-7 7M16 7h6v6"/></svg>
+              Populárne hľadania
+            </h4>
+            <div class="search-suggest-list">
+              <% ['Pixel 11 Pro', 'iPhone 17', 'MacBook Pro M5', 'Steam Deck 2', 'lokálne LLM'].forEach(term => { %>
+                <a href="/hladaj?q=<%= encodeURIComponent(term) %>" class="search-suggest-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                  <span><%= term %></span>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+          <div class="search-suggest-col">
+            <h4 class="search-suggest-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Kategórie
+            </h4>
+            <div class="search-suggest-list">
+              <% categories.forEach(c => { %>
+                <a href="/kategorie/<%= c.slug %>" class="search-suggest-item">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                  <span><%= c.name %></span>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+      <% } %>
+
+      <!-- Results -->
+      <% if (q && results.length > 0) { %>
+        <div class="search-results-meta">
+          <%= totalResults %> výsledkov pre „<%= q %>"
+        </div>
+        <div class="search-results">
+          <% results.forEach(a => { %>
+            <a href="/clanok/<%= a.slug %>" class="card card-link search-result">
+              <div class="search-result-thumb">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="" loading="lazy">
+                <% } else { %>
+                  <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+                <% } %>
+              </div>
+              <div class="search-result-body">
+                <div class="search-result-meta">
+                  <span class="tag tag-accent" style="padding:2px 8px; font-size:10px;">
+                    <%= a.type === 'review' ? 'Recenzia' : 'Článok' %>
+                  </span>
+                  <% if (a.category_name) { %><span><%= a.category_name %></span><% } %>
+                  <span>·</span>
+                  <span><%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %></span>
+                </div>
+                <h3 class="search-result-title"><%= a.title %></h3>
+                <p class="search-result-excerpt"><%= a.excerpt %></p>
+              </div>
+              <div class="search-result-views">
+                <span><%= a.viewsFormatted %></span>
+              </div>
+            </a>
+          <% }) %>
+        </div>
+
+        <!-- Pagination -->
+        <% if (totalPages > 1) { %>
+          <div class="listing-pagination">
+            <% for (var p = 1; p <= totalPages; p++) { %>
+              <a href="/hladaj?q=<%= encodeURIComponent(q) %><%= type ? '&type=' + type : '' %>&page=<%= p %>"
+                 class="btn btn-sm <%= p === currentPage ? 'btn-primary' : 'btn-ghost' %>"
+                 style="min-width:36px; justify-content:center;"><%= p %></a>
+            <% } %>
+          </div>
+        <% } %>
+      <% } %>
+
+      <!-- Empty -->
+      <% if (q && results.length === 0) { %>
+        <div class="search-empty">
+          <div class="comments-empty-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          </div>
+          <h3 style="margin:0 0 8px;">Nič sme nenašli pre „<%= q %>"</h3>
+          <p style="color:var(--text-muted); margin:0 0 24px;">Skús upraviť hľadanie alebo prelistuj kategórie.</p>
+          <div style="display:flex; gap:8px; justify-content:center;">
+            <a href="/hladaj" class="btn btn-sm">Vymazať</a>
+            <a href="/kategorie" class="btn btn-sm btn-primary">Pozrieť kategórie</a>
+          </div>
+        </div>
+      <% } %>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+</body>
+</html>

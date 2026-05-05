@@ -37,6 +37,97 @@ router.use('/', authRouter);
 router.use('/', profileRouter);
 
 // ---------------------------------------------------------------------------
+// SEARCH
+// ---------------------------------------------------------------------------
+router.get('/hladaj', async (req, res, next) => {
+  try {
+    const q = String(req.query.q || '').trim();
+    const type = req.query.type || null;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const perPage = 12;
+    const offset = (page - 1) * perPage;
+
+    let results = [];
+    let totalResults = 0;
+    let totalPages = 1;
+
+    if (q.length >= 2) {
+      const qb = db('articles')
+        .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media', 'articles.cover_media_id', 'media.id')
+        .where('articles.status', 'published')
+        .where(function () {
+          this.where('articles.title', 'like', `%${q}%`)
+            .orWhere('articles.excerpt', 'like', `%${q}%`)
+            .orWhere('articles.search_text', 'like', `%${q}%`);
+        });
+
+      if (type === 'article' || type === 'review') qb.where('articles.type', type);
+
+      const countRow = await qb.clone().count({ c: '*' }).first();
+      totalResults = Number(countRow.c);
+      totalPages = Math.max(1, Math.ceil(totalResults / perPage));
+
+      const rows = await qb
+        .clone()
+        .select(
+          'articles.id',
+          'articles.title',
+          'articles.slug',
+          'articles.excerpt',
+          'articles.type',
+          'articles.published_at',
+          'articles.view_count',
+          'users.nickname as author_name',
+          'media.thumbnail_path as cover_thumb'
+        )
+        .orderBy('articles.view_count', 'desc')
+        .limit(perPage)
+        .offset(offset);
+
+      // Category names
+      const ids = rows.map((r) => r.id);
+      let catMap = new Map();
+      if (ids.length > 0) {
+        const catRows = await db('article_categories')
+          .join('categories', 'article_categories.category_id', 'categories.id')
+          .whereIn('article_categories.article_id', ids)
+          .where('article_categories.is_primary', 1)
+          .select('article_categories.article_id', 'categories.name');
+        for (const r of catRows) catMap.set(r.article_id, r.name);
+      }
+
+      results = rows.map((a) => ({
+        ...a,
+        category_name: catMap.get(a.id) || null,
+        viewsFormatted:
+          a.view_count >= 1000
+            ? (a.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+            : String(a.view_count || 0),
+      }));
+    }
+
+    // Categories for suggestions
+    const categories = await db('categories').select('name', 'slug').orderBy('name').limit(8);
+
+    res.render('search/index', {
+      title: q ? 'Hľadanie: ' + q : 'Vyhľadávanie',
+      currentPath: '/hladaj',
+      q,
+      type,
+      results,
+      totalResults,
+      totalPages,
+      currentPage: page,
+      categories,
+    });
+  } catch (err) {
+    log.error('search failed', { err: err.message });
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // RANKINGS (mock data — Phase 6.4)
 // ---------------------------------------------------------------------------
 const MOCK_SCORE_LABELS = [
@@ -790,7 +881,14 @@ router.get('/clanok/:slug', async (req, res, next) => {
       .leftJoin('media as rm', 'ra.cover_media_id', 'rm.id')
       .where('article_related.article_id', article.id)
       .where('ra.status', 'published')
-      .select('ra.id', 'ra.title', 'ra.slug', 'ra.published_at', 'rm.thumbnail_path as cover_thumb')
+      .select(
+        'ra.id',
+        'ra.title',
+        'ra.slug',
+        'ra.published_at',
+        'ra.view_count',
+        'rm.thumbnail_path as cover_thumb'
+      )
       .orderBy('article_related.display_order', 'asc')
       .limit(5);
 
@@ -809,6 +907,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
           'ra.title',
           'ra.slug',
           'ra.published_at',
+          'ra.view_count',
           'rm.thumbnail_path as cover_thumb'
         )
         .orderBy('ra.published_at', 'desc')
@@ -835,7 +934,48 @@ router.get('/clanok/:slug', async (req, res, next) => {
     if (article.og_path) ogImage = '/uploads/' + article.og_path;
     else if (article.cover_full) ogImage = '/uploads/' + article.cover_full;
 
-    res.render('article/show', {
+    // Review mock data (neskôr z DB — Phase 8)
+    const reviewData =
+      article.type === 'review'
+        ? {
+            score: 9.1,
+            badge: "Editor's Choice",
+            verdict_title: 'Náš verdikt',
+            verdict_text: article.excerpt || '',
+            breakdown: [
+              { label: 'Dizajn', val: 9.2 },
+              { label: 'Displej', val: 9.5 },
+              { label: 'Výkon', val: 9.0 },
+              { label: 'Kamera', val: 9.6 },
+              { label: 'Batéria', val: 8.4 },
+              { label: 'Software', val: 9.0 },
+              { label: 'Cena/výkon', val: 8.8 },
+            ],
+            specs: [
+              { label: 'Čip', value: 'Tensor G5 (3 nm)' },
+              { label: 'RAM', value: '12 GB LPDDR5X' },
+              { label: 'Displej', value: '6,7" LTPO OLED, 120 Hz' },
+              { label: 'Hlavná kamera', value: '50 MPx f/1.6 OIS' },
+              { label: 'Batéria', value: '5 100 mAh, 45 W' },
+              { label: 'OS', value: 'Android 16, 7 rokov' },
+              { label: 'Cena', value: '1 099 €' },
+            ],
+            pros: [
+              'Kamera, ktorá konečne vie, kedy má prestať s HDR',
+              '7 rokov softvérovej podpory',
+              'Batéria dva dni bežnej záťaže',
+            ],
+            cons: [
+              '45 W nabíjanie je málo pre túto cenu',
+              'Žiadne fyzické tlačidlo na kameru',
+              'Multi-core výkon zaostáva za Apple',
+            ],
+          }
+        : { score: null, breakdown: [], specs: [], pros: [], cons: [] };
+
+    const viewTemplate = article.type === 'review' ? 'article/review' : 'article/show';
+
+    res.render(viewTemplate, {
       title: article.seo_title || article.title,
       currentPath: '/clanok/' + article.slug,
       article,
@@ -848,6 +988,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       relatedArticles,
       readTime,
       viewsFormatted,
+      reviewData,
     });
   } catch (err) {
     log.error('article detail failed', { err: err.message });
@@ -1075,6 +1216,13 @@ router.get('/dev', (req, res) => {
     env: config.app.env,
     nodeVersion: process.version,
     serverTime: new Date().toISOString(),
+  });
+});
+
+router.use((req, res) => {
+  res.status(404).render('error/404', {
+    title: 'Stránka nenájdená',
+    currentPath: '',
   });
 });
 

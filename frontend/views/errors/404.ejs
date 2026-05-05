@@ -1,19 +1,36 @@
 <!doctype html>
-<html lang="sk">
+<html lang="sk" data-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Stránka nenájdená' }) %>
 </head>
 <body>
-  <%- include('../partials/header', { currentPath: currentPath }) %>
+  <%- include('../partials/header', { currentPath: '' }) %>
 
-  <main class="site-main">
-    <div class="site-container">
-      <section class="error-page error-page--404">
-        <div class="error-page__code">404</div>
-        <h1>Stránka nenájdená</h1>
-        <p>Adresa <code><%= url %></code> neexistuje alebo bola presunutá.</p>
-        <p><a href="/">← Späť na úvod</a></p>
-      </section>
+  <main class="page">
+    <div class="container">
+      <div class="error-page">
+        <div class="error-glow"></div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Stránka nenájdená</h1>
+        <p class="error-desc">Adresa neexistuje, bola presunutá alebo si sa preklikol. Skús to cez navigáciu alebo vyhľadávanie.</p>
+        <div class="error-actions">
+          <a href="/" class="btn btn-accent btn-lg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+            Na hlavnú stránku
+          </a>
+          <a href="/hladaj" class="btn btn-lg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            Vyhľadávanie
+          </a>
+        </div>
+        <div class="error-links">
+          <span class="error-links-label">Alebo skús:</span>
+          <a href="/kategorie">Kategórie</a>
+          <a href="/rebricky">Rebríčky</a>
+          <a href="/rubriky">Rubriky</a>
+          <a href="/tagy">Tagy</a>
+        </div>
+      </div>
     </div>
   </main>
 
