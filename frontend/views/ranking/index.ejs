@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', { title: 'Rebríčky', description: 'Naše rebríčky testovaných produktov.' }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/rebricky' }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-current">Rebríčky</span>
+      </nav>
+
+      <!-- Hero -->
+      <header class="rank-index-hero">
+        <div class="rank-index-hero-bg">
+          <div class="rank-index-glow-1"></div>
+          <div class="rank-index-glow-2"></div>
+          <div class="rank-index-grid"></div>
+        </div>
+        <div class="rank-index-hero-content">
+          <span class="eyebrow" style="color:var(--accent);">Testujeme · Hodnotíme · Zoraďujeme</span>
+          <h1 class="h-1" style="margin:16px 0;">Rebríčky</h1>
+          <p class="lead" style="max-width:600px;">Každý produkt testujeme minimálne 14 dní v reálnom živote. Žiadne press správy, žiadne sponzorované pozície.</p>
+          <div class="rank-index-hero-stats">
+            <div class="rank-index-stat">
+              <span class="rank-index-stat-num">47</span>
+              <span class="rank-index-stat-label">otestovaných produktov</span>
+            </div>
+            <div class="rank-index-stat">
+              <span class="rank-index-stat-num">7</span>
+              <span class="rank-index-stat-label">hodnotených kategórií</span>
+            </div>
+            <div class="rank-index-stat">
+              <span class="rank-index-stat-num">14</span>
+              <span class="rank-index-stat-label">dní na produkt</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Ranking groups -->
+      <% rankingGroups.forEach((group, gi) => {
+        var accent = ['155','240','280'][gi % 3]; // hue rotation per group
+      %>
+        <section class="rank-group" style="--rg-hue:<%= accent %>;">
+          <div class="rank-group-header">
+            <div class="rank-group-header-left">
+              <div class="rank-group-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+              </div>
+              <div>
+                <span class="eyebrow"><%= group.category %> · <%= group.updated %></span>
+                <h2 class="rank-group-title"><%= group.title %></h2>
+                <p class="rank-group-subtitle"><%= group.subtitle %></p>
+              </div>
+            </div>
+            <div class="rank-group-header-actions">
+              <a href="/rebricky/<%= group.slug %>" class="btn btn-accent">
+                Zobraziť rebríček
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </a>
+              <a href="/rebricky/<%= group.slug %>/tabulka" class="btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+                Tabuľka
+              </a>
+            </div>
+          </div>
+
+          <!-- Lite podium — TOP 3 -->
+          <div class="rank-lite-podium">
+            <% [group.top3[1], group.top3[0], group.top3[2]].filter(Boolean).forEach(p => {
+              var isFirst = p.rank === 1;
+            %>
+              <a href="/rebricky/<%= group.slug %>" class="rank-lite-card <%= isFirst ? 'rank-lite-card--first' : '' %>">
+                <div class="rank-lite-card-bg"></div>
+                <div class="rank-lite-card-content">
+                  <span class="rank-lite-rank <%= isFirst ? 'rank-lite-rank--gold' : 'rank-lite-rank--silver' %>">
+                    <%= String(p.rank).padStart(2, '0') %>
+                  </span>
+                  <div class="rank-lite-info">
+                    <span class="rank-lite-brand"><%= p.brand %></span>
+                    <h3 class="rank-lite-name"><%= p.name %></h3>
+                  </div>
+                  <div class="rank-lite-score-wrap">
+                    <span class="rank-lite-score"><%= p.score.toFixed(1) %></span>
+                    <span class="rank-lite-score-label">skóre</span>
+                  </div>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% }) %>
+
+      <!-- Bottom methodology -->
+      <div class="rank-method" style="margin-top:var(--s-16);">
+        <div style="display:flex; gap:var(--s-8); align-items:flex-start; flex-wrap:wrap;">
+          <div class="rank-method-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3z"/></svg>
+          </div>
+          <div style="flex:1; min-width:280px;">
+            <span class="eyebrow">Metodika</span>
+            <h3 class="h-4" style="margin:8px 0 12px;">Ako naše rebríčky vznikajú</h3>
+            <p style="color:var(--text-muted); margin:0; font-size:14px; line-height:1.6;">
+              Každý produkt testujeme minimálne 14 dní. Skóre kombinuje šesť kategórií s váhou 1× a siedmu
+              (cena/výkon) s váhou 0,5×. Žiadny výrobca nemá vplyv na poradie ani na hodnotenie.
+              Rebríčky aktualizujeme priebežne, keď vychádza nový produkt.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', { title: ranking.title, description: ranking.subtitle }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/rebricky' }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <a href="/rebricky">Rebríčky</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-current"><%= ranking.title %></span>
+      </nav>
+
+      <!-- Header -->
+      <header class="rank-header">
+        <div class="rank-header-left">
+          <span class="eyebrow"><%= ranking.updated %> · <%= ranking.category %></span>
+          <h1 class="h-1" style="margin:16px 0;"><%= ranking.title %></h1>
+          <p class="lead" style="max-width:640px;"><%= ranking.subtitle %></p>
+        </div>
+        <div class="rank-header-actions">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M6 12h12M10 19h4"/></svg> Filter</button>
+            <button class="btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h13M3 12h9M3 18h5M17 8l3-3 3 3M20 5v14M20 19l3-3"/></svg> Zoradiť</button>
+            <button class="btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5"/></svg> Zdieľať</button>
+            <a href="/rebricky/<%= ranking.slug %>/tabulka" class="btn btn-accent"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg> Podrobný rebríček</a>
+          </div>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">Metodika · Ako testujeme</span>
+        </div>
+      </header>
+
+      <!-- ============================================================
+           TOP 3 PODIUM
+           ============================================================ -->
+      <section class="podium">
+        <% var podiumOrder = [items[1], items[0], items[2]].filter(Boolean); %>
+        <% podiumOrder.forEach(p => {
+          var isFirst = p.rank === 1;
+          var rankClass = p.rank === 1 ? 'podium-rank--gold' : 'podium-rank--silver';
+        %>
+          <div class="podium-card card card-link <%= isFirst ? 'podium-card--first' : '' %>">
+            <div class="ph ph-<%= (p.rank % 9) + 1 %>" style="aspect-ratio:<%= isFirst ? '4/3' : '1/1' %>;">
+              <% if (p.image) { %><img src="<%= p.image %>" alt="<%= p.name %>" loading="lazy"><% } %>
+            </div>
+            <div class="podium-body">
+              <div class="podium-top">
+                <span class="podium-rank <%= rankClass %>"><%= String(p.rank).padStart(2, '0') %></span>
+                <div class="podium-score-big">
+                  <span class="podium-score-label">Skóre</span>
+                  <span class="podium-score-num"><%= p.score.toFixed(1) %></span>
+                </div>
+              </div>
+              <span class="podium-brand"><%= p.brand %></span>
+              <h3 class="podium-name <%= isFirst ? 'podium-name--first' : '' %>"><%= p.name %></h3>
+
+              <div class="podium-scores">
+                <% p.scores.forEach(s => { %>
+                  <div class="podium-score-item">
+                    <span class="podium-score-item-label"><%= s.label %></span>
+                    <span class="podium-score-item-val"><%= s.val.toFixed(1) %></span>
+                  </div>
+                <% }) %>
+              </div>
+
+              <div class="podium-price"><%= p.price %></div>
+            </div>
+          </div>
+        <% }) %>
+      </section>
+
+      <!-- ============================================================
+           TOP 4-10
+           ============================================================ -->
+      <h3 class="h-4" style="margin:var(--s-12) 0 24px;">Zvyšok rebríčka</h3>
+      <div class="rlist">
+        <% items.slice(3, 10).forEach(p => { %>
+          <div class="ritem">
+            <div class="ritem-rank">
+              <span class="rank-num"><%= String(p.rank).padStart(2, '0') %></span>
+            </div>
+            <div class="ritem-img ph ph-<%= (p.rank % 9) + 1 %>">
+              <% if (p.image) { %><img src="<%= p.image %>" alt="<%= p.name %>" loading="lazy"><% } %>
+              <div class="ph-label" style="position:absolute;bottom:4px;left:4px;font-family:var(--font-mono);font-size:9px;color:oklch(1 0 0/0.5);"><%= p.brand %></div>
+            </div>
+            <div class="ritem-body">
+              <span class="eyebrow" style="font-size:10px;"><%= p.brand %></span>
+              <h4 class="ritem-name"><%= p.name %></h4>
+              <div class="ritem-scores">
+                <% p.scores.forEach(s => { %>
+                  <span class="ritem-score-chip">
+                    <span class="ritem-score-chip-label"><%= s.label %></span>
+                    <span class="ritem-score-chip-val"><%= s.val.toFixed(1) %></span>
+                  </span>
+                <% }) %>
+              </div>
+            </div>
+            <div class="ritem-right">
+              <div class="ritem-final-score">
+                <span class="ritem-final-label">Skóre</span>
+                <span class="ritem-final-num"><%= p.score.toFixed(1) %></span>
+              </div>
+              <div class="ritem-price"><%= p.price %></div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- ============================================================
+           TOP 11+
+           ============================================================ -->
+      <% if (items.length > 10) { %>
+        <h3 class="h-4" style="margin:var(--s-10) 0 16px;">Honorable mentions</h3>
+        <div class="rlist-compact">
+          <% items.slice(10).forEach(p => { %>
+            <div class="ritem-compact">
+              <span class="ritem-compact-rank"><%= String(p.rank).padStart(2, '0') %></span>
+              <div class="ritem-compact-body">
+                <span class="ritem-compact-brand"><%= p.brand %></span>
+                <span class="ritem-compact-name"><%= p.name %></span>
+              </div>
+              <div class="ritem-compact-scores">
+                <% p.scores.slice(0, 3).forEach(s => { %>
+                  <span class="ritem-score-chip ritem-score-chip--sm">
+                    <span class="ritem-score-chip-label"><%= s.label %></span>
+                    <span class="ritem-score-chip-val"><%= s.val.toFixed(1) %></span>
+                  </span>
+                <% }) %>
+              </div>
+              <div class="ritem-compact-final">
+                <span class="ritem-final-num" style="font-size:22px;"><%= p.score.toFixed(1) %></span>
+              </div>
+              <span class="ritem-compact-price"><%= p.price %></span>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <!-- Methodology -->
+      <div class="rank-method">
+        <span class="eyebrow">Metodika</span>
+        <h3 class="h-4" style="margin:8px 0 12px;">Ako tento rebríček vznikol</h3>
+        <p style="color:var(--text-muted); margin:0; font-size:14px; line-height:1.6;">
+          Každý produkt sme testovali minimálne 14 dní v reálnom použití. Skóre kombinuje šesť kategórií
+          (dizajn, displej, výkon, kamera, batéria, software) s váhou 1× a siedmu (cena/výkon) s váhou 0,5×.
+          Žiadny výrobca nemá vplyv na poradie ani na hodnotenie.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+</body>
+</html>

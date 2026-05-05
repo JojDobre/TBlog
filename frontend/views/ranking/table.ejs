@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', { title: ranking.title + ' — Tabuľka', description: 'Podrobný rebríček s hodnoteniami.' }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/rebricky' }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <a href="/rebricky">Rebríčky</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <a href="/rebricky/<%= ranking.slug %>"><%= ranking.title %></a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-current">Tabuľka</span>
+      </nav>
+
+      <header style="padding:var(--s-6) 0 var(--s-8); display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:24px;">
+        <div>
+          <span class="eyebrow"><%= ranking.updated %></span>
+          <h1 class="h-2" style="margin:12px 0 0;"><%= ranking.title %> — Podrobný rebríček</h1>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <a href="/rebricky/<%= ranking.slug %>" class="btn btn-sm">← Späť na rebríček</a>
+          <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5"/></svg> Zdieľať</button>
+        </div>
+      </header>
+
+      <!-- Filters -->
+      <div class="rtable-filters-wrap">
+        <div class="rtable-filters">
+          <span class="rtable-filter-label">Značka:</span>
+          <button class="btn btn-sm btn-primary" data-filter="all">Všetky</button>
+          <% var brands = [...new Set(items.map(i => i.brand))]; %>
+          <% brands.forEach(b => { %>
+            <button class="btn btn-sm" data-filter="<%= b %>"><%= b %></button>
+          <% }) %>
+        </div>
+
+        <div class="rtable-filters" style="margin-top:8px;">
+          <span class="rtable-filter-label">Cena:</span>
+          <div class="rtable-range-group">
+            <input type="number" class="rtable-range-input" data-price-min placeholder="Od €" min="0" step="50">
+            <span class="rtable-range-sep">–</span>
+            <input type="number" class="rtable-range-input" data-price-max placeholder="Do €" min="0" step="50">
+            <button class="btn btn-sm" data-price-apply>Použiť</button>
+            <button class="btn btn-sm btn-ghost" data-price-reset>×</button>
+          </div>
+
+          <span class="rtable-filter-label" style="margin-left:24px;">Vydané:</span>
+          <div class="rtable-range-group">
+            <select class="rtable-range-input" data-date-min style="width:130px;">
+              <option value="">Od</option>
+              <option value="2026-01">Jan 2026</option>
+              <option value="2025-07">Júl 2025</option>
+              <option value="2025-01">Jan 2025</option>
+              <option value="2024-01">Jan 2024</option>
+            </select>
+            <span class="rtable-range-sep">–</span>
+            <select class="rtable-range-input" data-date-max style="width:130px;">
+              <option value="">Do</option>
+              <option value="2026-06">Jún 2026</option>
+              <option value="2026-04">Apr 2026</option>
+              <option value="2026-01">Jan 2026</option>
+              <option value="2025-06">Jún 2025</option>
+            </select>
+            <button class="btn btn-sm" data-date-apply>Použiť</button>
+            <button class="btn btn-sm btn-ghost" data-date-reset>×</button>
+          </div>
+        </div>
+
+        <div class="rtable-filters" style="margin-top:8px;">
+          <span class="rtable-filter-label">Minimálne skóre:</span>
+          <div class="rtable-range-group">
+            <input type="number" class="rtable-range-input" data-score-min placeholder="napr. 8.0" min="0" max="10" step="0.1" style="width:90px;">
+            <button class="btn btn-sm" data-score-apply>Použiť</button>
+            <button class="btn btn-sm btn-ghost" data-score-reset>×</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="rtable-wrap">
+        <table class="rtable" data-sortable>
+          <thead>
+            <tr>
+              <th class="rtable-th rtable-th--rank" data-sort-col="rank"># <span class="sort-icon">↕</span></th>
+              <th class="rtable-th rtable-th--name" data-sort-col="name">Produkt <span class="sort-icon">↕</span></th>
+              <% scoreLabels.forEach(label => { %>
+                <th class="rtable-th rtable-th--score" data-sort-col="<%= label %>"><%= label %> <span class="sort-icon">↕</span></th>
+              <% }) %>
+              <th class="rtable-th rtable-th--total" data-sort-col="score">Skóre <span class="sort-icon">↕</span></th>
+              <th class="rtable-th rtable-th--price" data-sort-col="price">Cena <span class="sort-icon">↕</span></th>
+              <th class="rtable-th rtable-th--date" data-sort-col="released">Vydané <span class="sort-icon">↕</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% items.forEach(p => { %>
+              <tr class="rtable-row" data-brand="<%= p.brand %>">
+                <td class="rtable-rank"><span class="rtable-rank-num"><%= String(p.rank).padStart(2, '0') %></span></td>
+                <td class="rtable-name-cell">
+                  <div class="rtable-product">
+                    <div class="rtable-thumb ph ph-<%= (p.rank % 9) + 1 %>">
+                      <% if (p.image) { %><img src="<%= p.image %>" alt=""><% } %>
+                    </div>
+                    <div>
+                      <span class="rtable-brand"><%= p.brand %></span>
+                      <span class="rtable-name"><%= p.name %></span>
+                    </div>
+                  </div>
+                </td>
+                <% p.scores.forEach(s => { %>
+                  <td class="rtable-score-cell">
+                    <span class="rtable-score-val rtable-score--<%= s.val >= 9 ? 'great' : s.val >= 7.5 ? 'good' : s.val >= 6 ? 'mid' : 'low' %>">
+                      <%= s.val.toFixed(1) %>
+                    </span>
+                  </td>
+                <% }) %>
+                <td class="rtable-total-cell">
+                  <span class="rtable-total"><%= p.score.toFixed(1) %></span>
+                </td>
+                <td class="rtable-price-cell"><%= p.price %></td>
+                <td class="rtable-date-cell"><%= p.released || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Legend -->
+      <div class="rtable-legend">
+        <span class="rtable-legend-title">Legenda skóre:</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--great">9+</span> Výborné</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--good">7.5+</span> Dobré</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--mid">6+</span> Priemerné</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--low">&lt;6</span> Slabé</span>
+      </div>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/site.js" defer></script>
+  <script src="/js/ranking-table.js" defer></script>
+</body>
+</html>
