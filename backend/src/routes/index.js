@@ -1220,7 +1220,7 @@ router.get('/dev', (req, res) => {
 });
 
 router.use((req, res) => {
-  res.status(404).render('error/404', {
+  res.status(404).render('errors/404', {
     title: 'Stránka nenájdená',
     currentPath: '',
   });

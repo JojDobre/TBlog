@@ -1,0 +1,50 @@
+<!-- Comments section — reusable partial
+     Vyžaduje: article.id, user (optional) -->
+<section class="article-comments" data-comments-section data-article-id="<%= article.id %>">
+  <div class="container">
+    <div class="comments-header">
+      <h2 class="comments-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Diskusia
+      </h2>
+      <span class="comments-count" data-comments-count>0 komentárov</span>
+    </div>
+
+    <!-- Comment form -->
+    <div class="comment-form-wrap">
+      <% if (typeof user !== 'undefined' && user) { %>
+        <div class="comment-form" data-comment-form>
+          <span class="avatar comment-form-avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+          <div class="comment-form-body">
+            <textarea class="comment-textarea" placeholder="Napíš komentár..." rows="3" maxlength="2000"></textarea>
+            <div class="comment-form-footer">
+              <span class="comment-form-hint">Max 2 000 znakov. Buď slušný.</span>
+              <button class="btn btn-sm btn-accent" data-comment-submit disabled>Odoslať</button>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="comment-login-prompt">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <div>
+            <strong>Chceš sa zapojiť do diskusie?</strong>
+            <p>Pre písanie komentárov sa musíš prihlásiť.</p>
+          </div>
+          <a href="/login" class="btn btn-sm btn-primary">Prihlásiť sa</a>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Comments list (populated by JS) -->
+    <div class="comments-list" data-comments-list></div>
+
+    <!-- Empty state -->
+    <div class="comments-empty" data-comments-empty>
+      <div class="comments-empty-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h4>Zatiaľ žiadne komentáre</h4>
+      <p>Buď prvý, kto sa vyjadrí.</p>
+    </div>
+  </div>
+</section>
