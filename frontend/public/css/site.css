@@ -4459,7 +4459,7 @@ img {
     gap: var(--s-6);
   }
   .verdict-score {
-    flex-direction: row;
+    flex-direction: column;
     flex-wrap: wrap;
     justify-content: center;
     padding: 0;
@@ -4908,7 +4908,7 @@ img {
 /* --- Grid layout (title right, text left, media full below) ----------- */
 .cs-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-template-rows: auto auto;
   gap: var(--s-6) var(--s-12);
 }
@@ -4953,11 +4953,22 @@ img {
   color: var(--text-subtle);
   margin-top: var(--s-3);
 }
+.cs-grid--title-left .cs-grid-title {
+  grid-column: 1;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.cs-grid--title-left .cs-grid-text {
+  grid-column: 2;
+}
 
 @media (max-width: 860px) {
   .cs-grid {
+    display: flex;
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
+    flex-direction: column;
   }
   .cs-grid-title {
     grid-column: 1;
@@ -5288,4 +5299,175 @@ img {
     width: 100%;
     aspect-ratio: 16/9;
   }
+}
+
+/* =============================================
+   PATCH 6: Pridaj na KONIEC site.css
+   (color variant cards z review šablóny)
+   ============================================= */
+
+/* Color variants showcase */
+.rv-colors {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--s-3);
+  margin: var(--s-8) 0;
+}
+.rv-color-card {
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.4s;
+}
+.rv-color-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -16px oklch(0 0 0 / 0.4);
+}
+.rv-color-swatch {
+  position: relative;
+  aspect-ratio: 4/5;
+  background: var(--swatch);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.rv-color-phone {
+  width: 56%;
+  aspect-ratio: 9/19;
+  border-radius: 22px;
+  background: linear-gradient(
+    160deg,
+    oklch(from var(--swatch) calc(l + 0.08) c h),
+    var(--swatch) 50%,
+    oklch(from var(--swatch) calc(l - 0.06) c h)
+  );
+  border: 2px solid oklch(from var(--swatch) calc(l - 0.1) c h / 0.6);
+  box-shadow:
+    inset 0 0 0 4px oklch(from var(--swatch) calc(l - 0.04) c h / 0.5),
+    0 30px 60px -20px oklch(0 0 0 / 0.5);
+  position: relative;
+  transform: rotate(-6deg);
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.rv-color-phone::after {
+  content: '';
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28%;
+  height: 5%;
+  border-radius: 99px;
+  background: oklch(from var(--swatch) calc(l - 0.2) c h / 0.6);
+}
+.rv-color-card:hover .rv-color-phone {
+  transform: rotate(0deg) scale(1.06);
+}
+.rv-color-code {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--swatch-text);
+  opacity: 0.65;
+  text-transform: uppercase;
+}
+.rv-color-meta {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rv-color-meta h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.rv-color-meta span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-subtle);
+}
+
+@media (max-width: 1100px) {
+  .rv-colors {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .rv-colors {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Article content — plná šírka ---- */
+.article-content {
+  margin: 0 auto var(--s-12);
+}
+.article-content p {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  letter-spacing: -0.005em;
+  margin: 0 0 var(--s-4);
+}
+.article-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- review-half: vedľa seba ---- */
+.review-half {
+  display: inline-block;
+  vertical-align: top;
+  width: calc(50% - 24px);
+}
+.review-half:nth-child(odd) {
+  margin-right: 24px;
+}
+@media (max-width: 768px) {
+  .review-half {
+    display: block;
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+/* ---- Quote (blockquote) full width, normal weight ---- */
+.article-content blockquote {
+  margin: var(--s-8) 0;
+  padding: 0 0 0 var(--s-6);
+  border-left: 3px solid var(--accent);
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+}
+.article-content blockquote p {
+  margin: 0;
+  font-weight: 400;
+}
+.article-content blockquote cite {
+  display: block;
+  margin-top: var(--s-3);
+  font-size: 14px;
+  font-style: normal;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* ---- Verdict padding fix ---- */
+.verdict {
+  padding: 40px;
+  border-radius: var(--r-2xl);
+  margin: var(--s-12) 0;
 }

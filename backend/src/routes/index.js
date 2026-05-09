@@ -848,7 +848,25 @@ router.get('/clanok/:slug', async (req, res, next) => {
           if (it.media_id) mediaIds.push(it.media_id);
         }
       }
+      // section
+      if (b.type === 'section' && b.media_id) mediaIds.push(b.media_id);
+      // color_variants
+      if (b.type === 'color_variants' && Array.isArray(b.variants)) {
+        for (const v of b.variants) {
+          if (v.media_id) mediaIds.push(v.media_id);
+        }
+      }
+      // review_banner
+      if (b.type === 'review_banner') {
+        if (b.background_media_id) mediaIds.push(b.background_media_id);
+        if (Array.isArray(b.slider_media_ids)) {
+          for (const mid of b.slider_media_ids) {
+            if (mid) mediaIds.push(mid);
+          }
+        }
+      }
     }
+
     let mediaMap = new Map();
     if (mediaIds.length > 0) {
       const rows = await db('media')

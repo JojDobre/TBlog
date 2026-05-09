@@ -628,3 +628,55 @@
   font-weight: 500;
   color: #1f2937;
 }
+
+/**
+ * PATCH: admin.css
+ *
+ * Pridaj na KONIEC súboru tieto štýly pre nové bloky:
+ */
+
+/* ---- Nested items (pros/cons, specs, rating, variants, banner) ---- */
+.bz-nested-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.bz-nested-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.bz-nested-row .btn-outline-danger {
+  flex-shrink: 0;
+  padding: 0.15rem 0.35rem;
+}
+
+/* Section block — compact settings row */
+.bz-block[data-block-type='section'] .form-label-sm {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Rating block — score input highlight */
+.bz-block[data-block-type='rating'] input[data-field='total_score'] {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+  border-color: #f59e0b;
+}
+
+/* Color variant swatch in editor */
+.bz-nested-row .form-control-color {
+  height: 31px;
+  cursor: pointer;
+}
+
+/* Review banner — subtle background tint */
+.bz-block[data-block-type='review_banner'] {
+  background: linear-gradient(135deg, #fefce8 0%, #fff 100%);
+  border-color: #fde68a;
+}
