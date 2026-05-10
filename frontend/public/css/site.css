@@ -356,6 +356,65 @@ img {
   transform: translateY(-1px);
 }
 
+/* --- Nav dropdown ------------------------------------------------------ */
+.nav-dropdown {
+  position: relative;
+}
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+  padding: 4px;
+  z-index: 200;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+.nav-dropdown-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.1s, color 0.1s;
+  text-align: left;
+}
+.nav-dropdown-item:hover {
+  background: var(--bg-card-hover);
+  color: var(--text);
+}
+.nav-dropdown-item--danger:hover {
+  background: oklch(0.28 0.06 25);
+  color: oklch(0.82 0.12 25);
+}
+.nav-dropdown-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+.nav-dropdown-menu form {
+  display: contents;
+}
+
 /* --- Typography -------------------------------------------------------- */
 .eyebrow {
   font-family: var(--font-mono);

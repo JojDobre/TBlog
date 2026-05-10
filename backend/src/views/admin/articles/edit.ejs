@@ -1,46 +1,70 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: pageTitle }) %>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;0,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
 
-    <main class="bz-content">
-      <div class="container-fluid p-4">
-
-        <nav aria-label="breadcrumb" class="mb-3">
-          <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="/admin/articles">Články</a></li>
-            <li class="breadcrumb-item active"><%= isNew ? 'Nový' : (article.title || 'Upraviť') %></li>
-          </ol>
+    <!-- Sticky sub-toolbar -->
+    <div class="bz-art-toolbar">
+      <div class="bz-art-toolbar-inner">
+        <nav class="bz-art-breadcrumb" aria-label="Breadcrumb">
+          <a href="/admin/dashboard">Admin</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <a href="/admin/articles">Články</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <span class="bz-art-breadcrumb-current"><%= isNew ? 'Nový článok' : (article.title || 'Upraviť') %></span>
         </nav>
+        <div class="bz-art-save-status">
+          <span class="bz-art-save-dot"></span>
+          <span><%= isNew ? 'Nový článok' : 'Automatické ukladanie' %></span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <a href="/admin/articles" class="bz-art-btn bz-art-btn-sm bz-art-btn-ghost">
+            <i class="bi bi-arrow-left"></i> Späť
+          </a>
+          <button type="submit" form="article-form" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent">
+            <i class="bi bi-check-lg"></i>
+            <%= isNew ? 'Vytvoriť' : 'Uložiť zmeny' %>
+          </button>
+        </div>
+      </div>
+    </div>
 
+    <main class="bz-content">
+      <div class="bz-art-wrap">
+
+        <!-- Flash messages -->
         <% if (typeof flash !== 'undefined' && flash.created) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Článok bol vytvorený.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Článok bol vytvorený.
+            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
           </div>
         <% } %>
         <% if (typeof flash !== 'undefined' && flash.updated) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Zmeny uložené (vytvorená revízia).
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Zmeny uložené (vytvorená revízia).
+            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
           </div>
         <% } %>
-
         <% if (Object.keys(errors).length > 0) { %>
-          <div class="alert alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i>
             Skontroluj chyby vo formulári nižšie.
+            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
           </div>
         <% } %>
 
-        <form method="POST"
+        <!-- Main form -->
+        <form id="article-form"
+              method="POST"
               action="<%= isNew ? '/admin/articles' : ('/admin/articles/' + article.id) %>"
               novalidate
               data-article-form>
@@ -48,215 +72,306 @@
           <input type="hidden" name="content_json" data-content-json
                  value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c").replace(/'/g, "&#39;") %>'>
 
-          <div class="row g-4">
-            <div class="col-lg-8">
+          <div class="bz-art-grid">
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="title" class="form-label">Názov <span class="text-danger">*</span></label>
-                    <input type="text"
-                           class="form-control form-control-lg <%= errors.title ? 'is-invalid' : '' %>"
-                           id="title" name="title" maxlength="255" required autofocus
-                           value="<%= article.title || '' %>">
-                    <% if (errors.title) { %><div class="invalid-feedback"><%= errors.title %></div><% } %>
-                  </div>
+            <!-- ═══ MAIN COLUMN ══════════════════════════════════════ -->
+            <div class="bz-art-main">
 
-                  <div class="mb-3">
-                    <label for="slug" class="form-label">Slug</label>
-                    <input type="text"
-                           class="form-control <%= errors.slug ? 'is-invalid' : '' %>"
-                           id="slug" name="slug" maxlength="255"
-                           pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                           value="<%= article.slug || '' %>"
-                           placeholder="<%= isNew ? 'Auto-generuje sa z názvu' : '' %>">
-                    <% if (errors.slug) { %>
-                      <div class="invalid-feedback"><%= errors.slug %></div>
-                    <% } else { %>
-                      <div class="form-text">Časť URL — len <code>a-z</code>, <code>0-9</code>, pomlčky.</div>
-                    <% } %>
-                  </div>
+              <!-- Hero: title / slug / excerpt -->
+              <section class="bz-art-hero">
+                <input
+                  type="text"
+                  name="title"
+                  id="title"
+                  class="bz-art-title-inp <%= errors.title ? 'is-invalid' : '' %>"
+                  placeholder="Názov článku…"
+                  maxlength="255"
+                  required
+                  autofocus
+                  value="<%= article.title || '' %>">
+                <% if (errors.title) { %>
+                  <div style="color:oklch(.75 .18 25);font-size:12px;margin-top:4px;font-family:var(--art-mono)"><%= errors.title %></div>
+                <% } %>
 
-                  <div class="mb-0">
-                    <label for="excerpt" class="form-label">Krátky popis (excerpt)</label>
-                    <textarea class="form-control <%= errors.excerpt ? 'is-invalid' : '' %>"
-                              id="excerpt" name="excerpt" rows="2" maxlength="5000"><%= article.excerpt || '' %></textarea>
-                    <% if (errors.excerpt) { %>
-                      <div class="invalid-feedback"><%= errors.excerpt %></div>
-                    <% } else { %>
-                      <div class="form-text">Zobrazí sa v listingu. Ak nezadáš SEO description, použije sa toto.</div>
-                    <% } %>
-                  </div>
+                <div class="bz-art-slug-row">
+                  <span class="bz-art-slug-prefix">bytezone.sk/</span>
+                  <input
+                    type="text"
+                    name="slug"
+                    id="slug"
+                    class="bz-art-slug-inp <%= errors.slug ? 'is-invalid' : '' %>"
+                    maxlength="255"
+                    pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                    value="<%= article.slug || '' %>"
+                    placeholder="<%= isNew ? 'slug-sa-auto-generuje' : 'slug' %>">
                 </div>
-              </div>
+                <% if (errors.slug) { %>
+                  <div style="color:oklch(.75 .18 25);font-size:12px;font-family:var(--art-mono)"><%= errors.slug %></div>
+                <% } %>
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                  <h2 class="h5 mb-0">Obsah</h2>
-                  <small class="text-muted">Bloky sa zobrazia v poradí v akom sú tu.</small>
-                </div>
-                <div class="card-body">
-                  <% if (errors.content) { %>
-                    <div class="alert alert-danger small"><%= errors.content %></div>
+                <textarea
+                  name="excerpt"
+                  id="excerpt"
+                  class="bz-art-excerpt-inp <%= errors.excerpt ? 'is-invalid' : '' %>"
+                  rows="2"
+                  maxlength="5000"
+                  placeholder="Krátky popis / perex — 1–2 vety, použité v náhľade a SEO…"><%= article.excerpt || '' %></textarea>
+                <% if (errors.excerpt) { %>
+                  <div style="color:oklch(.75 .18 25);font-size:12px;font-family:var(--art-mono)"><%= errors.excerpt %></div>
+                <% } %>
+
+                <div class="bz-art-hero-meta">
+                  <span class="bz-art-hero-meta-item">
+                    <i class="bi bi-person"></i> Autor: <%= typeof user !== 'undefined' && user ? user.nickname : '—' %>
+                  </span>
+                  <% if (!isNew && article.created_at) { %>
+                    <span class="bz-art-hero-meta-item">
+                      <i class="bi bi-calendar3"></i> Vytvorené: <%= new Date(article.created_at).toLocaleDateString('sk-SK') %>
+                    </span>
                   <% } %>
-                  <div data-blocks-container></div>
-                  <div data-empty-state class="text-center text-muted py-4 border-top">
-                    Žiadne bloky. Pridaj prvý cez tlačidlá nižšie.
+                  <% if (!isNew && article.published_at) { %>
+                    <span class="bz-art-hero-meta-item">
+                      <i class="bi bi-send"></i> Publikované: <%= new Date(article.published_at).toLocaleString('sk-SK') %>
+                    </span>
+                  <% } %>
+                </div>
+              </section>
+
+              <!-- Tab navigation -->
+              <div class="bz-art-tabs-bar" id="artTabBar">
+                <button type="button" class="bz-art-tab-btn active" data-bz-tab="content">
+                  <i class="bi bi-text-paragraph"></i> Obsah
+                </button>
+                <button type="button" class="bz-art-tab-btn" data-bz-tab="seo">
+                  <i class="bi bi-search"></i> SEO
+                </button>
+                <% if (!isNew && revisionsList.length > 0) { %>
+                  <button type="button" class="bz-art-tab-btn" data-bz-tab="revisions">
+                    <i class="bi bi-clock-history"></i> Revízie
+                    <span class="bz-art-tab-count"><%= revisionsList.length %></span>
+                  </button>
+                <% } %>
+              </div>
+
+              <!-- ── Tab: Obsah ──────────────────────────────── -->
+              <div data-bz-pane="content" class="bz-art-pane-active">
+                <div class="bz-art-content-card">
+                  <div class="bz-art-content-head">
+                    <span class="bz-art-content-title"><i class="bi bi-layout-text-window me-2"></i>Bloky obsahu</span>
+                    <span style="font-family:var(--art-mono);font-size:11px;color:var(--art-text-subtle)">Poradie blokov = poradie na webe</span>
                   </div>
-                  <div class="d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="paragraph">
-                      <i class="bi bi-paragraph me-1"></i>Odsek
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="heading">
-                      <i class="bi bi-type-h2 me-1"></i>Nadpis
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="image">
-                      <i class="bi bi-image me-1"></i>Obrázok
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-add-block="divider">
-                      <i class="bi bi-dash-lg me-1"></i>Oddeľovač
-                    </button>
+                  <div class="bz-art-content-body">
+                    <% if (errors.content) { %>
+                      <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:12px">
+                        <i class="bi bi-exclamation-triangle"></i> <%= errors.content %>
+                      </div>
+                    <% } %>
+                    <div data-blocks-container></div>
+                    <div data-empty-state style="text-align:center;color:var(--art-text-subtle);padding:28px 16px;border-top:1px solid var(--art-border);font-size:13px">
+                      Žiadne bloky. Pridaj prvý cez tlačidlá nižšie.
+                    </div>
+                    <div class="bz-art-add-blocks">
+                      <button type="button" class="bz-art-btn bz-art-btn-sm" data-add-block="paragraph">
+                        <i class="bi bi-paragraph"></i> Odsek
+                      </button>
+                      <button type="button" class="bz-art-btn bz-art-btn-sm" data-add-block="heading">
+                        <i class="bi bi-type-h2"></i> Nadpis
+                      </button>
+                      <button type="button" class="bz-art-btn bz-art-btn-sm" data-add-block="image">
+                        <i class="bi bi-image"></i> Obrázok
+                      </button>
+                      <button type="button" class="bz-art-btn bz-art-btn-sm" data-add-block="divider">
+                        <i class="bi bi-dash-lg"></i> Oddeľovač
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <!-- SEO panel -->
-              <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                  <h2 class="h5 mb-0"><i class="bi bi-search me-2"></i>SEO &amp; sociálne siete</h2>
-                </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="seo_title" class="form-label">SEO Title</label>
-                    <input type="text"
-                           class="form-control <%= errors.seo_title ? 'is-invalid' : '' %>"
-                           id="seo_title" name="seo_title" maxlength="255"
-                           value="<%= article.seo_title || '' %>"
-                           placeholder="Ak prázdne, použije sa Názov článku">
-                    <% if (errors.seo_title) { %>
-                      <div class="invalid-feedback"><%= errors.seo_title %></div>
-                    <% } else { %>
-                      <div class="form-text">Odporúčaná dĺžka: 50–60 znakov.</div>
-                    <% } %>
+              <!-- ── Tab: SEO ———————————————————————————————— -->
+              <div data-bz-pane="seo">
+                <div class="bz-art-content-card">
+                  <div class="bz-art-content-head">
+                    <span class="bz-art-content-title"><i class="bi bi-search me-2"></i>SEO &amp; sociálne siete</span>
                   </div>
-
-                  <div class="mb-3">
-                    <label for="seo_description" class="form-label">SEO Description</label>
-                    <textarea class="form-control <%= errors.seo_description ? 'is-invalid' : '' %>"
-                              id="seo_description" name="seo_description" rows="2"
-                              maxlength="320"
-                              placeholder="Ak prázdne, použije sa Excerpt"><%= article.seo_description || '' %></textarea>
-                    <% if (errors.seo_description) { %>
-                      <div class="invalid-feedback"><%= errors.seo_description %></div>
-                    <% } else { %>
-                      <div class="form-text">Odporúčaná dĺžka: 150–160 znakov.</div>
-                    <% } %>
-                  </div>
-
-                  <div class="mb-0">
-                    <label class="form-label">OG Image</label>
-                    <div class="mb-2">
-                      <% if (typeof ogMedia !== 'undefined' && ogMedia && ogMedia.thumbnail_path) { %>
-                        <img src="/uploads/<%= ogMedia.thumbnail_path %>"
-                             class="img-fluid rounded" style="max-height: 140px;">
+                  <div class="bz-art-content-body" style="display:flex;flex-direction:column;gap:18px;">
+                    <div>
+                      <label for="seo_title" class="bz-art-field-label">SEO Title</label>
+                      <input type="text"
+                             class="form-control <%= errors.seo_title ? 'is-invalid' : '' %>"
+                             id="seo_title" name="seo_title" maxlength="255"
+                             value="<%= article.seo_title || '' %>"
+                             placeholder="Ak prázdne, použije sa Názov článku">
+                      <% if (errors.seo_title) { %>
+                        <div class="invalid-feedback"><%= errors.seo_title %></div>
                       <% } else { %>
-                        <div class="text-muted small fst-italic">(použije sa cover, ak nie je nastavené)</div>
+                        <div class="bz-art-hint mt-1">Odporúčaná dĺžka: 50–60 znakov.</div>
                       <% } %>
                     </div>
-                    <div class="input-group input-group-sm">
-                      <span class="input-group-text">Media ID</span>
-                      <input type="number" class="form-control <%= errors.og_image_media_id ? 'is-invalid' : '' %>"
-                             name="og_image_media_id" min="1"
-                             value="<%= article.og_image_media_id || '' %>"
-                             placeholder="napr. 12">
-                      <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
-                        <i class="bi bi-images"></i>
-                      </a>
+
+                    <div>
+                      <label for="seo_description" class="bz-art-field-label">Meta description</label>
+                      <textarea class="form-control <%= errors.seo_description ? 'is-invalid' : '' %>"
+                                id="seo_description" name="seo_description" rows="3"
+                                maxlength="320"
+                                placeholder="Ak prázdne, použije sa Excerpt"><%= article.seo_description || '' %></textarea>
+                      <% if (errors.seo_description) { %>
+                        <div class="invalid-feedback"><%= errors.seo_description %></div>
+                      <% } else { %>
+                        <div class="bz-art-hint mt-1">Odporúčaná dĺžka: 150–160 znakov.</div>
+                      <% } %>
                     </div>
-                    <% if (errors.og_image_media_id) { %>
-                      <div class="invalid-feedback d-block"><%= errors.og_image_media_id %></div>
-                    <% } else { %>
-                      <div class="form-text small">Odporúčaná veľkosť 1200×630.</div>
-                    <% } %>
+
+                    <div>
+                      <label class="bz-art-field-label">OG Image (1200×630)</label>
+                      <% if (typeof ogMedia !== 'undefined' && ogMedia && ogMedia.thumbnail_path) { %>
+                        <img src="/uploads/<%= ogMedia.thumbnail_path %>"
+                             class="img-fluid rounded mb-2" style="max-height:120px; border-radius:var(--art-r-md);">
+                      <% } else { %>
+                        <div class="bz-art-hint mb-2"><i class="bi bi-info-circle"></i> Použije sa cover, ak nie je nastavené</div>
+                      <% } %>
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text">Media ID</span>
+                        <input type="number" class="form-control <%= errors.og_image_media_id ? 'is-invalid' : '' %>"
+                               name="og_image_media_id" min="1"
+                               value="<%= article.og_image_media_id || '' %>"
+                               placeholder="napr. 12">
+                        <a href="/admin/media" target="_blank" class="bz-art-btn bz-art-btn-sm" style="border-radius:0 var(--art-r-sm) var(--art-r-sm) 0; border:1px solid var(--art-border);">
+                          <i class="bi bi-images"></i>
+                        </a>
+                      </div>
+                      <% if (errors.og_image_media_id) { %>
+                        <div class="invalid-feedback d-block"><%= errors.og_image_media_id %></div>
+                      <% } else { %>
+                        <div class="bz-art-hint mt-1">Odporúčaná veľkosť 1200×630 px.</div>
+                      <% } %>
+                    </div>
+
+                    <!-- SERP preview -->
+                    <div>
+                      <label class="bz-art-field-label">Náhľad vo vyhľadávaní</label>
+                      <div class="bz-art-serp">
+                        <div class="bz-art-serp-url">bytezone.sk › <%= article.slug || 'slug-clanku' %></div>
+                        <div class="bz-art-serp-title"><%= article.seo_title || article.title || 'SEO Title článku' %></div>
+                        <div class="bz-art-serp-desc"><%= article.seo_description || article.excerpt || 'Meta description sa zobrazí tu…' %></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-            </div>
+              <!-- ── Tab: Revízie ———————————————————————————— -->
+              <% if (!isNew && revisionsList.length > 0) { %>
+                <div data-bz-pane="revisions">
+                  <div class="bz-art-content-card">
+                    <div class="bz-art-content-head">
+                      <span class="bz-art-content-title"><i class="bi bi-clock-history me-2"></i>Revízie</span>
+                      <span style="font-family:var(--art-mono);font-size:11px;color:var(--art-text-subtle)">
+                        Posledných <%= revisionsList.length %> verzií
+                      </span>
+                    </div>
+                    <div>
+                      <% revisionsList.forEach((r, idx) => { %>
+                        <div class="bz-art-rev-item">
+                          <div style="flex:1;min-width:0">
+                            <div class="bz-art-rev-title">
+                              <%= r.title || '(bez názvu)' %>
+                              <% if (idx === 0) { %><span class="bz-art-rev-badge">najnovšia</span><% } %>
+                            </div>
+                            <div class="bz-art-rev-meta">
+                              <i class="bi bi-clock me-1"></i><%= new Date(r.created_at).toLocaleString('sk-SK') %>
+                              <% if (r.editor_nickname) { %> · <i class="bi bi-person me-1"></i><%= r.editor_nickname %><% } %>
+                            </div>
+                          </div>
+                          <div class="bz-art-rev-actions">
+                            <button type="button" class="bz-art-btn bz-art-btn-sm" title="Obnoviť"
+                                    data-restore-url="/admin/articles/<%= article.id %>/revisions/<%= r.id %>/restore"
+                                    data-restore-csrf="<%= csrfToken %>">
+                              <i class="bi bi-arrow-counterclockwise"></i> Obnoviť
+                            </button>
+                          </div>
+                        </div>
+                      <% }) %>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
 
-            <div class="col-lg-4">
+            </div><!-- /bz-art-main -->
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white"><h3 class="h6 mb-0">Publikovanie</h3></div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="status" class="form-label">Stav</label>
-                    <select class="form-select <%= errors.status ? 'is-invalid' : '' %>"
+            <!-- ═══ SIDEBAR ═══════════════════════════════════════════ -->
+            <aside class="bz-art-side">
+
+              <!-- Publikovanie -->
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-send"></i> Publikovanie
+                </div>
+                <div class="bz-art-side-body">
+                  <div>
+                    <label for="status" class="bz-art-field-label">Stav</label>
+                    <select class="form-select form-select-sm <%= errors.status ? 'is-invalid' : '' %>"
                             id="status" name="status" data-status-select>
-                      <option value="draft"     <%= article.status === 'draft' ? 'selected' : '' %>>Draft</option>
+                      <option value="draft"     <%= article.status === 'draft'     ? 'selected' : '' %>>Rozpracovaný</option>
                       <option value="scheduled" <%= article.status === 'scheduled' ? 'selected' : '' %>>Naplánovaný</option>
                       <option value="published" <%= article.status === 'published' ? 'selected' : '' %>>Publikovaný</option>
-                      <option value="archived"  <%= article.status === 'archived' ? 'selected' : '' %>>Archivovaný</option>
+                      <option value="archived"  <%= article.status === 'archived'  ? 'selected' : '' %>>Archivovaný</option>
                     </select>
                     <% if (errors.status) { %><div class="invalid-feedback"><%= errors.status %></div><% } %>
                   </div>
 
-                  <div class="mb-3" data-scheduled-at-wrap
+                  <div data-scheduled-at-wrap
                        <%= article.status === 'scheduled' ? '' : 'style="display:none;"' %>>
-                    <label for="scheduled_at" class="form-label">Plánovaný čas</label>
+                    <label for="scheduled_at" class="bz-art-field-label">Plánovaný čas</label>
                     <input type="datetime-local"
-                           class="form-control <%= errors.scheduled_at ? 'is-invalid' : '' %>"
+                           class="form-control form-control-sm <%= errors.scheduled_at ? 'is-invalid' : '' %>"
                            id="scheduled_at" name="scheduled_at"
                            value="<%= utils.toDatetimeLocalString(article.scheduled_at) %>">
                     <% if (errors.scheduled_at) { %>
                       <div class="invalid-feedback"><%= errors.scheduled_at %></div>
                     <% } else { %>
-                      <div class="form-text">Cron tick: každých 5 min.</div>
+                      <div class="bz-art-hint mt-1"><i class="bi bi-info-circle"></i> Cron tick: každých 5 min.</div>
                     <% } %>
                   </div>
 
-                  <% if (!isNew && article.published_at) { %>
-                    <div class="mb-3 small text-muted">
-                      <i class="bi bi-clock-history me-1"></i>
-                      Publikované: <%= new Date(article.published_at).toLocaleString('sk-SK') %>
-                    </div>
-                  <% } %>
-
-                  <div class="mb-3">
-                    <label for="type" class="form-label">Typ</label>
-                    <select class="form-select" id="type" name="type">
+                  <div>
+                    <label for="type" class="bz-art-field-label">Typ obsahu</label>
+                    <select class="form-select form-select-sm" id="type" name="type">
                       <option value="article" <%= article.type === 'article' ? 'selected' : '' %>>Klasický článok</option>
-                      <option value="review"  <%= article.type === 'review' ? 'selected' : '' %>>Recenzia</option>
+                      <option value="review"  <%= article.type === 'review'  ? 'selected' : '' %>>Recenzia</option>
                     </select>
                   </div>
 
-                  <div class="form-check mb-0">
+                  <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="is_featured"
                            name="is_featured" value="1"
                            <%= article.is_featured ? 'checked' : '' %>>
                     <label class="form-check-label" for="is_featured">
-                      <i class="bi bi-star-fill text-warning me-1"></i>Featured
+                      <i class="bi bi-star-fill" style="color:oklch(.8 .16 75)"></i> Featured
+                    </label>
+                  </div>
+
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="allow_comments"
+                           name="allow_comments" value="1" checked>
+                    <label class="form-check-label" for="allow_comments">
+                      <i class="bi bi-chat-dots"></i> Povoliť komentáre
                     </label>
                   </div>
                 </div>
-                <div class="card-footer bg-white d-flex gap-2">
-                  <button type="submit" class="btn btn-primary flex-fill">
-                    <i class="bi bi-check-lg me-1"></i>
-                    <%= isNew ? 'Vytvoriť' : 'Uložiť' %>
-                  </button>
-                  <a href="/admin/articles" class="btn btn-outline-secondary">Zrušiť</a>
-                </div>
               </div>
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white"><h3 class="h6 mb-0">Hlavný obrázok (cover)</h3></div>
-                <div class="card-body">
-                  <div class="mb-2" data-cover-preview>
+              <!-- Hlavný obrázok (cover) -->
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-image"></i> Hlavný obrázok
+                </div>
+                <div class="bz-art-side-body">
+                  <div class="bz-art-cover-ph" data-cover-preview>
                     <% if (coverMedia && coverMedia.thumbnail_path) { %>
-                      <img src="/uploads/<%= coverMedia.thumbnail_path %>"
-                           class="img-fluid rounded" style="max-height: 180px;">
+                      <img src="/uploads/<%= coverMedia.thumbnail_path %>" alt="Cover">
                     <% } else { %>
-                      <div class="text-muted small fst-italic">(bez obrázka)</div>
+                      <span style="font-family:var(--art-mono);font-size:11px">bez obrázka</span>
                     <% } %>
                   </div>
                   <div class="input-group input-group-sm">
@@ -265,7 +380,7 @@
                            name="cover_media_id" min="1"
                            value="<%= article.cover_media_id || '' %>"
                            placeholder="napr. 12">
-                    <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
+                    <a href="/admin/media" target="_blank" class="bz-art-btn bz-art-btn-sm" style="border-radius:0 var(--art-r-sm) var(--art-r-sm) 0; border:1px solid var(--art-border);">
                       <i class="bi bi-images"></i>
                     </a>
                   </div>
@@ -275,11 +390,14 @@
                 </div>
               </div>
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white"><h3 class="h6 mb-0">Rubriky</h3></div>
-                <div class="card-body">
+              <!-- Rubriky -->
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-collection"></i> Rubriky
+                </div>
+                <div class="bz-art-side-body">
                   <% if (taxonomy.rubrics.length === 0) { %>
-                    <p class="text-muted small mb-0">Žiadne rubriky. <a href="/admin/rubrics/new" target="_blank">Vytvor</a>.</p>
+                    <p class="bz-art-hint">Žiadne rubriky. <a href="/admin/rubrics/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
                   <% } else { %>
                     <% taxonomy.rubrics.forEach(r => { %>
                       <div class="form-check">
@@ -293,15 +411,18 @@
                 </div>
               </div>
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white"><h3 class="h6 mb-0">Kategórie</h3></div>
-                <div class="card-body">
+              <!-- Kategórie -->
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-diagram-3"></i> Kategórie
+                </div>
+                <div class="bz-art-side-body">
                   <% if (taxonomy.categories.length === 0) { %>
-                    <p class="text-muted small mb-0">Žiadne kategórie. <a href="/admin/categories/new" target="_blank">Vytvor</a>.</p>
+                    <p class="bz-art-hint">Žiadne kategórie. <a href="/admin/categories/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
                   <% } else { %>
                     <div class="bz-checklist mb-2">
                       <% taxonomy.categories.forEach(c => { %>
-                        <div class="form-check" style="padding-left: calc(1.5em + <%= c.depth %> * 1rem);">
+                        <div class="form-check" style="padding-left: calc(1em + <%= c.depth %> * 1rem);">
                           <input class="form-check-input" type="checkbox" name="category_ids"
                                  value="<%= c.id %>" id="cat_<%= c.id %>"
                                  <%= relations.category_ids.includes(c.id) ? 'checked' : '' %>>
@@ -309,218 +430,165 @@
                         </div>
                       <% }) %>
                     </div>
-                    <label class="form-label small mb-1 mt-2">Primárna kategória</label>
-                    <select class="form-select form-select-sm" name="primary_category_id">
-                      <option value="">— (auto: prvá vybraná)</option>
-                      <% taxonomy.categories.forEach(c => { if (relations.category_ids.includes(c.id)) { %>
-                        <option value="<%= c.id %>"
-                          <%= relations.primary_category_id === c.id ? 'selected' : '' %>>
-                          <%= c.label %>
-                        </option>
-                      <% }}) %>
-                    </select>
+                    <div>
+                      <label class="bz-art-field-label">Primárna kategória</label>
+                      <select class="form-select form-select-sm" name="primary_category_id">
+                        <option value="">— (auto: prvá vybraná)</option>
+                        <% taxonomy.categories.forEach(c => { if (relations.category_ids.includes(c.id)) { %>
+                          <option value="<%= c.id %>"
+                            <%= relations.primary_category_id === c.id ? 'selected' : '' %>>
+                            <%= c.label %>
+                          </option>
+                        <% }}) %>
+                      </select>
+                    </div>
                   <% } %>
                 </div>
               </div>
 
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white"><h3 class="h6 mb-0">Tagy</h3></div>
-                <div class="card-body">
+              <!-- Tagy -->
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-tags"></i> Tagy
+                </div>
+                <div class="bz-art-side-body">
                   <% if (taxonomy.tags.length === 0) { %>
-                    <p class="text-muted small mb-0">Žiadne tagy. <a href="/admin/tags/new" target="_blank">Vytvor</a>.</p>
+                    <p class="bz-art-hint">Žiadne tagy. <a href="/admin/tags/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
                   <% } else { %>
-                    <% taxonomy.tags.forEach(t => { %>
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="tag_ids"
-                               value="<%= t.id %>" id="tag_<%= t.id %>"
-                               <%= relations.tag_ids.includes(t.id) ? 'checked' : '' %>>
-                        <label class="form-check-label" for="tag_<%= t.id %>">
-                          <span class="bz-tag-pill" style="--bz-tag-color: <%= t.color || '#9ca3af' %>;">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                      <% taxonomy.tags.forEach(t => { %>
+                        <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
+                          <input class="form-check-input" type="checkbox" name="tag_ids"
+                                 value="<%= t.id %>" id="tag_<%= t.id %>"
+                                 <%= relations.tag_ids.includes(t.id) ? 'checked' : '' %>>
+                          <span class="bz-tag-pill" style="--bz-tag-color: <%= t.color || '#9ca3af' %>; for=tag_<%= t.id %>">
                             <%= t.name %>
                           </span>
                         </label>
-                      </div>
-                    <% }) %>
+                      <% }) %>
+                    </div>
                   <% } %>
                 </div>
               </div>
 
-              <!-- =================================================================
-                   SÚVISIACE ČLÁNKY — Phase 5.6
-                   Strategy select je vykreslený server-side (zachová pôvodnú hodnotu).
-                   Zoznam manuálne vybraných sa generuje JS-om z initial dát nižšie.
-                   ================================================================ -->
-              <div class="card border-0 shadow-sm mb-4" data-related-panel-server>
-                <div class="card-header bg-white">
-                  <h3 class="h6 mb-0"><i class="bi bi-link-45deg me-1"></i>Súvisiace články</h3>
+              <!-- Súvisiace články -->
+              <div class="bz-art-side-card" data-related-panel-server>
+                <div class="bz-art-side-head">
+                  <i class="bi bi-link-45deg"></i> Súvisiace články
                 </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label class="form-label small mb-1">Stratégia</label>
+                <div class="bz-art-side-body">
+                  <div>
+                    <label class="bz-art-field-label">Stratégia</label>
                     <select class="form-select form-select-sm" name="default_related_strategy">
                       <% var curStrat = article.default_related_strategy || 'both'; %>
-                      <option value="both"   <%= curStrat === 'both'   ? 'selected' : '' %>>Manuálne + auto (oboje)</option>
+                      <option value="both"   <%= curStrat === 'both'   ? 'selected' : '' %>>Manuálne + auto</option>
                       <option value="manual" <%= curStrat === 'manual' ? 'selected' : '' %>>Iba manuálne</option>
                       <option value="auto"   <%= curStrat === 'auto'   ? 'selected' : '' %>>Iba automatické</option>
                     </select>
                   </div>
 
-                  <div class="mb-2">
-                    <label class="form-label small mb-1">Manuálne vybrané</label>
+                  <div>
+                    <label class="bz-art-field-label">Manuálne vybrané</label>
                     <div class="bz-related-list" data-related-list></div>
-                    <div class="text-muted small fst-italic mt-2 d-none" data-related-empty>
-                      Žiadne manuálne vybrané. Vyhľadaj nižšie.
+                    <div class="bz-art-hint mt-1 d-none" data-related-empty>
+                      Žiadne manuálne vybrané.
                     </div>
                   </div>
 
-                  <div class="mt-3">
-                    <label class="form-label small mb-1">Hľadať a pridať</label>
+                  <div>
+                    <label class="bz-art-field-label">Hľadať a pridať</label>
                     <div class="position-relative">
                       <input type="search" class="form-control form-control-sm" data-related-search
-                             placeholder="Začni písať názov článku...">
+                             placeholder="Začni písať názov článku…">
                       <div class="bz-related-results d-none" data-related-results></div>
                     </div>
-                    <div class="form-text small">Min 2 znaky. Klik na článok pridá do zoznamu.</div>
+                    <div class="bz-art-hint mt-1">Min 2 znaky.</div>
                   </div>
                 </div>
               </div>
 
-            </div>
-          </div>
+            </aside><!-- /bz-art-side -->
+          </div><!-- /bz-art-grid -->
+
         </form>
 
-        <!-- ========================================================================
-             REVÍZIE — MIMO hlavného formulára!
-             (HTML neumožňuje nested forms; každá revízia má vlastný malý form)
-             ===================================================================== -->
-        <% if (!isNew && revisionsList.length > 0) { %>
-          <div class="row g-4 mt-2">
-            <div class="col-lg-8">
-              <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                  <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2"></i>Revízie</h2>
-                  <small class="text-muted">Posledných <%= revisionsList.length %> verzií. Pri obnovení sa aktuálny stav uloží ako nová revízia.</small>
-                </div>
-                <div class="list-group list-group-flush">
-                  <% revisionsList.forEach((r, idx) => { %>
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                      <div>
-                        <div>
-                          <strong><%= r.title || '(bez názvu)' %></strong>
-                          <% if (idx === 0) { %>
-                            <span class="badge text-bg-secondary ms-1">najnovšia</span>
-                          <% } %>
-                        </div>
-                        <small class="text-muted">
-                          <i class="bi bi-clock me-1"></i><%= new Date(r.created_at).toLocaleString('sk-SK') %>
-                          <% if (r.editor_nickname) { %>
-                            · <i class="bi bi-person me-1"></i><%= r.editor_nickname %>
-                          <% } %>
-                        </small>
-                      </div>
-                      <div>
-                        <form method="POST"
-                              action="/admin/articles/<%= article.id %>/revisions/<%= r.id %>/restore"
-                              class="d-inline"
-                              data-confirm="Obnoviť túto revíziu? Aktuálny stav sa uloží ako nová revízia.">
-                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                          <button type="submit" class="btn btn-sm btn-outline-warning" title="Obnoviť">
-                            <i class="bi bi-arrow-counterclockwise me-1"></i>Obnoviť
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  <% }) %>
-                </div>
-              </div>
-            </div>
-          </div>
-        <% } %>
-
-        <!-- Block templates pre paragraph/heading/image/divider (zvyšné typy
-             pridáva admin-article-extra-blocks.js dynamicky.) -->
-        <template data-block-template="paragraph">
-          <div class="bz-block" data-block-type="paragraph">
-            <div class="bz-block-header">
-              <span class="bz-block-label"><i class="bi bi-paragraph me-1"></i>Odsek</span>
-              <div class="bz-block-actions"></div>
-            </div>
-            <textarea class="form-control" rows="4" data-field="text" placeholder="Text odseku..."></textarea>
-          </div>
-        </template>
-        <template data-block-template="heading">
-          <div class="bz-block" data-block-type="heading">
-            <div class="bz-block-header">
-              <span class="bz-block-label"><i class="bi bi-type-h2 me-1"></i>Nadpis</span>
-              <div class="bz-block-actions"></div>
-            </div>
-            <div class="d-flex gap-2 align-items-center">
-              <select class="form-select form-select-sm" data-field="level" style="width: 90px;">
-                <option value="2">H2</option><option value="3">H3</option>
-              </select>
-              <input type="text" class="form-control" data-field="text" placeholder="Nadpis..." maxlength="255">
-            </div>
-          </div>
-        </template>
-        <template data-block-template="image">
-          <div class="bz-block" data-block-type="image">
-            <div class="bz-block-header">
-              <span class="bz-block-label"><i class="bi bi-image me-1"></i>Obrázok</span>
-              <div class="bz-block-actions"></div>
-            </div>
-            <div class="row g-2">
-              <div class="col-md-4">
-                <div data-image-preview class="bz-image-preview">
-                  <span class="text-muted small">(žiadny)</span>
-                </div>
-              </div>
-              <div class="col-md-8">
-                <div class="input-group input-group-sm mb-2">
-                  <span class="input-group-text">Media ID</span>
-                  <input type="number" class="form-control" data-field="media_id" min="1" placeholder="napr. 7">
-                  <a href="/admin/media" target="_blank" class="btn btn-outline-secondary">
-                    <i class="bi bi-images"></i>
-                  </a>
-                </div>
-                <input type="text" class="form-control form-control-sm mb-2"
-                       data-field="alt" placeholder="Alt text" maxlength="255">
-                <input type="text" class="form-control form-control-sm"
-                       data-field="caption" placeholder="Popis pod obrázkom" maxlength="500">
-              </div>
-            </div>
-          </div>
-        </template>
-        <template data-block-template="divider">
-          <div class="bz-block" data-block-type="divider">
-            <div class="bz-block-header">
-              <span class="bz-block-label"><i class="bi bi-dash-lg me-1"></i>Oddeľovač</span>
-              <div class="bz-block-actions"></div>
-            </div>
-            <hr class="my-1">
-          </div>
-        </template>
-
-        <!-- =================================================================
-             INIT DATA pre súvisiace články.
-             Použitie <script type="application/json"> namiesto data-attribute,
-             pretože attribute by sa rozbil pri apostrofe v title článku.
-             ================================================================ -->
-        <% if (typeof relatedArticles !== 'undefined' && relatedArticles.length > 0) { %>
-          <script type="application/json" data-related-init>
-            <%- JSON.stringify(relatedArticles).replace(/</g, "\\u003c") %>
-          </script>
-        <% } %>
-
-      </div>
+      </div><!-- /bz-art-wrap -->
     </main>
   </div>
+
+  <!-- =====================================================================
+       BLOCK TEMPLATES (hidden, used by admin-article-editor.js)
+       ===================================================================== -->
+  <template data-block-template="paragraph">
+    <div class="bz-block" data-block-type="paragraph">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-paragraph me-1"></i>Odsek</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <textarea class="form-control" rows="4" data-field="text" placeholder="Text odseku…"></textarea>
+    </div>
+  </template>
+  <template data-block-template="heading">
+    <div class="bz-block" data-block-type="heading">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-type-h2 me-1"></i>Nadpis</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" data-field="level" style="width:90px;">
+          <option value="2">H2</option><option value="3">H3</option>
+        </select>
+        <input type="text" class="form-control" data-field="text" placeholder="Nadpis…" maxlength="255">
+      </div>
+    </div>
+  </template>
+  <template data-block-template="image">
+    <div class="bz-block" data-block-type="image">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-image me-1"></i>Obrázok</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <div data-image-preview class="bz-image-preview"><span class="text-muted small">(žiadny)</span></div>
+        </div>
+        <div class="col-md-8">
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text">Media ID</span>
+            <input type="number" class="form-control" data-field="media_id" min="1" placeholder="napr. 7">
+            <a href="/admin/media" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-images"></i></a>
+          </div>
+          <input type="text" class="form-control form-control-sm mb-2" data-field="alt" placeholder="Alt text" maxlength="255">
+          <input type="text" class="form-control form-control-sm" data-field="caption" placeholder="Popis pod obrázkom" maxlength="500">
+        </div>
+      </div>
+    </div>
+  </template>
+  <template data-block-template="divider">
+    <div class="bz-block" data-block-type="divider">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-dash-lg me-1"></i>Oddeľovač</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <hr class="my-1">
+    </div>
+  </template>
+
+  <!-- Related articles init data -->
+  <% if (typeof relatedArticles !== 'undefined' && relatedArticles.length > 0) { %>
+    <script type="application/json" data-related-init>
+      <%- JSON.stringify(relatedArticles).replace(/</g, "\\u003c") %>
+    </script>
+  <% } %>
 
   <%- include('../partials/scripts') %>
   <script src="/admin/static/js/admin-taxonomy.js" defer></script>
   <script src="/admin/static/js/admin-media-picker.js" defer></script>
-   <script src="/admin/static/js/admin-article-review-blocks.js" defer></script>
+  <script src="/admin/static/js/admin-article-review-blocks.js" defer></script>
   <script src="/admin/static/js/admin-article-extra-blocks.js" defer></script>
   <script src="/admin/static/js/admin-article-editor.js" defer></script>
   <script src="/admin/static/js/admin-article-status.js" defer></script>
+
+  <script src="/admin/static/js/admin-article-tabs.js" defer></script>
 </body>
 </html>

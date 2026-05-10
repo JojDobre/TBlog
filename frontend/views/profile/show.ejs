@@ -2,77 +2,108 @@
 <html lang="sk">
 <head>
   <%- include('../partials/head', { title: profile.nickname }) %>
+  <link rel="stylesheet" href="/css/profile.css" />
 </head>
-<body>
+<body class="profile-page">
   <%- include('../partials/header') %>
 
-  <main class="site-main">
-    <div class="site-container">
-      <article class="profile-show">
+  <div class="profile-bg">
+    <div class="profile-bg-orb profile-bg-orb-1"></div>
+    <div class="profile-bg-orb profile-bg-orb-2"></div>
+  </div>
 
-        <header class="profile-show__header">
-          <div class="profile-show__avatar" aria-hidden="true">
-            <% if (profile.avatar_thumb) { %>
-              <img src="/uploads/<%= profile.avatar_thumb %>" alt="" />
-            <% } else { %>
-              <span class="profile-show__avatar-initials">
-                <%= profile.nickname.slice(0, 2).toUpperCase() %>
+  <main class="profile-main">
+    <article>
+
+      <%# ====================== HERO ====================== %>
+      <div class="profile-show-hero">
+        <div class="profile-show-avatar" aria-hidden="true">
+          <% if (profile.avatar_thumb) { %>
+            <img src="/uploads/<%= profile.avatar_thumb %>" alt="" />
+          <% } else { %>
+            <span class="profile-show-avatar-initials">
+              <%= profile.nickname.slice(0, 2).toUpperCase() %>
+            </span>
+          <% } %>
+        </div>
+
+        <div class="profile-show-info">
+          <h1 class="profile-show-name">
+            <%= profile.nickname %>
+            <% if (profile.role === 'admin') { %>
+              <span class="profile-show-badge profile-show-badge--admin">admin</span>
+            <% } else if (profile.role === 'editor') { %>
+              <span class="profile-show-badge profile-show-badge--editor">editor</span>
+            <% } %>
+          </h1>
+          <div class="profile-show-meta">
+            <% if (profile.location) { %>
+              <span class="profile-show-meta-item">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                <%= profile.location %>
               </span>
             <% } %>
+            <span class="profile-show-meta-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Člen od <%= new Date(profile.created_at).toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' }) %>
+            </span>
           </div>
-          <div>
-            <h1 class="profile-show__name">
-              <%= profile.nickname %>
-              <% if (profile.role === 'admin') { %>
-                <span class="site-user__badge site-user__badge--admin">admin</span>
-              <% } else if (profile.role === 'editor') { %>
-                <span class="site-user__badge site-user__badge--editor">editor</span>
-              <% } %>
-            </h1>
-            <p class="profile-show__meta">
-              <% if (profile.location) { %><span><%= profile.location %></span><% } %>
-              <span class="profile-show__joined">
-                Registrovaný <%= new Date(profile.created_at).toLocaleDateString('sk-SK', { year: 'numeric', month: 'long' }) %>
-              </span>
-            </p>
-          </div>
+        </div>
 
-          <% if (user && user.id === profile.id) { %>
-            <a href="/profil" class="profile-show__edit">Upraviť profil</a>
-          <% } %>
-        </header>
+        <% if (user && user.id === profile.id) { %>
+          <div class="profile-show-actions">
+            <a href="/profil" class="btn btn-sm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Upraviť profil
+            </a>
+          </div>
+        <% } %>
+      </div>
+
+      <%# ====================== CONTENT ====================== %>
+      <div class="profile-show-content">
 
         <% if (profile.bio) { %>
-          <section class="profile-show__section">
-            <h2>O mne</h2>
-            <p class="profile-show__bio"><%= profile.bio %></p>
-          </section>
+          <div class="profile-show-card">
+            <div class="profile-show-card-label">O mne</div>
+            <p class="profile-show-bio"><%= profile.bio %></p>
+          </div>
         <% } %>
 
         <% if (profile.custom_field_label && profile.custom_field_value) { %>
-          <section class="profile-show__section">
-            <h2><%= profile.custom_field_label %></h2>
-            <p><%= profile.custom_field_value %></p>
-          </section>
+          <div class="profile-show-card">
+            <div class="profile-show-card-label"><%= profile.custom_field_label %></div>
+            <p style="margin:0; font-size:15px; color:var(--text-muted)"><%= profile.custom_field_value %></p>
+          </div>
         <% } %>
 
         <% if (links && links.length > 0) { %>
-          <section class="profile-show__section">
-            <h2>Sociálne odkazy</h2>
-            <ul class="profile-show__links">
+          <div class="profile-show-card">
+            <div class="profile-show-card-label">Sociálne siete</div>
+            <div class="profile-social-grid">
               <% links.forEach(l => { %>
-                <li>
-                  <a href="<%= l.url %>" target="_blank" rel="noopener nofollow">
-                    <%= platformLabels[l.platform] || l.platform %>
-                  </a>
-                </li>
+                <a href="<%= l.url %>" target="_blank" rel="noopener nofollow" class="profile-social-pill">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                  </svg>
+                  <%= platformLabels[l.platform] || l.platform %>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
               <% }) %>
-            </ul>
-          </section>
+            </div>
+          </div>
         <% } %>
 
-      </article>
-    </div>
+      </div>
+    </article>
   </main>
 
   <%- include('../partials/footer') %>

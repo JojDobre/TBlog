@@ -2,170 +2,419 @@
 <html lang="sk">
 <head>
   <%- include('../partials/head', { title: 'Môj profil' }) %>
+  <link rel="stylesheet" href="/css/profile.css" />
 </head>
-<body>
+<body class="profile-page">
   <%- include('../partials/header') %>
 
-  <main class="site-main">
-    <div class="site-container">
-      <div class="profile-edit">
+  <div class="profile-bg">
+    <div class="profile-bg-orb profile-bg-orb-1"></div>
+    <div class="profile-bg-orb profile-bg-orb-2"></div>
+  </div>
 
-        <header class="profile-edit__header">
-          <h1>Môj profil</h1>
-          <p class="text-muted">
-            <a href="/u/<%= encodeURIComponent(user.nickname) %>">Pozrieť verejný profil</a>
-          </p>
-        </header>
+  <main class="profile-main">
 
-        <% if (success) { %><div class="auth-alert auth-alert--info"><%= success %></div><% } %>
-        <% if (error) { %><div class="auth-alert auth-alert--error"><%= error %></div><% } %>
+    <% if (success) { %>
+      <div class="profile-alert profile-alert--success">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <%= success %>
+      </div>
+    <% } %>
+    <% if (error) { %>
+      <div class="profile-alert profile-alert--error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <%= error %>
+      </div>
+    <% } %>
 
-        <nav class="profile-tabs">
-          <a href="#profile"  class="profile-tabs__link <%= section === 'profile'  ? 'is-active' : '' %>">Údaje</a>
-          <a href="#password" class="profile-tabs__link <%= section === 'password' ? 'is-active' : '' %>">Heslo</a>
-          <a href="#security" class="profile-tabs__link <%= section === 'security' ? 'is-active' : '' %>">Bezpečnostná otázka</a>
-        </nav>
+    <div class="profile-edit-layout">
 
-        <%# ====================== AVATAR ====================== %>
-        <section class="profile-section">
-          <h2>Avatar</h2>
-          <div class="profile-avatar-row">
-            <div class="profile-avatar-preview">
+      <%# ====================== SIDEBAR ====================== %>
+      <aside class="profile-edit-sidebar">
+
+        <%# Avatar + meno %>
+        <div class="profile-edit-sidebar-card">
+          <div class="profile-edit-avatar-block">
+            <div class="profile-edit-avatar">
               <% if (avatarThumb) { %>
                 <img src="/uploads/<%= avatarThumb %>" alt="Avatar" />
               <% } else { %>
-                <div class="profile-avatar-initials">
+                <span class="profile-edit-avatar-initials">
                   <%= profile.nickname.slice(0, 2).toUpperCase() %>
-                </div>
+                </span>
               <% } %>
             </div>
-            <div class="profile-avatar-actions">
-              <form method="POST" action="/profil/avatar" enctype="multipart/form-data" class="auth-form">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <div class="auth-field">
-                  <label for="avatar">Nahrať nový obrázok</label>
-                  <input type="file" id="avatar" name="avatar"
-                         accept="image/jpeg,image/png,image/webp,image/gif" required />
-                  <small>JPEG, PNG, WebP, GIF.</small>
-                </div>
-                <button type="submit" class="auth-button">Uložiť avatar</button>
-              </form>
-              <% if (avatarId) { %>
-                <form method="POST" action="/profil/avatar/remove" class="profile-avatar-remove">
+            <div class="profile-edit-username"><%= profile.nickname %></div>
+            <a href="/u/<%= encodeURIComponent(user.nickname) %>" class="profile-edit-public-link">
+              Zobraziť verejný profil →
+            </a>
+          </div>
+
+          <%# Navigácia %>
+          <nav class="profile-edit-nav" aria-label="Sekcie profilu">
+            <a href="#avatar" class="profile-edit-nav-item <%= section === 'avatar' ? 'active' : '' %>">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+              </svg>
+              Avatar
+            </a>
+            <a href="#profile" class="profile-edit-nav-item <%= section === 'profile' ? 'active' : '' %>">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+              </svg>
+              Údaje profilu
+            </a>
+            <a href="#password" class="profile-edit-nav-item <%= section === 'password' ? 'active' : '' %>">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+              </svg>
+              Heslo
+            </a>
+            <a href="#security" class="profile-edit-nav-item <%= section === 'security' ? 'active' : '' %>">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Bezpečnosť
+            </a>
+          </nav>
+        </div>
+
+      </aside>
+
+      <%# ====================== MAIN CONTENT ====================== %>
+      <div class="profile-edit-main">
+
+        <%# ====================== AVATAR ====================== %>
+        <section id="avatar" class="profile-edit-card">
+          <div class="profile-edit-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <div>
+              <div class="profile-edit-card-title">Avatar</div>
+              <p class="profile-edit-card-desc">Nahrať alebo odstrániť profilový obrázok</p>
+            </div>
+          </div>
+          <div class="profile-edit-card-body">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar-preview">
+                <% if (avatarThumb) { %>
+                  <img src="/uploads/<%= avatarThumb %>" alt="Avatar" />
+                <% } else { %>
+                  <span class="profile-avatar-preview-initials">
+                    <%= profile.nickname.slice(0, 2).toUpperCase() %>
+                  </span>
+                <% } %>
+              </div>
+              <div class="profile-avatar-forms">
+                <form method="POST" action="/profil/avatar" enctype="multipart/form-data" class="profile-form">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                  <button type="submit" class="auth-button auth-button--danger"
-                          onclick="return confirm('Odstrániť avatar?')">Odstrániť avatar</button>
+                  <div class="profile-field">
+                    <span class="profile-field-label">Nahrať nový obrázok</span>
+                    <div class="profile-file-wrap">
+                      <input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" required />
+                      <div class="profile-file-icon">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                        </svg>
+                      </div>
+                      <div class="profile-file-texts">
+                        <span class="profile-file-text">Klikni pre výber súboru</span>
+                        <span class="profile-file-hint">JPEG, PNG, WebP, GIF</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="profile-form-actions">
+                    <button type="submit" class="profile-submit">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Uložiť avatar
+                    </button>
+                  </div>
                 </form>
-              <% } %>
+                <% if (avatarId) { %>
+                  <form method="POST" action="/profil/avatar/remove">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <button type="submit" class="profile-btn-danger"
+                            onclick="return confirm('Odstrániť avatar?')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                      Odstrániť avatar
+                    </button>
+                  </form>
+                <% } %>
+              </div>
             </div>
           </div>
         </section>
 
-        <%# ====================== PROFILE ====================== %>
-        <section id="profile" class="profile-section">
-          <h2>Údaje profilu</h2>
-          <form method="POST" action="/profil" class="auth-form">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-
-            <div class="auth-field">
-              <label for="bio">O mne</label>
-              <textarea id="bio" name="bio" maxlength="1000" rows="4"><%= profile.bio || '' %></textarea>
+        <%# ====================== PROFILE DATA ====================== %>
+        <section id="profile" class="profile-edit-card">
+          <div class="profile-edit-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+            </svg>
+            <div>
+              <div class="profile-edit-card-title">Údaje profilu</div>
+              <p class="profile-edit-card-desc">Verejné informácie zobrazené na tvojom profile</p>
             </div>
+          </div>
+          <div class="profile-edit-card-body">
+            <form method="POST" action="/profil" class="profile-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-            <div class="profile-row">
-              <div class="auth-field">
-                <label for="location">Lokalita</label>
-                <input type="text" id="location" name="location" value="<%= profile.location || '' %>" maxlength="120" />
+              <div class="profile-field">
+                <label for="bio" class="profile-field-label">O mne</label>
+                <div class="profile-textarea-wrap">
+                  <textarea id="bio" name="bio" maxlength="1000" rows="4"><%= profile.bio || '' %></textarea>
+                </div>
               </div>
-              <div class="auth-field">
-                <label for="birth_date">Dátum narodenia</label>
-                <input type="date" id="birth_date" name="birth_date"
-                       value="<%= profile.birth_date ? new Date(profile.birth_date).toISOString().slice(0,10) : '' %>" />
-              </div>
-            </div>
 
-            <div class="profile-row">
-              <div class="auth-field">
-                <label for="custom_field_label">Vlastné pole — názov</label>
-                <input type="text" id="custom_field_label" name="custom_field_label" value="<%= profile.custom_field_label || '' %>" maxlength="64" />
+              <div class="profile-field-row">
+                <div class="profile-field">
+                  <label for="location" class="profile-field-label">Lokalita</label>
+                  <div class="profile-input-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <input type="text" id="location" name="location"
+                           value="<%= profile.location || '' %>"
+                           placeholder="Mesto, Krajina"
+                           maxlength="120" />
+                  </div>
+                </div>
+                <div class="profile-field">
+                  <label for="birth_date" class="profile-field-label">Dátum narodenia</label>
+                  <div class="profile-input-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <input type="date" id="birth_date" name="birth_date"
+                           value="<%= profile.birth_date ? new Date(profile.birth_date).toISOString().slice(0,10) : '' %>" />
+                  </div>
+                </div>
               </div>
-              <div class="auth-field">
-                <label for="custom_field_value">Vlastné pole — hodnota</label>
-                <input type="text" id="custom_field_value" name="custom_field_value" value="<%= profile.custom_field_value || '' %>" maxlength="255" />
-              </div>
-            </div>
 
-            <hr class="auth-sep" />
-            <h3 class="profile-subhead">Sociálne odkazy</h3>
-            <% platforms.forEach(p => { %>
-              <div class="auth-field">
-                <label for="link_<%= p %>"><%= platformLabels[p] %></label>
-                <input type="url" id="link_<%= p %>" name="link_<%= p %>"
-                       value="<%= links[p] || '' %>" placeholder="https://…" maxlength="500" />
+              <div class="profile-field-row">
+                <div class="profile-field">
+                  <label for="custom_field_label" class="profile-field-label">Vlastné pole — názov</label>
+                  <div class="profile-input-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+                    </svg>
+                    <input type="text" id="custom_field_label" name="custom_field_label"
+                           value="<%= profile.custom_field_label || '' %>"
+                           placeholder="napr. Herná platforma"
+                           maxlength="64" />
+                  </div>
+                </div>
+                <div class="profile-field">
+                  <label for="custom_field_value" class="profile-field-label">Vlastné pole — hodnota</label>
+                  <div class="profile-input-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                    <input type="text" id="custom_field_value" name="custom_field_value"
+                           value="<%= profile.custom_field_value || '' %>"
+                           placeholder="napr. Steam"
+                           maxlength="255" />
+                  </div>
+                </div>
               </div>
-            <% }) %>
 
-            <button type="submit" class="auth-button">Uložiť údaje</button>
-          </form>
+              <div class="profile-divider">Sociálne odkazy</div>
+
+              <% platforms.forEach(p => { %>
+                <div class="profile-field">
+                  <label for="link_<%= p %>" class="profile-field-label"><%= platformLabels[p] %></label>
+                  <div class="profile-input-wrap">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    <input type="url" id="link_<%= p %>" name="link_<%= p %>"
+                           value="<%= links[p] || '' %>"
+                           placeholder="https://…"
+                           maxlength="500" />
+                  </div>
+                </div>
+              <% }) %>
+
+              <div class="profile-form-actions">
+                <button type="submit" class="profile-submit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Uložiť údaje
+                </button>
+              </div>
+            </form>
+          </div>
         </section>
 
         <%# ====================== PASSWORD ====================== %>
-        <section id="password" class="profile-section">
-          <h2>Zmena hesla</h2>
-          <form method="POST" action="/profil/password" class="auth-form">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-            <div class="auth-field">
-              <label for="current_password">Aktuálne heslo</label>
-              <input type="password" id="current_password" name="current_password" required autocomplete="current-password" maxlength="200" />
+        <section id="password" class="profile-edit-card">
+          <div class="profile-edit-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+            </svg>
+            <div>
+              <div class="profile-edit-card-title">Zmena hesla</div>
+              <p class="profile-edit-card-desc">Pre zmenu zadaj aktuálne heslo a nové heslo</p>
             </div>
-            <div class="auth-field">
-              <label for="new_password">Nové heslo</label>
-              <input type="password" id="new_password" name="new_password" required autocomplete="new-password" minlength="<%= minPasswordLength %>" maxlength="200" />
-              <small>Aspoň <%= minPasswordLength %> znakov.</small>
-            </div>
-            <div class="auth-field">
-              <label for="new_password2">Nové heslo (znova)</label>
-              <input type="password" id="new_password2" name="new_password2" required autocomplete="new-password" minlength="<%= minPasswordLength %>" maxlength="200" />
-            </div>
-            <button type="submit" class="auth-button">Zmeniť heslo</button>
-          </form>
+          </div>
+          <div class="profile-edit-card-body">
+            <form method="POST" action="/profil/password" class="profile-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+              <div class="profile-field">
+                <label for="current_password" class="profile-field-label">Aktuálne heslo</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                  </svg>
+                  <input type="password" id="current_password" name="current_password"
+                         placeholder="••••••••"
+                         required autocomplete="current-password" maxlength="200" />
+                </div>
+              </div>
+
+              <div class="profile-field">
+                <label for="new_password" class="profile-field-label">Nové heslo</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                  </svg>
+                  <input type="password" id="new_password" name="new_password"
+                         placeholder="••••••••"
+                         required autocomplete="new-password"
+                         minlength="<%= minPasswordLength %>" maxlength="200" />
+                </div>
+                <span class="profile-field-hint">Aspoň <%= minPasswordLength %> znakov</span>
+              </div>
+
+              <div class="profile-field">
+                <label for="new_password2" class="profile-field-label">Nové heslo (znova)</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                  </svg>
+                  <input type="password" id="new_password2" name="new_password2"
+                         placeholder="••••••••"
+                         required autocomplete="new-password"
+                         minlength="<%= minPasswordLength %>" maxlength="200" />
+                </div>
+              </div>
+
+              <div class="profile-form-actions">
+                <button type="submit" class="profile-submit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Zmeniť heslo
+                </button>
+              </div>
+            </form>
+          </div>
         </section>
 
         <%# ====================== SECURITY ====================== %>
-        <section id="security" class="profile-section">
-          <h2>Bezpečnostná otázka</h2>
-          <% if (securityQuestion) { %>
-            <div class="auth-info-box">
-              <small>Aktuálna otázka:</small><br /><strong><%= securityQuestion %></strong>
+        <section id="security" class="profile-edit-card">
+          <div class="profile-edit-card-head">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <div>
+              <div class="profile-edit-card-title">Bezpečnostná otázka</div>
+              <p class="profile-edit-card-desc">Slúži na overenie identity pri obnove hesla</p>
             </div>
-          <% } %>
-          <form method="POST" action="/profil/security" class="auth-form">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-            <div class="auth-field">
-              <label for="sec_current_password">Aktuálne heslo</label>
-              <input type="password" id="sec_current_password" name="current_password" required maxlength="200" />
-            </div>
-            <div class="auth-field">
-              <label for="question_id">Nová otázka zo zoznamu</label>
-              <select id="question_id" name="question_id">
-                <option value="">— Vyber alebo zadaj vlastnú —</option>
-                <% questions.forEach(q => { %><option value="<%= q.id %>"><%= q.text %></option><% }) %>
-              </select>
-            </div>
-            <div class="auth-field">
-              <label for="custom_question">…alebo vlastná otázka</label>
-              <input type="text" id="custom_question" name="custom_question" maxlength="255" />
-            </div>
-            <div class="auth-field">
-              <label for="answer">Nová odpoveď</label>
-              <input type="text" id="answer" name="answer" required minlength="3" autocomplete="off" />
-            </div>
-            <button type="submit" class="auth-button">Zmeniť otázku</button>
-          </form>
+          </div>
+          <div class="profile-edit-card-body">
+            <% if (securityQuestion) { %>
+              <div class="profile-info-box" style="margin-bottom:var(--s-4)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <div class="profile-info-box-inner">
+                  <span class="profile-info-box-label">Aktuálna otázka</span>
+                  <span class="profile-info-box-value"><%= securityQuestion %></span>
+                </div>
+              </div>
+            <% } %>
+
+            <form method="POST" action="/profil/security" class="profile-form">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+
+              <div class="profile-field">
+                <label for="sec_current_password" class="profile-field-label">Aktuálne heslo</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                  </svg>
+                  <input type="password" id="sec_current_password" name="current_password"
+                         placeholder="••••••••"
+                         required maxlength="200" />
+                </div>
+              </div>
+
+              <div class="profile-field">
+                <label for="question_id" class="profile-field-label">Nová otázka zo zoznamu</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <select id="question_id" name="question_id">
+                    <option value="">— Vyber alebo zadaj vlastnú —</option>
+                    <% questions.forEach(q => { %>
+                      <option value="<%= q.id %>"><%= q.text %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+
+              <div class="profile-field">
+                <label for="custom_question" class="profile-field-label">…alebo vlastná otázka</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  <input type="text" id="custom_question" name="custom_question"
+                         placeholder="Napíš vlastnú otázku…"
+                         maxlength="255" />
+                </div>
+              </div>
+
+              <div class="profile-field">
+                <label for="answer" class="profile-field-label">Nová odpoveď</label>
+                <div class="profile-input-wrap">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                  <input type="text" id="answer" name="answer"
+                         placeholder="Tvoja odpoveď…"
+                         required minlength="3" autocomplete="off" />
+                </div>
+              </div>
+
+              <div class="profile-form-actions">
+                <button type="submit" class="profile-submit">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Zmeniť otázku
+                </button>
+              </div>
+            </form>
+          </div>
         </section>
 
-      </div>
-    </div>
+      </div><%# .profile-edit-main %>
+    </div><%# .profile-edit-layout %>
   </main>
 
   <%- include('../partials/footer') %>
