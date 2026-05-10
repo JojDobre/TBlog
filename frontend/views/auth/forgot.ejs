@@ -2,93 +2,170 @@
 <html lang="sk">
 <head>
   <%- include('../partials/head', { title: 'Zabudnuté heslo' }) %>
+  <link rel="stylesheet" href="/css/auth.css" />
 </head>
-<body>
+<body class="auth-page">
   <%- include('../partials/header') %>
 
-  <main class="site-main">
-    <div class="site-container auth-container">
-      <div class="auth-card">
-        <div class="auth-card__header">
-          <h1 class="auth-card__title">Zabudnuté heslo</h1>
-          <p class="auth-card__subtitle">
-            <% if (step === 'identify') { %>Identifikácia účtu<% } else { %>Bezpečnostná otázka<% } %>
-          </p>
-        </div>
+  <div class="auth-bg">
+    <div class="auth-bg-orb auth-bg-orb-1"></div>
+    <div class="auth-bg-orb auth-bg-orb-2"></div>
+    <div class="auth-bg-grid"></div>
+  </div>
 
-        <% if (error) { %>
-          <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
-        <% } %>
-        <% if (info) { %>
-          <div class="auth-alert auth-alert--info" role="alert"><%= info %></div>
-        <% } %>
+  <main class="auth-wrap">
+    <aside class="auth-side">
+      <%- include('../partials/auth-side') %>
+    </aside>
+
+    <div class="auth-main">
+      <div class="auth-card">
 
         <% if (step === 'identify') { %>
+          <%# ======================== KROK 1: Identifikácia ======================== %>
+          <div class="auth-card-head">
+            <a class="auth-back" href="/login">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              Späť na prihlásenie
+            </a>
+            <span class="eyebrow">Reset hesla</span>
+            <h1 class="h-2" style="margin:10px 0 8px; letter-spacing:-0.03em">Zabudol si heslo?</h1>
+            <p style="margin:0; color:var(--text-muted); font-size:14px">
+              Nič strašné. Zadaj svoj nickname a zobrazíme ti bezpečnostnú otázku.
+            </p>
+          </div>
+
+          <% if (error) { %>
+            <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
+          <% } %>
+          <% if (info) { %>
+            <div class="auth-alert auth-alert--info" role="alert"><%= info %></div>
+          <% } %>
+
           <form method="POST" action="/forgot" novalidate class="auth-form">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-            <div class="auth-field">
-              <label for="nickname">Nickname</label>
-              <input type="text" id="nickname" name="nickname"
-                     value="<%= nickname %>"
-                     required autofocus maxlength="64" />
-              <small>Po zadaní sa zobrazí tvoja bezpečnostná otázka.</small>
-            </div>
-            <button type="submit" class="auth-button">Pokračovať</button>
+
+            <label class="auth-field">
+              <span class="auth-field-label">Nickname tvojho účtu</span>
+              <div class="auth-input-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <input type="text" id="nickname" name="nickname"
+                       placeholder="tvoj_nick"
+                       value="<%= nickname %>"
+                       required autofocus maxlength="64" />
+              </div>
+            </label>
+
+            <button type="submit" class="btn btn-accent btn-lg auth-submit">
+              Pokračovať
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
           </form>
+
+          <div class="auth-help">
+            <div class="auth-help-item">
+              <span class="auth-help-num">01</span>
+              <div>
+                <strong>Zadaj nickname</strong>
+                <span>Zobrazí sa ti bezpečnostná otázka.</span>
+              </div>
+            </div>
+            <div class="auth-help-item">
+              <span class="auth-help-num">02</span>
+              <div>
+                <strong>Odpovedz správne</strong>
+                <span>Odpoveď musí zodpovedať tej pri registrácii.</span>
+              </div>
+            </div>
+            <div class="auth-help-item">
+              <span class="auth-help-num">03</span>
+              <div>
+                <strong>Nastav nové heslo</strong>
+                <span>A si späť v hre do 30 sekúnd.</span>
+              </div>
+            </div>
+          </div>
 
         <% } else { %>
-          <div class="auth-info-box">
-            <small>Účet:</small><br />
-            <strong><%= nickname %></strong>
+          <%# ======================== KROK 2: Otázka + nové heslo ======================== %>
+          <div class="auth-card-head">
+            <a class="auth-back" href="/forgot">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(180deg)"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              Začať odznova
+            </a>
+            <span class="eyebrow">Krok 2 z 2</span>
+            <h1 class="h-2" style="margin:10px 0 8px; letter-spacing:-0.03em">Bezpečnostná otázka</h1>
           </div>
 
-          <div class="auth-info-box">
-            <small>Bezpečnostná otázka:</small><br />
-            <strong><%= question %></strong>
+          <% if (error) { %>
+            <div class="auth-alert auth-alert--error" role="alert"><%= error %></div>
+          <% } %>
+
+          <div class="auth-info-card">
+            <div class="auth-info-card-row">
+              <span class="auth-info-card-label">Účet</span>
+              <span class="auth-info-card-value"><%= nickname %></span>
+            </div>
+            <div class="auth-info-card-row">
+              <span class="auth-info-card-label">Bezpečnostná otázka</span>
+              <span class="auth-info-card-value"><%= question %></span>
+            </div>
           </div>
 
-          <form method="POST" action="/forgot" novalidate class="auth-form">
+          <form method="POST" action="/forgot" novalidate class="auth-form" style="margin-top:24px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-            <div class="auth-field">
-              <label for="answer">Tvoja odpoveď</label>
-              <input type="text" id="answer" name="answer"
-                     required autofocus autocomplete="off" />
-              <small>Nie je citlivé na veľkosť písmen ani medzery.</small>
-            </div>
+            <label class="auth-field">
+              <span class="auth-field-label">Tvoja odpoveď</span>
+              <div class="auth-input-wrap">
+                <input type="text" id="answer" name="answer"
+                       placeholder="Odpoveď na otázku"
+                       required autofocus autocomplete="off" />
+              </div>
+              <small class="auth-field-hint">Nie je citlivé na veľkosť písmen ani medzery.</small>
+            </label>
 
-            <hr class="auth-sep" />
+            <div class="auth-divider"><span>nové heslo</span></div>
 
-            <div class="auth-field">
-              <label for="password">Nové heslo</label>
-              <input type="password" id="password" name="password"
-                     required autocomplete="new-password"
-                     minlength="<%= minPasswordLength %>" maxlength="200" />
-              <small>Aspoň <%= minPasswordLength %> znakov.</small>
-            </div>
+            <label class="auth-field">
+              <span class="auth-field-label">Nové heslo</span>
+              <div class="auth-input-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <input type="password" id="password" name="password"
+                       placeholder="Min. <%= minPasswordLength %> znakov"
+                       required autocomplete="new-password"
+                       minlength="<%= minPasswordLength %>" maxlength="200" />
+                <button type="button" class="auth-input-action" data-toggle-pw="password">Zobraziť</button>
+              </div>
+            </label>
 
-            <div class="auth-field">
-              <label for="password2">Nové heslo (znova)</label>
-              <input type="password" id="password2" name="password2"
-                     required autocomplete="new-password"
-                     minlength="<%= minPasswordLength %>" maxlength="200" />
-            </div>
+            <label class="auth-field">
+              <span class="auth-field-label">Nové heslo (znova)</span>
+              <div class="auth-input-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <input type="password" id="password2" name="password2"
+                       placeholder="Zopakuj heslo"
+                       required autocomplete="new-password"
+                       minlength="<%= minPasswordLength %>" maxlength="200" />
+              </div>
+            </label>
 
-            <button type="submit" class="auth-button">Zmeniť heslo</button>
+            <button type="submit" class="btn btn-accent btn-lg auth-submit">
+              Zmeniť heslo
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+            </button>
           </form>
 
-          <p class="auth-card__footer">
-            <a href="/forgot">← Začať odznova</a>
+          <p class="auth-fineprint">
+            <a class="auth-link" href="/login">← Späť na prihlásenie</a>
           </p>
         <% } %>
 
-        <p class="auth-card__footer">
-          <a href="/login">← Späť na prihlásenie</a>
-        </p>
       </div>
     </div>
   </main>
 
   <%- include('../partials/footer') %>
+  <script src="/js/auth.js" defer></script>
 </body>
 </html>

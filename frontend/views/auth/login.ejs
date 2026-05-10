@@ -2,15 +2,30 @@
 <html lang="sk">
 <head>
   <%- include('../partials/head', { title: 'Prihlásenie' }) %>
+  <link rel="stylesheet" href="/css/auth.css" />
 </head>
-<body>
+<body class="auth-page">
   <%- include('../partials/header') %>
 
-  <main class="site-main">
-    <div class="site-container auth-container">
+  <div class="auth-bg">
+    <div class="auth-bg-orb auth-bg-orb-1"></div>
+    <div class="auth-bg-orb auth-bg-orb-2"></div>
+    <div class="auth-bg-grid"></div>
+  </div>
+
+  <main class="auth-wrap">
+    <aside class="auth-side">
+      <%- include('../partials/auth-side') %>
+    </aside>
+
+    <div class="auth-main">
       <div class="auth-card">
-        <div class="auth-card__header">
-          <h1 class="auth-card__title">Prihlásenie</h1>
+        <div class="auth-card-head">
+          <span class="eyebrow">Vitaj späť</span>
+          <h1 class="h-2" style="margin:10px 0 8px; letter-spacing:-0.03em">Prihlásenie</h1>
+          <p style="margin:0; color:var(--text-muted); font-size:14px">
+            Ešte nemáš účet? <a class="auth-link" href="/register">Vytvor si ho</a>
+          </p>
         </div>
 
         <% if (error) { %>
@@ -20,37 +35,67 @@
           <div class="auth-alert auth-alert--info" role="alert"><%= info %></div>
         <% } %>
 
+        <%# === Social login — zakomentované, backend nepodporuje === %>
+        <!--
+        <div class="auth-providers">
+          <button class="btn auth-provider" type="button">
+            <span class="auth-provider-icon">G</span> Pokračovať s Google
+          </button>
+          <button class="btn auth-provider" type="button">
+            <span class="auth-provider-icon"></span> Pokračovať s Apple
+          </button>
+          <button class="btn auth-provider" type="button">
+            <span class="auth-provider-icon">f</span> Pokračovať s Facebook
+          </button>
+        </div>
+        <div class="auth-divider"><span>alebo s nickom</span></div>
+        -->
+
         <form method="POST" action="/login" novalidate class="auth-form">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
           <% if (nextUrl) { %>
             <input type="hidden" name="next" value="<%= nextUrl %>" />
           <% } %>
 
-          <div class="auth-field">
-            <label for="nickname">Nickname</label>
-            <input type="text" id="nickname" name="nickname"
-                   value="<%= nickname %>"
-                   required autofocus autocomplete="username" maxlength="64" />
-          </div>
+          <label class="auth-field">
+            <span class="auth-field-label">Nickname</span>
+            <div class="auth-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+              <input type="text" id="nickname" name="nickname"
+                     placeholder="tvoj_nick"
+                     value="<%= nickname %>"
+                     required autofocus autocomplete="username" maxlength="64" />
+            </div>
+          </label>
 
-          <div class="auth-field">
-            <label for="password">Heslo</label>
-            <input type="password" id="password" name="password"
-                   required autocomplete="current-password" maxlength="200" />
-          </div>
+          <label class="auth-field">
+            <div style="display:flex; justify-content:space-between; align-items:baseline">
+              <span class="auth-field-label">Heslo</span>
+              <a class="auth-link auth-link-sm" href="/forgot">Zabudol som heslo</a>
+            </div>
+            <div class="auth-input-wrap">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <input type="password" id="password" name="password"
+                     placeholder="••••••••"
+                     required autocomplete="current-password" maxlength="200" />
+              <button type="button" class="auth-input-action" data-toggle-pw="password">Zobraziť</button>
+            </div>
+          </label>
 
-          <button type="submit" class="auth-button">Prihlásiť sa</button>
+          <button type="submit" class="btn btn-accent btn-lg auth-submit">
+            Prihlásiť sa
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
         </form>
 
-        <p class="auth-card__footer">
-          <a href="/forgot">Zabudnuté heslo?</a>
-          <span class="auth-sep-dot">·</span>
-          <a href="/register">Vytvoriť účet</a>
+        <p class="auth-fineprint">
+          Prihlásením súhlasíš s <a class="auth-link" href="/gdpr">podmienkami</a> a <a class="auth-link" href="/gdpr">spracovaním údajov</a>.
         </p>
       </div>
     </div>
   </main>
 
   <%- include('../partials/footer') %>
+  <script src="/js/auth.js" defer></script>
 </body>
 </html>
