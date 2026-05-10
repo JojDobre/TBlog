@@ -14,6 +14,7 @@ const adminRubricsRouter = require('./admin-rubrics');
 const adminTagsRouter = require('./admin-tags');
 const adminCategoriesRouter = require('./admin-categories');
 const adminArticlesRouter = require('./admin-articles');
+const adminRankingsRouter = require('./admin-rankings');
 const blockRenderer = require('../utils/block-renderer');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
@@ -29,6 +30,7 @@ router.use('/admin/media', adminMediaRouter);
 router.use('/admin/rubrics', adminRubricsRouter);
 router.use('/admin/tags', adminTagsRouter);
 router.use('/admin/categories', adminCategoriesRouter);
+router.use('/admin/rankings', adminRankingsRouter);
 router.use('/admin/articles', adminArticlesRouter);
 router.use('/admin', adminRouter);
 
