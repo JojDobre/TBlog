@@ -1,0 +1,46 @@
+<%#
+  Ranking widget — sidebar karta v editore článku
+  Vloží sa do col-lg-4 v admin/articles/edit.ejs
+
+  Premenné:
+    articleRankings  — pole objektov z DB (ranking_items pre tento článok)
+    csrfToken, isNew, article
+%>
+<div class="card border-0 shadow-sm mb-4" id="ranking-widget">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between">
+    <h3 class="h6 mb-0"><i class="bi bi-trophy me-2 text-warning"></i>Rebríčky</h3>
+  </div>
+  <div class="card-body">
+
+    <% if (!isNew) { %>
+      <%# Jeden hidden input s JSON — funguje aj s extended: false %>
+      <input type="hidden" name="ranking_json" id="rw-json"
+             value='<%- JSON.stringify(articleRankings || []).replace(/</g, "\\u003c").replace(/\x27/g, "&#39;") %>'>
+
+      <!-- Existujúce rebríčky -->
+      <div id="rw-entries"></div>
+
+      <div class="text-muted small fst-italic" id="rw-empty" style="display:none">
+        Článok nie je v žiadnom rebríčku.
+      </div>
+
+      <!-- Pridať do rebríčka -->
+      <div class="mt-3 pt-2 border-top">
+        <label class="form-label small mb-1">Pridať do rebríčka</label>
+        <div class="d-flex gap-2">
+          <select class="form-select form-select-sm" id="rw-add-select">
+            <option value="">— Vyber rebríček —</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="rw-add-btn" disabled>
+            <i class="bi bi-plus"></i>
+          </button>
+        </div>
+      </div>
+    <% } else { %>
+      <p class="text-muted small mb-0">
+        Najprv ulož článok, potom ho budeš môcť pridať do rebríčka.
+      </p>
+    <% } %>
+
+  </div>
+</div>

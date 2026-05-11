@@ -76,7 +76,7 @@
             <% [group.top3[1], group.top3[0], group.top3[2]].filter(Boolean).forEach(p => {
               var isFirst = p.rank === 1;
             %>
-              <a href="/rebricky/<%= group.slug %>" class="rank-lite-card <%= isFirst ? 'rank-lite-card--first' : '' %>">
+              <a href="<%= p.slug ? '/clanok/' + p.slug : '/rebricky/' + group.slug %>" class="rank-lite-card <%= isFirst ? 'rank-lite-card--first' : '' %>">
                 <div class="rank-lite-card-bg"></div>
                 <div class="rank-lite-card-content">
                   <span class="rank-lite-rank <%= isFirst ? 'rank-lite-rank--gold' : 'rank-lite-rank--silver' %>">
