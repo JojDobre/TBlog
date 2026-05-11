@@ -1,124 +1,125 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Rebríčky' }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Rebríčky' }) %>
 
     <main class="bz-content">
-      <div class="container-fluid p-4">
+      <div class="bz-art-wrap">
 
         <% if (flash.created) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Rebríček bol vytvorený.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Rebríček bol vytvorený.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (flash.updated) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Rebríček bol upravený.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Rebríček bol upravený.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (flash.deleted) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Rebríček bol zmazaný.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Rebríček bol zmazaný.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (flash.err) { %>
-          <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i><%= flash.err %>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
 
         <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="bz-art-header">
           <div>
-            <h1 class="h3 mb-1">Rebríčky</h1>
-            <p class="text-muted mb-0">Správa rebríčkov produktov</p>
+            <h1 class="bz-art-header-title">Rebríčky</h1>
+            <p class="bz-art-header-sub">Správa rebríčkov produktov</p>
           </div>
-          <a href="/admin/rankings/new" class="btn btn-primary">
-            <i class="bi bi-plus-lg me-1"></i>Nový rebríček
+          <a href="/admin/rankings/new" class="bz-art-btn bz-art-btn-accent">
+            <i class="bi bi-plus-lg"></i> Nový rebríček
           </a>
         </div>
 
         <% if (rankings.length === 0) { %>
-          <div class="card border-0 shadow-sm">
-            <div class="card-body text-center text-muted py-5">
-              <i class="bi bi-trophy fs-1 d-block mb-2 text-body-tertiary"></i>
-              Žiadne rebríčky. Vytvor prvý cez tlačidlo vyššie.
-            </div>
+          <div class="bz-art-empty">
+            <i class="bi bi-trophy bz-art-empty-icon"></i>
+            <p class="bz-art-empty-text">Žiadne rebríčky. Vytvor prvý cez tlačidlo vyššie.</p>
           </div>
         <% } else { %>
-          <div class="card border-0 shadow-sm">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+          <div class="bz-art-table-wrap">
+            <table class="bz-art-table">
+              <thead>
+                <tr>
+                  <th>Názov</th>
+                  <th style="width:100px">Stav</th>
+                  <th style="width:100px; text-align:center">Položky</th>
+                  <th style="width:120px">Radenie</th>
+                  <th style="width:160px">Vytvorený</th>
+                  <th style="width:160px; text-align:right">Akcie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% rankings.forEach(r => { %>
                   <tr>
-                    <th>Názov</th>
-                    <th style="width:100px">Stav</th>
-                    <th class="text-center" style="width:100px">Položky</th>
-                    <th style="width:120px">Radenie</th>
-                    <th style="width:160px">Vytvorený</th>
-                    <th class="text-end" style="width:160px">Akcie</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% rankings.forEach(r => { %>
-                    <tr>
-                      <td>
-                        <a href="/admin/rankings/<%= r.id %>/edit" class="fw-semibold text-decoration-none">
-                          <i class="bi bi-trophy me-1 text-warning"></i>
-                          <%= r.name %>
-                        </a>
-                        <br>
-                        <code class="small text-muted"><%= r.slug %></code>
-                      </td>
-                      <td>
-                        <% if (r.status === 'active') { %>
-                          <span class="badge text-bg-success">Aktívny</span>
-                        <% } else { %>
-                          <span class="badge text-bg-secondary">Archivovaný</span>
-                        <% } %>
-                      </td>
-                      <td class="text-center">
-                        <span class="badge text-bg-info"><%= r.item_count %></span>
-                      </td>
-                      <td>
-                        <% if (r.admin_override) { %>
-                          <span class="small text-muted"><i class="bi bi-hand-index me-1"></i>Ručné</span>
-                        <% } else { %>
-                          <span class="small text-muted"><i class="bi bi-sort-numeric-down me-1"></i>Podľa skóre</span>
-                        <% } %>
-                      </td>
-                      <td>
-                        <span class="small text-muted">
-                          <%= new Date(r.created_at).toLocaleDateString('sk-SK') %>
+                    <td>
+                      <a href="/admin/rankings/<%= r.id %>/edit" class="bz-art-title-link">
+                        <i class="bi bi-trophy" style="color:oklch(0.74 0.16 60); margin-right:6px;"></i>
+                        <%= r.name %>
+                      </a>
+                      <span class="bz-art-slug-cell"><%= r.slug %></span>
+                    </td>
+                    <td>
+                      <% if (r.status === 'active') { %>
+                        <span class="bz-art-badge bz-art-badge-published">
+                          <i class="bi bi-check-circle"></i> Aktívny
                         </span>
-                      </td>
-                      <td class="text-end">
-                        <a href="/admin/rankings/<%= r.id %>/edit" class="btn btn-sm btn-outline-secondary" title="Upraviť">
+                      <% } else { %>
+                        <span class="bz-art-badge bz-art-badge-archived">
+                          <i class="bi bi-archive"></i> Archivovaný
+                        </span>
+                      <% } %>
+                    </td>
+                    <td style="text-align:center">
+                      <span class="bz-art-badge bz-art-badge-article"><%= r.item_count %></span>
+                    </td>
+                    <td>
+                      <% if (r.admin_override) { %>
+                        <span class="bz-art-meta-text"><i class="bi bi-hand-index me-1"></i>Ručné</span>
+                      <% } else { %>
+                        <span class="bz-art-meta-text"><i class="bi bi-sort-numeric-down me-1"></i>Podľa skóre</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="bz-art-meta-text">
+                        <%= new Date(r.created_at).toLocaleDateString('sk-SK') %>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="bz-art-row-actions">
+                        <a href="/admin/rankings/<%= r.id %>/edit" class="bz-art-btn bz-art-btn-sm" title="Upraviť">
                           <i class="bi bi-pencil"></i>
                         </a>
                         <form method="POST" action="/admin/rankings/<%= r.id %>/delete" class="d-inline"
                               data-confirm="Naozaj zmazať rebríček &quot;<%= r.name %>&quot;?">
                           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                          <button type="submit" class="btn btn-sm btn-outline-danger" title="Zmazať">
+                          <button type="submit" class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" title="Zmazať">
                             <i class="bi bi-trash"></i>
                           </button>
                         </form>
-                      </td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
           </div>
         <% } %>
 

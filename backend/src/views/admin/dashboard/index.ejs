@@ -1,88 +1,244 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Dashboard' }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Dashboard' }) %>
 
     <main class="bz-content">
-      <div class="container-fluid p-4">
+      <div class="bz-dash-wrap">
 
-        <div class="alert alert-warning d-flex align-items-start" role="alert">
-          <i class="bi bi-cone-striped me-2 fs-4"></i>
+        <%# Dev placeholder alert %>
+        <div class="bz-dash-alert">
+          <i class="bi bi-cone-striped"></i>
           <div>
             <strong>Dev placeholder.</strong> Toto je kostra layoutu — žiadne dáta zatiaľ
             nepribúdajú a auth nie je aktívny. Auth pribudne vo Phase 2,
             jednotlivé sekcie postupne v Phase 3–15.
           </div>
+          <button class="bz-dash-alert-close" onclick="this.closest('.bz-dash-alert').remove()" aria-label="Zatvoriť">×</button>
         </div>
 
-        <div class="row g-4 mb-4">
-          <% const cards = [
-            { label: 'Články',        value: stats.articles,    icon: 'file-earmark-text', color: 'primary' },
-            { label: 'Komentáre',     value: stats.comments,    icon: 'chat-dots',         color: 'success' },
-            { label: 'Médiá',         value: stats.media,       icon: 'images',            color: 'info' },
-            { label: 'Návštevy (24h)', value: stats.visits24h,  icon: 'graph-up',          color: 'warning' },
-          ]; %>
-          <% cards.forEach(card => { %>
+        <%# Header %>
+        <div class="bz-dash-header">
+          <div>
+            <span class="bz-eyebrow">
+              <%
+                const days = ['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
+                const months = ['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
+                const now = new Date();
+              %>
+              <%= days[now.getDay()] %> · <%= now.getDate() %>. <%= months[now.getMonth()] %> <%= now.getFullYear() %>
+            </span>
+            <h1 class="bz-dash-title">
+              Dobré ráno<% if (typeof user !== 'undefined' && user && user.nickname) { %>, <%= user.nickname %><% } %> 👋
+            </h1>
+          </div>
+          <div class="bz-dash-header-actions">
+            <button class="bz-btn bz-btn-sm">Posledných 30 dní <i class="bi bi-chevron-down"></i></button>
+            <button class="bz-btn bz-btn-sm">Export</button>
+          </div>
+        </div>
+
+        <%# KPI karty %>
+        <div class="row g-3 mb-4">
+          <%
+            const kpiCards = [
+              { label: 'Článkov celkom',   value: stats.articles,   delta: null, up: null, icon: 'file-earmark-text' },
+              { label: 'Komentáre',        value: stats.comments,   delta: null, up: null, icon: 'chat-dots' },
+              { label: 'Médiá',            value: stats.media,      delta: null, up: null, icon: 'images' },
+              { label: 'Návštevy (24 h)',  value: stats.visits24h,  delta: null, up: null, icon: 'graph-up' },
+            ];
+          %>
+          <% kpiCards.forEach(k => { %>
             <div class="col-sm-6 col-xl-3">
-              <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex align-items-center">
-                  <div class="bz-stat-icon bg-<%= card.color %>-subtle text-<%= card.color %>">
-                    <i class="bi bi-<%= card.icon %>"></i>
-                  </div>
-                  <div class="ms-3">
-                    <div class="text-muted small"><%= card.label %></div>
-                    <div class="h3 mb-0"><%= card.value %></div>
-                  </div>
+              <div class="bz-kpi-card">
+                <div class="bz-kpi-icon">
+                  <i class="bi bi-<%= k.icon %>"></i>
                 </div>
+                <div class="bz-kpi-label"><%= k.label %></div>
+                <div class="bz-kpi-value"><%= k.value ?? '—' %></div>
+                <% if (k.delta) { %>
+                  <div class="bz-kpi-delta <%= k.up ? 'up' : 'down' %>">
+                    <%= k.up ? '↑' : '↓' %> <%= k.delta %>
+                  </div>
+                <% } %>
               </div>
             </div>
           <% }) %>
         </div>
 
-        <div class="row g-4">
-          <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white border-bottom">
-                <h2 class="h6 mb-0">Najnovšie články</h2>
-              </div>
-              <div class="card-body">
-                <p class="text-muted mb-0">Pribudne vo Phase 5.</p>
-              </div>
+        <%# Chart card %>
+        <div class="bz-card mb-4">
+          <div class="bz-card-head">
+            <div>
+              <span class="bz-eyebrow">Návštevnosť</span>
+              <h3 class="bz-card-title">Pozretia za posledných 30 dní</h3>
+            </div>
+            <div class="d-flex gap-2">
+              <% ['7d','30d','90d','1r'].forEach((t, i) => { %>
+                <button class="bz-btn bz-btn-sm <%= i === 1 ? 'bz-btn-primary' : 'bz-btn-ghost' %>"><%= t %></button>
+              <% }) %>
             </div>
           </div>
-          <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white border-bottom">
-                <h2 class="h6 mb-0">Stav systému</h2>
-              </div>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                  <span><i class="bi bi-database me-2"></i>Databáza</span>
-                  <span class="badge text-bg-success">OK</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                  <span><i class="bi bi-clock-history me-2"></i>Cron joby</span>
-                  <span class="badge text-bg-success">3 aktívne</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                  <span><i class="bi bi-shield-lock me-2"></i>Auth</span>
-                  <span class="badge text-bg-secondary">Phase 2</span>
-                </li>
-              </ul>
-            </div>
+          <div class="bz-card-body">
+            <svg viewBox="0 0 800 160" style="width:100%;height:160px;display:block;">
+              <defs>
+                <linearGradient id="bzChartGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%"   stop-color="oklch(0.72 0.17 155)" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="oklch(0.72 0.17 155)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,110 C40,100 80,72 120,82 C160,92 200,55 240,50 C280,45 320,65 360,60 C400,55 440,22 480,32 C520,42 560,16 600,24 C640,32 680,50 720,36 C760,22 800,14 800,14 L800,160 L0,160 Z"
+                    fill="url(#bzChartGrad)"/>
+              <path d="M0,110 C40,100 80,72 120,82 C160,92 200,55 240,50 C280,45 320,65 360,60 C400,55 440,22 480,32 C520,42 560,16 600,24 C640,32 680,50 720,36 C760,22 800,14 800,14"
+                    fill="none" stroke="oklch(0.72 0.17 155)" stroke-width="2"/>
+              <% ['1.4.','8.4.','15.4.','22.4.','29.4.'].forEach((label, i) => { %>
+                <text x="<%= i * 200 %>" y="155" font-size="10" font-family="IBM Plex Mono, monospace" fill="oklch(0.48 0.01 240)"><%= label %></text>
+              <% }) %>
+            </svg>
           </div>
         </div>
 
-      </div>
+        <%# Spodná sekcia: tabuľka + pravý stĺpec %>
+        <div class="row g-4">
+
+          <%# Tabuľka — Najnovšie články %>
+          <div class="col-lg-8">
+            <div class="bz-card">
+              <div class="bz-card-head">
+                <h3 class="bz-card-title" style="margin:0">Najnovšie články</h3>
+                <a href="/admin/articles" class="bz-btn bz-btn-sm bz-btn-ghost">Všetky →</a>
+              </div>
+              <div class="bz-card-body" style="padding:0">
+                <table class="bz-dash-table">
+                  <thead>
+                    <tr>
+                      <th>Názov</th>
+                      <th>Autor</th>
+                      <th>Stav</th>
+                      <th style="text-align:right">Akcie</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (typeof recentArticles !== 'undefined' && recentArticles && recentArticles.length > 0) { %>
+                      <% recentArticles.forEach(a => {
+                        const stMap = {
+                          published: { cls: 'bz-pill-pub',   label: 'Publikovaný' },
+                          draft:     { cls: 'bz-pill-draft', label: 'Koncept' },
+                          scheduled: { cls: 'bz-pill-sched', label: 'Naplánovaný' },
+                          archived:  { cls: 'bz-pill-arch',  label: 'Archív' },
+                          trash:     { cls: 'bz-pill-trash', label: 'Kôš' },
+                        };
+                        const st = stMap[a.status] || { cls: 'bz-pill-draft', label: a.status };
+                      %>
+                      <tr>
+                        <td>
+                          <a href="/admin/articles/<%= a.id %>/edit" class="bz-dash-art-link"><%= a.title %></a>
+                          <span class="bz-dash-art-date">
+                            <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : (a.updated_at ? new Date(a.updated_at).toLocaleDateString('sk-SK') : '—') %>
+                          </span>
+                        </td>
+                        <td class="bz-dash-author"><%= a.author_nickname || '—' %></td>
+                        <td><span class="bz-status-pill <%= st.cls %>"><%= st.label %></span></td>
+                        <td style="text-align:right">
+                          <a href="/admin/articles/<%= a.id %>/edit" class="bz-btn bz-btn-sm bz-btn-ghost" title="Upraviť">
+                            <i class="bi bi-pencil"></i>
+                          </a>
+                        </td>
+                      </tr>
+                      <% }) %>
+                    <% } else { %>
+                      <tr>
+                        <td colspan="4" class="bz-dash-empty">Žiadne články zatiaľ. Pribudne vo Phase 5.</td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <%# Pravý stĺpec %>
+          <div class="col-lg-4 d-flex flex-column gap-3">
+
+            <%# Stav systému %>
+            <div class="bz-card">
+              <div class="bz-card-head">
+                <h3 class="bz-card-title" style="margin:0">Stav systému</h3>
+              </div>
+              <div class="bz-card-body" style="padding:0">
+                <ul class="bz-sys-list">
+                  <li class="bz-sys-item">
+                    <span class="bz-sys-label"><i class="bi bi-database"></i> Databáza</span>
+                    <span class="bz-status-pill bz-pill-pub">OK</span>
+                  </li>
+                  <li class="bz-sys-item">
+                    <span class="bz-sys-label"><i class="bi bi-clock-history"></i> Cron joby</span>
+                    <span class="bz-status-pill bz-pill-pub">3 aktívne</span>
+                  </li>
+                  <li class="bz-sys-item">
+                    <span class="bz-sys-label"><i class="bi bi-shield-lock"></i> Rankings</span>
+                    <span class="bz-status-pill bz-pill-draft">Phase 9</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <%# Čaká na review %>
+            <div class="bz-card">
+              <div class="bz-card-head">
+                <h3 class="bz-card-title" style="margin:0">Čaká na review</h3>
+              </div>
+              <div class="bz-card-body" style="padding:0">
+                <% if (typeof pendingReview !== 'undefined' && pendingReview && pendingReview.length > 0) { %>
+                  <ul class="bz-review-list">
+                    <% pendingReview.forEach(r => { %>
+                      <li class="bz-review-item">
+                        <div>
+                          <div class="bz-review-title"><%= r.title %></div>
+                          <div class="bz-review-meta"><%= r.author_nickname || '—' %> · <%= r.updated_at ? new Date(r.updated_at).toLocaleDateString('sk-SK') : '—' %></div>
+                        </div>
+                        <a href="/admin/articles/<%= r.id %>/edit" class="bz-btn bz-btn-sm bz-btn-ghost">Otvoriť</a>
+                      </li>
+                    <% }) %>
+                  </ul>
+                <% } else { %>
+                  <div class="bz-dash-empty" style="padding:16px">Žiadne články nečakajú na review.</div>
+                <% } %>
+              </div>
+            </div>
+
+            <%# Rýchle odkazy %>
+            <div class="bz-card bz-card-inset">
+              <div class="bz-card-head">
+                <h3 class="bz-card-title" style="margin:0">Rýchle akcie</h3>
+              </div>
+              <div class="bz-card-body d-flex flex-column gap-2">
+                <a href="/admin/articles/new" class="bz-btn bz-btn-sm bz-btn-accent" style="justify-content:center">
+                  <i class="bi bi-plus-lg"></i> Nový článok
+                </a>
+                <a href="/admin/media" class="bz-btn bz-btn-sm bz-btn-ghost" style="justify-content:center">
+                  <i class="bi bi-images"></i> Správa médií
+                </a>
+                <a href="/admin/comments" class="bz-btn bz-btn-sm bz-btn-ghost" style="justify-content:center">
+                  <i class="bi bi-chat-dots"></i> Komentáre
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /bz-dash-wrap -->
     </main>
   </div>
 
   <%- include('../partials/scripts') %>
 </body>
 </html>
+

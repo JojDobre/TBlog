@@ -30,22 +30,17 @@
         </div>
       </header>
 
-      <!-- ============================================================
-           FILTERS
-           ============================================================ -->
+      <!-- Filters -->
       <div class="rtable-filters-wrap">
-
-        <!-- Brand -->
         <div class="rtable-filters">
           <span class="rtable-filter-label">Značka:</span>
           <button class="btn btn-sm btn-primary" data-filter="all">Všetky</button>
-          <% var brands = [...new Set(items.map(i => i.brand).filter(Boolean))]; %>
+          <% var brands = [...new Set(items.map(i => i.brand))]; %>
           <% brands.forEach(b => { %>
             <button class="btn btn-sm" data-filter="<%= b %>"><%= b %></button>
           <% }) %>
         </div>
 
-        <!-- Price -->
         <div class="rtable-filters" style="margin-top:8px;">
           <span class="rtable-filter-label">Cena:</span>
           <div class="rtable-range-group">
@@ -56,45 +51,45 @@
             <button class="btn btn-sm btn-ghost" data-price-reset>×</button>
           </div>
 
-          <!-- Date — separate month + year -->
-          <span class="rtable-filter-label" style="margin-left:24px;">Vydané:</span>
+<span class="rtable-filter-label" style="margin-left:24px;">Vydané:</span>
           <div class="rtable-range-group">
             <%
-              // Zbieraj roky z dát
-              var dateYears = new Set();
+              var monthNames = ['Jan','Feb','Mar','Apr','Máj','Jún','Júl','Aug','Sep','Okt','Nov','Dec'];
+              // Zbieraj unikátne mesiace z dát
+              var dateMonths = new Set();
               items.forEach(function(p) {
                 if (p.date) {
-                  var ym = p.date.match(/(\d{4})/);
-                  if (ym) dateYears.add(ym[1]);
+                  // Podporuj formáty: "Jan 2026", "2026-01", "01/2026"
+                  var m = p.date.match(/(\d{4})-(\d{2})/);
+                  if (m) { dateMonths.add(m[1] + '-' + m[2]); }
+                  else {
+                    var m2 = p.date.match(/([A-Za-záéíóúýčďľňřšťžÁÉÍÓÚÝČĎĽŇŘŠŤŽ]+)\s+(\d{4})/i);
+                    if (m2) {
+                      var mi = monthNames.findIndex(function(n) { return n.toLowerCase() === m2[1].toLowerCase().slice(0,3); });
+                      if (mi >= 0) dateMonths.add(m2[2] + '-' + String(mi+1).padStart(2,'0'));
+                    }
+                  }
                 }
               });
-              var sortedYears = Array.from(dateYears).sort();
+              var sortedMonths = Array.from(dateMonths).sort();
             %>
-            <select class="rtable-range-input" data-date-month-min style="width:80px;">
-              <option value="">Mes.</option>
-              <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
-              <option value="04">Apr</option><option value="05">Máj</option><option value="06">Jún</option>
-              <option value="07">Júl</option><option value="08">Aug</option><option value="09">Sep</option>
-              <option value="10">Okt</option><option value="11">Nov</option><option value="12">Dec</option>
-            </select>
-            <select class="rtable-range-input" data-date-year-min style="width:80px;">
-              <option value="">Rok</option>
-              <% sortedYears.forEach(function(y) { %>
-                <option value="<%= y %>"><%= y %></option>
+            <select class="rtable-range-input" data-date-min style="width:140px;">
+              <option value="">Od</option>
+              <% sortedMonths.forEach(function(ym) {
+                var parts = ym.split('-');
+                var label = monthNames[parseInt(parts[1],10)-1] + ' ' + parts[0];
+              %>
+                <option value="<%= ym %>"><%= label %></option>
               <% }) %>
             </select>
             <span class="rtable-range-sep">–</span>
-            <select class="rtable-range-input" data-date-month-max style="width:80px;">
-              <option value="">Mes.</option>
-              <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
-              <option value="04">Apr</option><option value="05">Máj</option><option value="06">Jún</option>
-              <option value="07">Júl</option><option value="08">Aug</option><option value="09">Sep</option>
-              <option value="10">Okt</option><option value="11">Nov</option><option value="12">Dec</option>
-            </select>
-            <select class="rtable-range-input" data-date-year-max style="width:80px;">
-              <option value="">Rok</option>
-              <% sortedYears.forEach(function(y) { %>
-                <option value="<%= y %>"><%= y %></option>
+            <select class="rtable-range-input" data-date-max style="width:140px;">
+              <option value="">Do</option>
+              <% sortedMonths.forEach(function(ym) {
+                var parts = ym.split('-');
+                var label = monthNames[parseInt(parts[1],10)-1] + ' ' + parts[0];
+              %>
+                <option value="<%= ym %>"><%= label %></option>
               <% }) %>
             </select>
             <button class="btn btn-sm" data-date-apply>Použiť</button>
@@ -102,44 +97,24 @@
           </div>
         </div>
 
-        <!-- Score + Criteria -->
         <div class="rtable-filters" style="margin-top:8px;">
-          <span class="rtable-filter-label">Min. skóre:</span>
+          <span class="rtable-filter-label">Minimálne skóre:</span>
           <div class="rtable-range-group">
             <input type="number" class="rtable-range-input" data-score-min placeholder="napr. 8.0" min="0" max="10" step="0.1" style="width:90px;">
             <button class="btn btn-sm" data-score-apply>Použiť</button>
             <button class="btn btn-sm btn-ghost" data-score-reset>×</button>
           </div>
         </div>
-
-        <% if (scoreLabels.length > 0) { %>
-        <div class="rtable-filters" style="margin-top:8px;">
-          <span class="rtable-filter-label">Min. skóre podľa kritéria:</span>
-          <div class="rtable-range-group" style="flex-wrap:wrap; gap:6px;">
-            <% scoreLabels.forEach(function(label, idx) { %>
-              <div style="display:flex; align-items:center; gap:4px;">
-                <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle); white-space:nowrap;"><%= label %>:</span>
-                <input type="number" class="rtable-range-input rtable-crit-min" data-crit-index="<%= idx %>"
-                       placeholder="min" min="0" max="10" step="0.1" style="width:70px; font-size:12px;">
-              </div>
-            <% }) %>
-            <button class="btn btn-sm" data-crit-apply>Použiť</button>
-            <button class="btn btn-sm btn-ghost" data-crit-reset>×</button>
-          </div>
-        </div>
-        <% } %>
       </div>
 
-      <!-- ============================================================
-           TABLE
-           ============================================================ -->
+      <!-- Table -->
       <div class="rtable-wrap">
         <table class="rtable" data-sortable>
           <thead>
             <tr>
               <th class="rtable-th rtable-th--rank" data-sort-col="rank"># <span class="sort-icon">↕</span></th>
               <th class="rtable-th rtable-th--name" data-sort-col="name">Produkt <span class="sort-icon">↕</span></th>
-              <% scoreLabels.forEach(function(label) { %>
+              <% scoreLabels.forEach(label => { %>
                 <th class="rtable-th rtable-th--score" data-sort-col="<%= label %>"><%= label %> <span class="sort-icon">↕</span></th>
               <% }) %>
               <th class="rtable-th rtable-th--total" data-sort-col="score">Skóre <span class="sort-icon">↕</span></th>
@@ -148,11 +123,8 @@
             </tr>
           </thead>
           <tbody>
-            <% items.forEach(function(p) { %>
-              <tr class="rtable-row"
-                  data-brand="<%= p.brand %>"
-                  data-date="<%= p.date %>"
-                  data-price-raw="<%= p.price ? parseFloat(String(p.price).replace(/[^\d.,]/g,'').replace(',','.')) || '' : '' %>">
+            <% items.forEach(p => { %>
+              <tr class="rtable-row" data-brand="<%= p.brand %>" data-date="<%= p.date %>" data-price-raw="<%= p.price ? parseFloat(p.price.replace(/[^\d.,]/g,'').replace(',','.')) || '' : '' %>">
                 <td class="rtable-rank"><span class="rtable-rank-num"><%= String(p.rank).padStart(2, '0') %></span></td>
                 <td class="rtable-name-cell">
                   <div class="rtable-product">
@@ -162,17 +134,17 @@
                     <div>
                       <span class="rtable-brand"><%= p.brand %></span>
                       <% if (p.slug) { %>
-                        <a href="/clanok/<%= p.slug %>" class="rtable-name" style="color:inherit; text-decoration:none; font-weight:600;"><%= p.name %></a>
+                        <a href="/clanok/<%= p.slug %>" style="color:inherit; text-decoration:none; font-weight:600;"><%= p.name %></a>
                       <% } else { %>
-                        <span class="rtable-name" style="font-weight:600;"><%= p.name %></span>
+                        <span style="font-weight:600;"><%= p.name %></span>
                       <% } %>
                     </div>
                   </div>
                 </td>
-                <% p.scores.forEach(function(s, si) { %>
-                  <td class="rtable-score-cell" data-crit-index="<%= si %>">
+                <% p.scores.forEach(s => { %>
+                  <td class="rtable-score-cell">
                     <span class="rtable-score-val rtable-score--<%= s.val >= 9 ? 'great' : s.val >= 7.5 ? 'good' : s.val >= 6 ? 'mid' : 'low' %>">
-                      <%= s.text || s.val.toFixed(1) %>
+                      <%= s.val.toFixed(1) %>
                     </span>
                   </td>
                 <% }) %>

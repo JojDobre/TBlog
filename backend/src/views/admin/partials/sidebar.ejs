@@ -1,53 +1,69 @@
 <%#
-  Admin sidebar
-  ============
-  Bootstrap responsive offcanvas — desktop static, mobile drawer.
-
-  Premenné z locals:
-    currentPath  — req.path, na zvýraznenie aktívneho linku
-    user         — z res.locals (admin/editor po prihlásení)
-
-  Phase 4.1 update: pridaný link na Rubriky (predtým len Kategórie + Tagy).
+  Admin sidebar — redizajn v ByteZone design systéme
 %>
 <%
   const navGroups = [
     {
       label: 'Obsah',
       items: [
-        { href: '/admin/dashboard',  icon: 'speedometer2', label: 'Dashboard' },
-        { href: '/admin/articles',   icon: 'file-earmark-text', label: 'Články' },
-        { href: '/admin/rankings',   icon: 'trophy', label: 'Rebríčky' },
-        { href: '/admin/pages',      icon: 'file-earmark', label: 'Stránky' },
+        { href: '/admin/dashboard',  icon: 'dashboard', label: 'Dashboard' },
+        { href: '/admin/articles',   icon: 'article',   label: 'Články' },
+        { href: '/admin/rankings',   icon: 'rank',      label: 'Rebríčky' },
+        { href: '/admin/pages',      icon: 'page',      label: 'Stránky' },
       ],
     },
     {
       label: 'Komunita',
       items: [
-        { href: '/admin/comments',   icon: 'chat-dots', label: 'Komentáre' },
-        { href: '/admin/users',      icon: 'people', label: 'Používatelia' },
-        { href: '/admin/messages',   icon: 'envelope', label: 'Správy' },
+        { href: '/admin/comments',   icon: 'comment',   label: 'Komentáre' },
+        { href: '/admin/users',      icon: 'users',     label: 'Používatelia' },
+        { href: '/admin/messages',   icon: 'message',   label: 'Správy' },
       ],
     },
     {
       label: 'Štruktúra',
       items: [
-        { href: '/admin/rubrics',    icon: 'collection', label: 'Rubriky' },
-        { href: '/admin/categories', icon: 'diagram-3', label: 'Kategórie' },
-        { href: '/admin/tags',       icon: 'tags', label: 'Tagy' },
-        { href: '/admin/media',      icon: 'images', label: 'Médiá' },
-        { href: '/admin/banners',    icon: 'megaphone', label: 'Bannery a slidery' },
+        { href: '/admin/rubrics',    icon: 'rubric',    label: 'Rubriky' },
+        { href: '/admin/categories', icon: 'category',  label: 'Kategórie' },
+        { href: '/admin/tags',       icon: 'tag',       label: 'Tagy' },
+        { href: '/admin/media',      icon: 'image',     label: 'Médiá' },
+        { href: '/admin/banners',    icon: 'banner',    label: 'Bannery a slidery' },
       ],
     },
     {
       label: 'Systém',
       items: [
-        { href: '/admin/stats',      icon: 'graph-up', label: 'Štatistiky' },
-        { href: '/admin/settings',   icon: 'gear', label: 'Nastavenia' },
+        { href: '/admin/stats',      icon: 'stats',     label: 'Štatistiky' },
+        { href: '/admin/settings',   icon: 'settings',  label: 'Nastavenia' },
       ],
     },
   ];
-  // Pozn.: NEPOUŽÍVAJ rovnaký názov ako z locals — TDZ.
+
+  // Inline SVG ikony — rovnaký štýl ako icons.jsx (stroke, no fill)
+  const icons = {
+    dashboard: `<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>`,
+    dashboardAlt: `<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="4" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>`,
+    article: `<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/>`,
+    rank:    `<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>`,
+    page:    `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>`,
+    comment: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`,
+    users:   `<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a4 4 0 0 0 0-8M22 21a7 7 0 0 0-5-6.7"/>`,
+    message: `<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>`,
+    rubric:  `<path d="M3 5h18M3 12h18M3 19h18"/><circle cx="21" cy="5" r="0"/><path d="M3 5h4M3 12h4M3 19h4"/>`,
+    category:`<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>`,
+    tag:     `<path d="M20 12l-8 8a2 2 0 0 1-2.8 0L3 13.8a2 2 0 0 1 0-2.8L11 3h9v9z"/><circle cx="16" cy="8" r="1.5"/>`,
+    image:   `<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-11 11"/>`,
+    banner:  `<path d="M3 3h18v6H3zM3 15h18v6H3M3 9h18v6H3"/>`,
+    stats:   `<path d="M22 7l-8 8-4-4-7 7M16 7h6v6"/>`,
+    settings:`<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>`,
+  };
+
   const cp = (typeof currentPath === 'string') ? currentPath : '';
+
+  function renderIcon(name) {
+    const path = icons[name] || `<circle cx="12" cy="12" r="9"/>`;
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
+  }
 %>
 
 <aside
@@ -56,33 +72,52 @@
   id="bzSidebar"
   aria-labelledby="bzSidebarLabel"
 >
-  <div class="offcanvas-header d-lg-none">
-    <h5 class="offcanvas-title text-white" id="bzSidebarLabel">Bytezone</h5>
+
+  <!-- Mobile header -->
+  <div class="offcanvas-header d-lg-none" style="padding: 14px 16px; border-bottom: 1px solid oklch(0.22 0.008 240);">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="bz-sidebar-logo">BZ</div>
+      <span class="bz-sidebar-brand-name" id="bzSidebarLabel">ByteZone</span>
+    </div>
     <button
       type="button"
-      class="btn-close btn-close-white"
+      class="bz-sidebar-close"
       data-bs-dismiss="offcanvas"
       data-bs-target="#bzSidebar"
       aria-label="Zatvoriť"
-    ></button>
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18"/>
+      </svg>
+    </button>
   </div>
 
-  <div class="bz-sidebar-brand d-none d-lg-flex">
-    <i class="bi bi-hdd-stack me-2"></i>
-    <span>Bytezone</span>
-  </div>
+  <!-- Desktop brand -->
+  <a href="/admin/dashboard" class="bz-sidebar-brand d-none d-lg-flex">
+    <div class="bz-sidebar-logo">BZ</div>
+    <div class="bz-sidebar-brand-text">
+      <span class="bz-sidebar-brand-name">ByteZone</span>
+      <span class="bz-sidebar-brand-sub">Admin · Redakcia</span>
+    </div>
+  </a>
 
-  <nav class="bz-sidebar-nav">
+  <!-- Nav -->
+  <nav class="bz-sidebar-nav" aria-label="Hlavná navigácia">
     <% navGroups.forEach(group => { %>
       <div class="bz-sidebar-group">
-        <div class="bz-sidebar-group-label"><%= group.label %></div>
-        <ul class="nav flex-column">
+        <span class="bz-sidebar-group-label"><%= group.label %></span>
+        <ul>
           <% group.items.forEach(item => {
               const active = cp === item.href || cp.startsWith(item.href + '/');
           %>
-            <li class="nav-item">
-              <a class="nav-link <%= active ? 'is-active' : '' %>" href="<%= item.href %>">
-                <i class="bi bi-<%= item.icon %> me-2"></i><span><%= item.label %></span>
+            <li>
+              <a
+                class="nav-link <%= active ? 'is-active' : '' %>"
+                href="<%= item.href %>"
+                <%- active ? 'aria-current="page"' : '' %>
+              >
+                <%- renderIcon(item.icon) %>
+                <span><%= item.label %></span>
               </a>
             </li>
           <% }) %>
@@ -90,4 +125,26 @@
       </div>
     <% }) %>
   </nav>
+
+  <!-- Footer — používateľ -->
+  <% if (typeof user !== 'undefined' && user) {
+    const initials = (user.nickname || user.email || '?')
+      .split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+    const displayName = user.nickname || user.email || 'Admin';
+    const role = user.role || 'editor';
+  %>
+  <div class="bz-sidebar-footer">
+    <div class="bz-sidebar-footer-avatar"><%= initials %></div>
+    <div class="bz-sidebar-footer-info">
+      <div class="bz-sidebar-footer-name"><%= displayName %></div>
+      <div class="bz-sidebar-footer-role"><%= role %></div>
+    </div>
+    <a href="/admin/logout" class="bz-sidebar-footer-link" title="Odhlásiť sa">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+    </a>
+  </div>
+  <% } %>
+
 </aside>

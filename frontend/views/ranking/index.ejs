@@ -28,12 +28,16 @@
           <p class="lead" style="max-width:600px;">Každý produkt testujeme minimálne 14 dní v reálnom živote. Žiadne press správy, žiadne sponzorované pozície.</p>
           <div class="rank-index-hero-stats">
             <div class="rank-index-stat">
-              <span class="rank-index-stat-num">47</span>
+              <span class="rank-index-stat-num"><%= stats.products %></span>
               <span class="rank-index-stat-label">otestovaných produktov</span>
             </div>
             <div class="rank-index-stat">
-              <span class="rank-index-stat-num">7</span>
+              <span class="rank-index-stat-num"><%= stats.rankings %></span>
               <span class="rank-index-stat-label">hodnotených kategórií</span>
+            </div>
+            <div class="rank-index-stat">
+              <span class="rank-index-stat-num"><%= stats.criteria %></span>
+              <span class="rank-index-stat-label">hodnotených kritérií</span>
             </div>
             <div class="rank-index-stat">
               <span class="rank-index-stat-num">14</span>
@@ -84,7 +88,7 @@
                   </span>
                   <div class="rank-lite-info">
                     <span class="rank-lite-brand"><%= p.brand %></span>
-                    <h3 class="rank-lite-name"><%= p.name %></h3>
+                    <h3 class="rank-lite-name" style="margin: 2px 0 0;"><%= p.name %></h3>
                   </div>
                   <div class="rank-lite-score-wrap">
                     <span class="rank-lite-score"><%= p.score.toFixed(1) %></span>

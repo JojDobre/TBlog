@@ -63,7 +63,7 @@
                 <% p.scores.forEach(s => { %>
                   <div class="podium-score-item">
                     <span class="podium-score-item-label"><%= s.label %></span>
-                    <span class="podium-score-item-val"><%= s.val.toFixed(1) %></span>
+                    <span class="podium-score-item-val"><%= s.text || s.val.toFixed(1) %></span>
                   </div>
                 <% }) %>
               </div>
@@ -95,7 +95,7 @@
                 <% p.scores.forEach(s => { %>
                   <span class="ritem-score-chip">
                     <span class="ritem-score-chip-label"><%= s.label %></span>
-                    <span class="ritem-score-chip-val"><%= s.val.toFixed(1) %></span>
+                    <span class="ritem-score-chip-val"><%= s.text || s.val.toFixed(1) %></span>
                   </span>
                 <% }) %>
               </div>

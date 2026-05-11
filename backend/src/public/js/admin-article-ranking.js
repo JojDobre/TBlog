@@ -22,7 +22,11 @@
 
   // State — pole ranking entries
   let entries = [];
-  try { entries = JSON.parse(jsonInput.value) || []; } catch (e) { entries = []; }
+  try {
+    entries = JSON.parse(jsonInput.value) || [];
+  } catch (e) {
+    entries = [];
+  }
 
   // Cache
   const criteriaCache = {};
@@ -48,9 +52,10 @@
     renderAll();
 
     // Event listeners
-    if (addSelect) addSelect.addEventListener('change', () => {
-      addBtn.disabled = !addSelect.value;
-    });
+    if (addSelect)
+      addSelect.addEventListener('change', () => {
+        addBtn.disabled = !addSelect.value;
+      });
     if (addBtn) addBtn.addEventListener('click', addEntry);
   }
 
@@ -65,7 +70,7 @@
   }
 
   function renderEntry(entry, idx) {
-    const ranking = allRankings.find(r => String(r.id) === String(entry.ranking_id));
+    const ranking = allRankings.find((r) => String(r.id) === String(entry.ranking_id));
     const name = entry.ranking_name || (ranking ? ranking.name : 'Rebríček #' + entry.ranking_id);
     const criteria = criteriaCache[entry.ranking_id] || [];
     const isNew = !entry.item_id;
@@ -89,13 +94,13 @@
     // Kritériá
     if (criteria.length > 0) {
       html += '<div class="row g-1">';
-      criteria.forEach(c => {
+      criteria.forEach((c) => {
         const isNumeric = ['score_1_10', 'decimal', 'integer', 'price'].includes(c.field_type);
         const type = isNumeric ? 'number' : 'text';
         const val = entry.values && entry.values[c.id] != null ? entry.values[c.id] : '';
         const minMax = c.field_type === 'score_1_10' ? 'min="1" max="10" step="0.1"' : '';
-        const step = (c.field_type === 'decimal' || c.field_type === 'price') ? 'step="0.01"' : '';
-        const ph = c.field_type === 'score_1_10' ? '1–10' : (c.unit || '');
+        const step = c.field_type === 'decimal' || c.field_type === 'price' ? 'step="0.01"' : '';
+        const ph = c.field_type === 'score_1_10' ? '1–10' : c.unit || '';
 
         html += `
           <div class="col-6 mb-1">
@@ -114,8 +119,25 @@
     }
 
     // Override score
+    // Brand + Custom name + Override score
+    const brand = entry.custom_brand || '';
+    const cname = entry.custom_name || '';
     const ov = entry.override_score != null ? entry.override_score : '';
     html += `
+      <div class="row g-2 mt-2">
+        <div class="col-6">
+          <label class="form-label mb-0" style="font-size:11px; color:#6b7280;">Značka</label>
+          <input type="text" class="form-control form-control-sm rw-brand-input"
+                 data-idx="${idx}" value="${esc(brand)}"
+                 placeholder="napr. Samsung" maxlength="100" style="font-size:12px">
+        </div>
+        <div class="col-6">
+          <label class="form-label mb-0" style="font-size:11px; color:#6b7280;">Vlastný názov <span class="text-muted">(voliteľné)</span></label>
+          <input type="text" class="form-control form-control-sm rw-cname-input"
+                 data-idx="${idx}" value="${esc(cname)}"
+                 placeholder="prepíše názov článku" maxlength="200" style="font-size:12px">
+        </div>
+      </div>
       <div class="mt-2">
         <label class="form-label small mb-1 text-muted">Celkové skóre (override)</label>
         <input type="number" class="form-control form-control-sm rw-override-input"
@@ -133,13 +155,32 @@
       renderAll();
     });
 
+    // Event: brand change
+    const brandInput = div.querySelector('.rw-brand-input');
+    if (brandInput) {
+      brandInput.addEventListener('change', () => {
+        entries[idx].custom_brand = brandInput.value.trim() || null;
+        syncJson();
+      });
+    }
+
+    // Event: custom name change
+    const cnameInput = div.querySelector('.rw-cname-input');
+    if (cnameInput) {
+      cnameInput.addEventListener('change', () => {
+        entries[idx].custom_name = cnameInput.value.trim() || null;
+        syncJson();
+      });
+    }
+
     // Events: criterion value change
-    div.querySelectorAll('.rw-crit-input').forEach(input => {
+    div.querySelectorAll('.rw-crit-input').forEach((input) => {
       input.addEventListener('change', () => {
         const i = Number(input.dataset.idx);
         const critId = input.dataset.critId;
         if (!entries[i].values) entries[i].values = {};
-        entries[i].values[critId] = input.value !== '' ? parseFloat(input.value) || input.value : null;
+        entries[i].values[critId] =
+          input.value !== '' ? parseFloat(input.value) || input.value : null;
         syncJson();
       });
     });
@@ -156,9 +197,9 @@
 
   function populateSelect() {
     if (!addSelect) return;
-    const usedIds = new Set(entries.map(e => String(e.ranking_id)));
+    const usedIds = new Set(entries.map((e) => String(e.ranking_id)));
     addSelect.innerHTML = '<option value="">— Vyber rebríček —</option>';
-    allRankings.forEach(r => {
+    allRankings.forEach((r) => {
       if (usedIds.has(String(r.id))) return;
       const opt = document.createElement('option');
       opt.value = r.id;
@@ -181,7 +222,7 @@
   async function addEntry() {
     const rankingId = addSelect.value;
     if (!rankingId) return;
-    const ranking = allRankings.find(r => String(r.id) === rankingId);
+    const ranking = allRankings.find((r) => String(r.id) === rankingId);
     if (!ranking) return;
 
     await getCriteria(rankingId);

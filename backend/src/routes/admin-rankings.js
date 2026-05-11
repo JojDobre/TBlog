@@ -290,8 +290,12 @@ router.get('/:id/edit', async (req, res, next) => {
       if (item.override_score !== null && item.override_score !== undefined) {
         item.computed_score = Number(item.override_score);
       } else {
+        // Načítaj IDs kritérií, ktoré nie sú numerické (date, text) a price
+        const excludeCritIds = new Set(
+          criteria.filter((c) => ['date', 'text', 'price'].includes(c.field_type)).map((c) => c.id)
+        );
         const numericVals = item.values
-          .filter((v) => v.value_decimal !== null)
+          .filter((v) => v.value_decimal !== null && !excludeCritIds.has(Number(v.criterion_id)))
           .map((v) => Number(v.value_decimal));
         item.computed_score =
           numericVals.length > 0
@@ -553,5 +557,7 @@ router.post('/:id/criteria/reorder', async (req, res, next) => {
     next(err);
   }
 });
+
+require('./admin-ranking-items')(router);
 
 module.exports = router;

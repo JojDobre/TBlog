@@ -100,7 +100,13 @@ async function saveArticleRankings(trx, articleId, body) {
 
     if (itemId && existingMap.has(String(rankingId))) {
       // UPDATE existujúceho
-      await trx('ranking_items').where('id', itemId).update({ override_score: overrideScore });
+      await trx('ranking_items')
+        .where('id', itemId)
+        .update({
+          override_score: overrideScore,
+          custom_brand: entry.custom_brand || null,
+          custom_name: entry.custom_name || null,
+        });
     } else {
       // INSERT nového (skontroluj duplicitu)
       const dup = await trx('ranking_items')
@@ -110,7 +116,13 @@ async function saveArticleRankings(trx, articleId, body) {
 
       if (dup) {
         itemId = dup.id;
-        await trx('ranking_items').where('id', itemId).update({ override_score: overrideScore });
+        await trx('ranking_items')
+          .where('id', itemId)
+          .update({
+            override_score: overrideScore,
+            custom_brand: entry.custom_brand || null,
+            custom_name: entry.custom_name || null,
+          });
       } else {
         const maxPos = await trx('ranking_items')
           .where('ranking_id', rankingId)
@@ -121,6 +133,8 @@ async function saveArticleRankings(trx, articleId, body) {
         [itemId] = await trx('ranking_items').insert({
           ranking_id: rankingId,
           article_id: articleId,
+          custom_brand: entry.custom_brand || null,
+          custom_name: entry.custom_name || null,
           override_score: overrideScore,
           manual_position: nextPos,
           added_at: new Date(),

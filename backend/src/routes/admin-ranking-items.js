@@ -117,10 +117,13 @@ module.exports = function mountItemRoutes(router) {
 
       // Update basic fields
       const updates = {};
-      if (req.body.custom_name !== undefined) updates.custom_name = String(req.body.custom_name).trim() || null;
-      if (req.body.custom_brand !== undefined) updates.custom_brand = String(req.body.custom_brand).trim() || null;
+      if (req.body.custom_name !== undefined)
+        updates.custom_name = String(req.body.custom_name).trim() || null;
+      if (req.body.custom_brand !== undefined)
+        updates.custom_brand = String(req.body.custom_brand).trim() || null;
       if (req.body.override_score !== undefined) {
-        updates.override_score = req.body.override_score !== '' ? parseFloat(req.body.override_score) : null;
+        updates.override_score =
+          req.body.override_score !== '' ? parseFloat(req.body.override_score) : null;
       }
 
       if (Object.keys(updates).length > 0) {
@@ -134,8 +137,16 @@ module.exports = function mountItemRoutes(router) {
         if (req.body[key] === undefined) continue;
 
         const isNumeric = ['score_1_10', 'decimal', 'integer', 'price'].includes(c.field_type);
-        const valDecimal = isNumeric ? (req.body[key] !== '' ? parseFloat(req.body[key]) : null) : null;
-        const valText = !isNumeric ? (req.body[key] !== '' ? String(req.body[key]).trim() : null) : null;
+        const valDecimal = isNumeric
+          ? req.body[key] !== ''
+            ? parseFloat(req.body[key])
+            : null
+          : null;
+        const valText = !isNumeric
+          ? req.body[key] !== ''
+            ? String(req.body[key]).trim()
+            : null
+          : null;
 
         const existing = await db('ranking_item_values')
           .where('ranking_item_id', iid)
@@ -143,10 +154,13 @@ module.exports = function mountItemRoutes(router) {
           .first();
 
         if (existing) {
-          await db('ranking_item_values').where('id', existing.id).update({
-            value_decimal: valDecimal,
-            value_text: valText,
-          });
+          await db('ranking_item_values')
+            .where('ranking_item_id', iid)
+            .where('criterion_id', c.id)
+            .update({
+              value_decimal: valDecimal,
+              value_text: valText,
+            });
         } else if (valDecimal !== null || valText !== null) {
           await db('ranking_item_values').insert({
             ranking_item_id: iid,

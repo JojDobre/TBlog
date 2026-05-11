@@ -1,11 +1,11 @@
 /**
- * Public ranking routes — Phase 9 (updated)
+ * Public ranking routes — Phase 9
  *
- * Zmeny oproti pôvodnej verzii:
- * - Cover obrázky z článkov (cover_thumb, cover_full)
- * - Cena extrahovaná z kritéria typu 'price'
- * - Reálne štatistiky v hero sekcii (/rebricky)
- * - Sort direction fix
+ * Nahradí mock data v index.js reálnymi DB queries.
+ *
+ * GET /rebricky              — zoznam aktívnych rebríčkov
+ * GET /rebricky/:slug        — detail rebríčka (karty)
+ * GET /rebricky/:slug/tabulka — tabuľkový pohľad
  */
 
 'use strict';
@@ -20,6 +20,10 @@ const router = express.Router();
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Načítaj položky rebríčka s hodnotami a článkami.
+ * Vracia pole zoradené podľa admin_override / computed_score.
+ */
 async function loadRankingItems(rankingId, ranking) {
   const criteria = await db('ranking_criteria')
     .where('ranking_id', rankingId)
@@ -40,6 +44,7 @@ async function loadRankingItems(rankingId, ranking) {
       'media.thumbnail_path as cover_thumb'
     );
 
+  // Načítaj hodnoty
   const itemIds = items.map((i) => i.id);
   const valuesMap = new Map();
   if (itemIds.length > 0) {
@@ -50,10 +55,7 @@ async function loadRankingItems(rankingId, ranking) {
     }
   }
 
-  // Nájdi price kritérium (ak existuje)
-  const priceCriterion = criteria.find((c) => c.field_type === 'price');
-  const dateCriterion = criteria.find((c) => c.field_type === 'date');
-
+  // Spracuj každý item
   items.forEach((item) => {
     item.values = valuesMap.get(item.id) || [];
     item.name = item.article_id ? item.article_title : item.custom_name;
@@ -61,42 +63,12 @@ async function loadRankingItems(rankingId, ranking) {
     item.slug = item.article_id ? item.article_slug : null;
     item.type = item.article_id ? item.article_type : 'product';
 
-    // Cover obrázok
-    const imgPath = item.cover_thumb || item.cover_full || null;
-    item.image = imgPath ? '/uploads/' + imgPath : null;
-
-    // Cena z price kritéria
-    if (priceCriterion) {
-      const priceVal = item.values.find((v) => Number(v.criterion_id) === priceCriterion.id);
-      if (priceVal && priceVal.value_decimal !== null) {
-        item.price = Number(priceVal.value_decimal).toLocaleString('sk-SK') + ' €';
-      } else if (priceVal && priceVal.value_text) {
-        item.price = priceVal.value_text;
-      } else {
-        item.price = '';
-      }
-    } else {
-      item.price = '';
-    }
-    if (dateCriterion) {
-      const dateVal = item.values.find((v) => Number(v.criterion_id) === dateCriterion.id);
-      item.date = dateVal && dateVal.value_text ? dateVal.value_text : '';
-    } else {
-      item.date = '';
-    }
-
     // Skóre
     if (item.override_score !== null && item.override_score !== undefined) {
       item.score = Number(item.override_score);
     } else {
-      // Priemer z numerických kritérií (okrem price)
       const numericVals = item.values
-        .filter((v) => {
-          if (v.value_decimal === null) return false;
-          // Vynechaj price kritérium z priemeru
-          if (priceCriterion && Number(v.criterion_id) === priceCriterion.id) return false;
-          return true;
-        })
+        .filter((v) => v.value_decimal !== null)
         .map((v) => Number(v.value_decimal));
       item.score =
         numericVals.length > 0
@@ -104,18 +76,16 @@ async function loadRankingItems(rankingId, ranking) {
           : null;
     }
 
-    // Scores array pre frontend (label + val), vynechaj price
-    item.scores = criteria
-      .filter((c) => c.field_type !== 'price' && c.field_type !== 'date')
-      .map((c) => {
-        const val = item.values.find((v) => Number(v.criterion_id) === c.id);
-        return {
-          label: c.name,
-          val: val && val.value_decimal !== null ? Number(val.value_decimal) : 0,
-          text: val && val.value_text ? val.value_text : null,
-          unit: c.unit,
-        };
-      });
+    // Scores array pre frontend (label + val)
+    item.scores = criteria.map((c) => {
+      const val = item.values.find((v) => Number(v.criterion_id) === c.id);
+      return {
+        label: c.name,
+        val: val && val.value_decimal !== null ? Number(val.value_decimal) : 0,
+        text: val && val.value_text ? val.value_text : null,
+        unit: c.unit,
+      };
+    });
   });
 
   // Zoraď
@@ -126,6 +96,7 @@ async function loadRankingItems(rankingId, ranking) {
     items.sort((a, b) => ((b.score || 0) - (a.score || 0)) * dir);
   }
 
+  // Pridaj rank
   items.forEach((item, idx) => {
     item.rank = idx + 1;
   });
@@ -133,6 +104,9 @@ async function loadRankingItems(rankingId, ranking) {
   return { items, criteria };
 }
 
+/**
+ * Formátuj dátum po slovensky.
+ */
 function formatDateSk(date) {
   if (!date) return '';
   const d = new Date(date);
@@ -160,22 +134,13 @@ router.get('/rebricky', async (req, res, next) => {
   try {
     const rankings = await db('rankings').where('status', 'active').orderBy('created_at', 'desc');
 
-    // Reálne štatistiky
-    const totalProducts = await db('ranking_items').countDistinct({ c: 'id' }).first();
-    const totalRankings = rankings.length;
-    const totalCriteria = await db('ranking_criteria').countDistinct({ c: 'id' }).first();
-
-    const stats = {
-      products: Number(totalProducts?.c || 0),
-      rankings: totalRankings,
-      criteria: Number(totalCriteria?.c || 0),
-    };
-
+    // Pre každý rebríček načítaj top 3
     const rankingGroups = [];
     for (const r of rankings) {
       const { items, criteria } = await loadRankingItems(r.id, r);
       const top3 = items.slice(0, 3);
 
+      // Kategóriu odvodíme z prvého článku (ak existuje)
       let category = '';
       if (items.length > 0 && items[0].article_id) {
         const catRow = await db('article_categories')
@@ -198,9 +163,8 @@ router.get('/rebricky', async (req, res, next) => {
           name: i.name,
           brand: i.brand,
           score: i.score,
-          price: i.price,
+          price: '',
           slug: i.slug,
-          image: i.image,
         })),
         itemCount: items.length,
         criteriaCount: criteria.length,
@@ -211,7 +175,6 @@ router.get('/rebricky', async (req, res, next) => {
       title: 'Rebríčky',
       currentPath: '/rebricky',
       rankingGroups,
-      stats,
     });
   } catch (err) {
     log.error('ranking list failed', { err: err.message });
@@ -232,6 +195,7 @@ router.get('/rebricky/:slug', async (req, res, next) => {
 
     const { items, criteria } = await loadRankingItems(ranking.id, ranking);
 
+    // Kategóriu odvodíme z prvého článku
     let category = '';
     if (items.length > 0 && items[0].article_id) {
       const catRow = await db('article_categories')
@@ -243,6 +207,7 @@ router.get('/rebricky/:slug', async (req, res, next) => {
       if (catRow) category = catRow.name;
     }
 
+    // Adaptuj na štruktúru, ktorú template očakáva
     const templateRanking = {
       slug: ranking.slug,
       title: ranking.name,
@@ -284,9 +249,7 @@ router.get('/rebricky/:slug/tabulka', async (req, res, next) => {
       updated: 'Aktualizované ' + formatDateSk(ranking.updated_at),
     };
 
-    const scoreLabels = criteria
-      .filter((c) => c.field_type !== 'price' && c.field_type !== 'date')
-      .map((c) => c.name);
+    const scoreLabels = criteria.map((c) => c.name);
 
     res.render('ranking/table', {
       title: ranking.name + ' — Tabuľka',
