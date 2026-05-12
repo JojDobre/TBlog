@@ -53,9 +53,7 @@ router.get('/', async (req, res, next) => {
     const items = rows.map((r) => ({
       ...r,
       is_read: !!r.is_read,
-      url: r.article_slug
-        ? `/${r.article_type === 'review' ? 'recenzia' : 'clanok'}/${r.article_slug}`
-        : null,
+      url: r.article_slug ? `/clanok/${r.article_slug}` : null,
     }));
 
     res.json({ items });
@@ -101,9 +99,7 @@ router.post('/:id/read', async (req, res, next) => {
     const id = Number(req.params.id);
     if (!id) return res.status(400).json({ error: 'Neplatné ID.' });
 
-    await db('notifications')
-      .where({ id, user_id: req.user.id })
-      .update({ is_read: true });
+    await db('notifications').where({ id, user_id: req.user.id }).update({ is_read: true });
     res.json({ ok: true });
   } catch (err) {
     next(err);
