@@ -1,6 +1,6 @@
 <!-- Comments section — reusable partial
      Vyžaduje: article.id, user (optional) -->
-<section class="article-comments" data-comments-section data-article-id="<%= article.id %>">
+<section class="article-comments" data-comments-section data-article-id="<%= article.id %>" data-csrf="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" data-user-id="<%= (typeof user !== 'undefined' && user) ? user.id : '' %>">
   <div class="container">
     <div class="comments-header">
       <h2 class="comments-title">
@@ -14,7 +14,11 @@
     <div class="comment-form-wrap">
       <% if (typeof user !== 'undefined' && user) { %>
         <div class="comment-form" data-comment-form>
-          <span class="avatar comment-form-avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+          <% if (user.avatar_path) { %>
+            <span class="avatar comment-form-avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+          <% } else { %>
+            <span class="avatar comment-form-avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+          <% } %>
           <div class="comment-form-body">
             <textarea class="comment-textarea" placeholder="Napíš komentár..." rows="3" maxlength="2000"></textarea>
             <div class="comment-form-footer">

@@ -3,6 +3,13 @@
    Založené na prototype v Claude Design.
    ========================================================================== */
 
+@font-face {
+  font-family: 'Proxima Nova';
+  src: url('../fonts/ProximaBlack.ttf') format('typeface');
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* --- Tokens ------------------------------------------------------------ */
 :root {
   --s-1: 4px;
@@ -28,6 +35,7 @@
   --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter Tight', 'Inter', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-logo: 'Proxima Nova', sans-serif;
 
   --accent: oklch(0.72 0.17 155);
   --accent-hover: oklch(0.78 0.17 155);
@@ -228,10 +236,14 @@ img {
   letter-spacing: -0.04em;
 }
 .bz-brand-name {
-  font-family: var(--font-display);
-  font-weight: 700;
+  font-family: var(--font-logo);
+  font-weight: 800;
   font-size: 17px;
   letter-spacing: -0.02em;
+  color: #f13223;
+  font-weight: 700;
+  color: #b22222;
+  text-transform: uppercase;
 }
 .topnav-pill {
   display: flex;
@@ -374,7 +386,10 @@ img {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);
-  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s;
 }
 .nav-dropdown-menu.is-open {
   opacity: 1;
@@ -395,7 +410,9 @@ img {
   border: none;
   cursor: pointer;
   text-decoration: none;
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
   text-align: left;
 }
 .nav-dropdown-item:hover {
@@ -1402,7 +1419,6 @@ img {
   text-decoration: none;
   color: inherit;
 }
-
 .minimal-review .ph {
   position: relative;
   overflow: hidden;
@@ -1454,17 +1470,6 @@ img {
   color: oklch(1 0 0);
   line-height: 1;
 }
-.minimal-review-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: var(--s-4);
-  gap: 4px;
-  background: linear-gradient(to top, oklch(0 0 0/0.85) 0%, oklch(0 0 0/0) 60%);
-}
-
 .minimal-review-title {
   font-family: var(--font-display);
   font-size: 15px;
@@ -1472,10 +1477,8 @@ img {
   letter-spacing: -0.015em;
   line-height: 1.3;
   margin: 0;
-  color: oklch(1 0 0);
-  padding: 0;
+  padding: 0 var(--s-3) var(--s-3);
 }
-
 @media (max-width: 1100px) {
   .grid-4 {
     grid-template-columns: repeat(3, 1fr);
@@ -5529,4 +5532,331 @@ img {
   padding: 40px;
   border-radius: var(--r-2xl);
   margin: var(--s-12) 0;
+}
+
+/* =======================================================================
+   COMMENTS — rendered items  (Phase 7)
+   ======================================================================= */
+
+/* Single comment */
+.cmt-item {
+  display: flex;
+  gap: var(--s-3);
+  padding: var(--s-4) 0;
+}
+.cmt-item + .cmt-item {
+  border-top: 1px solid var(--border);
+}
+.cmt-avatar {
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.cmt-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.cmt-body {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Header */
+.cmt-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.cmt-author {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cmt-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-subtle);
+  letter-spacing: 0.04em;
+}
+.cmt-edited {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  background: var(--border);
+  border-radius: var(--r-sm);
+}
+
+/* Content */
+.cmt-content {
+  margin: 0 0 var(--s-2);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cmt-content--deleted {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Actions */
+.cmt-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+  flex-wrap: wrap;
+}
+.cmt-action-btn {
+  background: none;
+  border: none;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-subtle);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  letter-spacing: 0.02em;
+}
+.cmt-action-btn:hover {
+  background: var(--bg-inset);
+  color: var(--text);
+}
+.cmt-action-danger:hover {
+  color: var(--red, #ef4444);
+}
+.cmt-action-save {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Like button */
+.cmt-like-btn {
+  gap: 3px;
+}
+.cmt-like-btn.cmt-liked {
+  color: var(--red, #ef4444);
+}
+
+/* Replies */
+.cmt-replies {
+  margin-left: 48px;
+  border-left: 2px solid var(--border);
+  padding-left: var(--s-4);
+}
+.cmt-reply .cmt-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+/* Reply mode hint */
+.cmt-reply-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: var(--s-2) var(--s-3);
+  background: var(--bg-inset);
+  border-radius: var(--r-sm);
+  margin-bottom: var(--s-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cmt-cancel-reply {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-subtle);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.cmt-cancel-reply:hover {
+  color: var(--text);
+}
+
+/* Edit textarea */
+.cmt-edit-textarea {
+  min-height: 80px;
+  font-size: 14px;
+}
+
+/* Pagination */
+.cmt-pagination {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  padding: var(--s-6) 0 var(--s-2);
+}
+.cmt-page-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.cmt-page-btn:hover {
+  background: var(--bg-inset);
+  color: var(--text);
+}
+.cmt-page-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .cmt-replies {
+    margin-left: 24px;
+    padding-left: var(--s-3);
+  }
+}
+
+/* =======================================================================
+   NOTIFICATIONS BELL + DROPDOWN  (Phase 7 — notifikácie)
+   ======================================================================= */
+
+.notif-wrap {
+  position: relative;
+}
+.notif-bell:hover {
+  color: var(--text);
+}
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background: var(--red, #ef4444);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+  font-family: var(--font-mono);
+}
+
+/* Dropdown */
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  max-height: 440px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  z-index: 1000;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+}
+.notif-dropdown.notif-open {
+  display: flex;
+}
+
+.notif-dropdown-header {
+  padding: var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.notif-dropdown-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Single notification item */
+.notif-item {
+  display: flex;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.notif-item:last-child {
+  border-bottom: none;
+}
+.notif-item:hover {
+  background: var(--bg-inset);
+}
+.notif-unread {
+  background: rgba(59, 130, 246, 0.06);
+}
+.notif-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-inset);
+  display: grid;
+  place-items: center;
+  color: var(--text-subtle);
+  margin-top: 2px;
+}
+.notif-unread .notif-icon {
+  background: var(--accent);
+  color: #fff;
+}
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+.notif-message {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+}
+.notif-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-subtle);
+  letter-spacing: 0.04em;
+}
+
+/* Empty / loading states */
+.notif-empty,
+.notif-loading {
+  text-align: center;
+  padding: var(--s-8) var(--s-4);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .notif-dropdown {
+    width: calc(100vw - 32px);
+    right: -60px;
+  }
 }

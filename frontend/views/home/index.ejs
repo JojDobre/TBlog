@@ -251,7 +251,7 @@
            5. "RECENZIE V SKRATKE" — vlep ZA sekciu "Recenzie grid"
            ============================================================ -->
 
-      <!-- Minimal reviews -->
+<!-- Minimal reviews -->
       <% if (reviews.length > 0) { %>
         <div class="sec-head">
           <div class="sec-head-l">
@@ -271,16 +271,17 @@
                 <% } else { %>
                   <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
                 <% } %>
-                <div class="minimal-review-overlay">
+                <div class="minimal-review-score">
                   <span class="minimal-review-label">Skóre</span>
                   <span class="minimal-review-num"><%= a.viewsFormatted %></span>
-                  <h4 class="minimal-review-title"><%= a.title %></h4>
                 </div>
               </div>
+              <h4 class="minimal-review-title"><%= a.title %></h4>
             </a>
           <% }) %>
         </div>
       <% } %>
+
 
 
 

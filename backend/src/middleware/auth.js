@@ -26,7 +26,11 @@ async function attachUser(req, res, next) {
   }
 
   try {
-    const user = await db('users').where('id', req.session.userId).first();
+    const user = await db('users')
+      .leftJoin('media', 'users.avatar_media_id', 'media.id')
+      .where('users.id', req.session.userId)
+      .select('users.*', 'media.thumbnail_path as avatar_path')
+      .first();
 
     if (!user || user.is_banned) {
       req.session.destroy(() => {});
@@ -40,6 +44,7 @@ async function attachUser(req, res, next) {
       nickname: user.nickname,
       email: user.email,
       avatar_media_id: user.avatar_media_id,
+      avatar_path: user.avatar_path || null,
     };
 
     next();

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: title }) %>
+</head>
+<body class="bz-admin-body">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="container-fluid py-4">
+
+        <%# Flash %>
+        <% if (flash.deleted) { %>
+          <div class="alert alert-success alert-dismissible bz-flash">
+            Komentár bol zmazaný. <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+        <% if (flash.restored) { %>
+          <div class="alert alert-success alert-dismissible bz-flash">
+            Komentár bol obnovený. <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+        <% if (flash.resolved) { %>
+          <div class="alert alert-success alert-dismissible bz-flash">
+            Nahlásenie bolo vyriešené. <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+        <% if (flash.err) { %>
+          <div class="alert alert-danger alert-dismissible bz-flash">
+            <%= flash.err %> <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+
+        <%# Tabs %>
+        <ul class="nav nav-tabs mb-3">
+          <% tabs.forEach(t => { %>
+            <li class="nav-item">
+              <a class="nav-link <%= activeTab === t.key ? 'active' : '' %>"
+                 href="/admin/comments?tab=<%= t.key %>">
+                <%= t.label %>
+                <span class="badge bg-secondary ms-1"><%= counts[t.key] || 0 %></span>
+              </a>
+            </li>
+          <% }) %>
+        </ul>
+
+        <%# Search %>
+        <form method="GET" action="/admin/comments" class="row g-2 mb-3">
+          <input type="hidden" name="tab" value="<%= activeTab %>">
+          <div class="col-auto">
+            <input type="text" name="q" class="form-control form-control-sm"
+                   placeholder="Hľadať v komentároch..." value="<%= query.q || '' %>"
+                   style="min-width:250px;">
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-sm btn-primary" type="submit">
+              <i class="bi bi-search me-1"></i>Hľadať
+            </button>
+            <% if (query.q || query.article) { %>
+              <a href="/admin/comments?tab=<%= activeTab %>" class="btn btn-sm btn-outline-secondary">Zrušiť</a>
+            <% } %>
+          </div>
+          <% if (query.article) { %>
+            <div class="col-auto">
+              <input type="hidden" name="article" value="<%= query.article %>">
+              <span class="badge bg-info text-dark">
+                Filtrované podľa článku #<%= query.article %>
+                <a href="/admin/comments?tab=<%= activeTab %>" class="text-dark ms-1">&times;</a>
+              </span>
+            </div>
+          <% } %>
+        </form>
+
+        <%# Table %>
+        <% if (comments.length === 0) { %>
+          <div class="text-center text-muted py-5">
+            <i class="bi bi-chat-dots display-4"></i>
+            <p class="mt-3">Žiadne komentáre.</p>
+          </div>
+        <% } else { %>
+          <div class="card">
+            <div class="table-responsive">
+              <table class="table table-sm table-hover align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th style="width:40px;">#</th>
+                    <th>Komentár</th>
+                    <th>Autor</th>
+                    <th>Článok</th>
+                    <th style="width:100px;">Dátum</th>
+                    <th style="width:60px;">Report</th>
+                    <th style="width:160px;">Akcie</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% comments.forEach(c => { %>
+                    <tr class="<%= c.is_deleted_by_admin ? 'table-danger' : '' %> <%= c.reports_count > 0 ? 'table-warning' : '' %>">
+                      <td class="text-muted"><%= c.id %></td>
+                      <td>
+                        <a href="/admin/comments/<%= c.id %>" class="text-decoration-none">
+                          <% if (c.is_deleted_by_admin) { %>
+                            <span class="text-muted fst-italic">[zmazané adminom]</span>
+                          <% } else { %>
+                            <%= c.content_short %>
+                          <% } %>
+                        </a>
+                        <% if (c.parent_id) { %>
+                          <span class="badge bg-light text-muted ms-1">odpoveď</span>
+                        <% } %>
+                      </td>
+                      <td><small><%= c.nickname || '[zmazaný]' %></small></td>
+                      <td>
+                        <% if (c.article_title) { %>
+                          <a href="/admin/comments?article=<%= c.article_id %>" class="text-decoration-none">
+                            <small><%= c.article_title.length > 40 ? c.article_title.slice(0, 40) + '…' : c.article_title %></small>
+                          </a>
+                        <% } else { %>
+                          <small class="text-muted">[zmazaný]</small>
+                        <% } %>
+                      </td>
+                      <td>
+                        <small class="text-muted">
+                          <%= new Date(c.created_at).toLocaleDateString('sk-SK') %>
+                        </small>
+                      </td>
+                      <td class="text-center">
+                        <% if (c.reports_count > 0) { %>
+                          <span class="badge bg-danger"><%= c.reports_count %></span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <a href="/admin/comments/<%= c.id %>" class="btn btn-outline-secondary" title="Detail">
+                            <i class="bi bi-eye"></i>
+                          </a>
+                          <% if (c.article_slug) { %>
+                            <a href="/<%= c.article_type === 'review' ? 'recenzia' : 'clanok' %>/<%= c.article_slug %>"
+                               class="btn btn-outline-secondary" target="_blank" title="Zobraziť na webe">
+                              <i class="bi bi-box-arrow-up-right"></i>
+                            </a>
+                          <% } %>
+                          <form method="POST" action="/admin/comments/<%= c.id %>/toggle-delete" class="d-inline">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn-sm <%= c.is_deleted_by_admin ? 'btn-outline-success' : 'btn-outline-warning' %>"
+                                    title="<%= c.is_deleted_by_admin ? 'Obnoviť' : 'Skryť' %>">
+                              <i class="bi bi-<%= c.is_deleted_by_admin ? 'arrow-counterclockwise' : 'eye-slash' %>"></i>
+                            </button>
+                          </form>
+                          <form method="POST" action="/admin/comments/<%= c.id %>/hard-delete" class="d-inline"
+                                data-confirm="Permanentne zmazať komentár #<%= c.id %>? Táto akcia je nevratná.">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn-sm btn-outline-danger" title="Permanentne zmazať">
+                              <i class="bi bi-x-lg"></i>
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <%# Pagination %>
+          <% if (pagination.totalPages > 1) { %>
+            <nav class="mt-3">
+              <ul class="pagination justify-content-center mb-0">
+                <%
+                  const buildHref = (p) => {
+                    const params = new URLSearchParams();
+                    params.set('tab', activeTab);
+                    if (query.q) params.set('q', query.q);
+                    if (query.article) params.set('article', query.article);
+                    if (p > 1) params.set('page', p);
+                    return '/admin/comments?' + params.toString();
+                  };
+                  const cur = pagination.page;
+                  const tot = pagination.totalPages;
+                  const show = new Set([1, tot, cur-1, cur, cur+1]);
+                  const pages = [...show].filter(p => p >= 1 && p <= tot).sort((a,b) => a-b);
+                %>
+                <li class="page-item <%= cur <= 1 ? 'disabled' : '' %>">
+                  <a class="page-link" href="<%= cur > 1 ? buildHref(cur-1) : '#' %>">‹</a>
+                </li>
+                <% pages.forEach((p, idx) => {
+                  if (idx > 0 && pages[idx-1] < p - 1) { %>
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                  <% } %>
+                  <li class="page-item <%= p === cur ? 'active' : '' %>">
+                    <a class="page-link" href="<%= buildHref(p) %>"><%= p %></a>
+                  </li>
+                <% }) %>
+                <li class="page-item <%= cur >= tot ? 'disabled' : '' %>">
+                  <a class="page-link" href="<%= cur < tot ? buildHref(cur+1) : '#' %>">›</a>
+                </li>
+              </ul>
+            </nav>
+          <% } %>
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-taxonomy.js" defer></script>
+</body>
+</html>
