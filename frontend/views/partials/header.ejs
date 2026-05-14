@@ -11,9 +11,9 @@
 <header class="topnav">
   <div class="container topnav-inner">
     <a href="/" class="topnav-brand">
-      <div class="bz-logo">BZ</div>
-      <div class="bz-brand-name"><%= appName %></div>
+        <%- include('logo', {  size: 'md'}) %>
     </a>
+
 
     <nav class="topnav-pill">
       <% navLinks.forEach(link => {

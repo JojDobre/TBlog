@@ -3,9 +3,8 @@
     <div class="footer-grid">
       <div class="footer-col">
         <div class="footer-brand">
-          <div class="bz-logo">BZ</div>
           <div>
-            <div class="bz-brand-name"><%= appName %></div>
+            <%- include('logo', {  size: 'md'}) %>
             <div class="footer-tagline">tech bez kompromisu</div>
           </div>
         </div>
@@ -14,8 +13,8 @@
           čo techniku skutočne používajú.
         </p>
         <div class="footer-actions">
-          <a href="/newsletter" class="btn btn-sm">Newsletter</a>
-          <a href="/rss" class="btn btn-sm btn-ghost">RSS</a>
+          <div class="btn btn-sm" cursor="pointer"><a href="/newsletter" fill="none" cursor="pointer" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><strong>Newsletter</strong></a></div>
+          <div class="btn btn-sm" cursor="pointer"><a href="/newsletter" fill="none" cursor="pointer" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><strong>RSS</strong></a></div>
         </div>
       </div>
       <div class="footer-col">

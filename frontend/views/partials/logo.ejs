@@ -1,0 +1,39 @@
+<%
+size = typeof size !== 'undefined' ? size : 'md';
+subtitle = typeof subtitle !== 'undefined' ? subtitle : '';
+mono = typeof mono !== 'undefined' ? mono : false;
+%>
+<div class="logo logo-<%= size || 'md' %>">
+  <svg class="logo-mark" viewBox="0 0 36 32" aria-hidden="true">
+    <rect
+      x="0"
+      y="2"
+      width="22"
+      height="13"
+      rx="6.5"
+      fill="currentColor"
+    />
+
+    <rect
+      x="0"
+      y="17"
+      width="28"
+      height="13"
+      rx="6.5"
+      fill="<%= mono ? 'currentColor' : 'var(--accent)' %>"
+      opacity="<%= mono ? '0.55' : '1' %>"
+    />
+  </svg>
+
+  <span class="logo-word">
+    <span class="logo-word-main">ByteZone</span>
+
+    <span class="logo-word-dot" aria-hidden="true"></span>
+
+    <% if (subtitle) { %>
+      <span class="logo-word-sub">
+        <%= subtitle %>
+      </span>
+    <% } %>
+  </span>
+</div>

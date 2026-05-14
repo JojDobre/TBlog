@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="light">
+<head>
+  <%- include('../partials/head', { title: pageTitle }) %>
+</head>
+<body class="bz-admin-body">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="container-fluid py-4">
+
+        <%# Flash %>
+        <% if (typeof flash !== 'undefined' && flash.created) { %>
+          <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>Stránka vytvorená.
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+        <% if (typeof flash !== 'undefined' && flash.updated) { %>
+          <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>Zmeny uložené.
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+        <% if (Object.keys(errors).length > 0) { %>
+          <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>Skontroluj chyby vo formulári nižšie.
+          </div>
+        <% } %>
+
+        <%# Breadcrumb + actions %>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+              <li class="breadcrumb-item"><a href="/admin/dashboard">Admin</a></li>
+              <li class="breadcrumb-item"><a href="/admin/pages">Stránky</a></li>
+              <li class="breadcrumb-item active"><%= isNew ? 'Nová' : pg.title %></li>
+            </ol>
+          </nav>
+          <div class="d-flex gap-2">
+            <a href="/admin/pages" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Späť</a>
+            <button type="submit" form="page-form" class="btn btn-sm btn-primary">
+              <i class="bi bi-check-lg me-1"></i><%= isNew ? 'Vytvoriť' : 'Uložiť zmeny' %>
+            </button>
+          </div>
+        </div>
+
+        <form id="page-form" method="POST"
+              action="<%= isNew ? '/admin/pages' : '/admin/pages/' + pg.id %>"
+              data-page-form>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="content_json" data-content-json
+                 value="<%- JSON.stringify(content).replace(/</g, '\\u003c') %>">
+
+          <div class="row g-4">
+            <%# ===== LEFT COLUMN — content ===== %>
+            <div class="col-lg-8">
+
+              <%# Title + slug %>
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="title" class="form-label fw-semibold">Názov stránky</label>
+                    <input type="text" class="form-control <%= errors.title ? 'is-invalid' : '' %>"
+                           id="title" name="title" value="<%= pg.title %>" maxlength="255" required autofocus>
+                    <% if (errors.title) { %><div class="invalid-feedback"><%= errors.title %></div><% } %>
+                  </div>
+                  <div class="mb-0">
+                    <label for="slug" class="form-label">Slug</label>
+                    <div class="input-group input-group-sm">
+                      <span class="input-group-text">/</span>
+                      <input type="text" class="form-control <%= errors.slug ? 'is-invalid' : '' %>"
+                             id="slug" name="slug" value="<%= pg.slug %>" maxlength="120"
+                             placeholder="automaticky z názvu">
+                    </div>
+                    <% if (errors.slug) { %><div class="text-danger small mt-1"><%= errors.slug %></div><% } %>
+                    <div class="form-text">Ponechaj prázdne pre automatické vygenerovanie.</div>
+                  </div>
+                </div>
+              </div>
+
+              <%# Block editor %>
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0"><i class="bi bi-layout-text-window-reverse me-2"></i>Obsah</h6>
+                  <% if (errors.content) { %>
+                    <span class="text-danger small"><%= errors.content %></span>
+                  <% } %>
+                </div>
+                <div class="card-body">
+                  <div data-blocks-container></div>
+                  <div data-empty-state class="text-center text-muted py-4" style="<%= content.length > 0 ? 'display:none' : '' %>">
+                    <i class="bi bi-file-earmark-text" style="font-size:1.5rem;"></i>
+                    <p class="mt-2 mb-0">Žiadny obsah. Pridaj bloky nižšie.</p>
+                  </div>
+
+                  <%# Standard block buttons %>
+                  <div class="d-flex flex-wrap gap-1 mt-3 pt-3 border-top" data-block-toolbar>
+                    <span class="text-muted small me-2 align-self-center">Základné:</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-add-block="paragraph">
+                      <i class="bi bi-paragraph"></i> Odsek
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-add-block="heading">
+                      <i class="bi bi-type-h2"></i> Nadpis
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-add-block="image">
+                      <i class="bi bi-image"></i> Obrázok
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-add-block="divider">
+                      <i class="bi bi-dash-lg"></i> Oddeľovač
+                    </button>
+                  </div>
+
+                  <%# Page-specific block buttons — grouped %>
+                  <div class="d-flex flex-wrap gap-1 mt-2" data-block-toolbar-page>
+                    <span class="text-muted small me-2 align-self-center">Šablónové:</span>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_values">
+                      <i class="bi bi-grid-3x3-gap"></i> Hodnoty
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_team">
+                      <i class="bi bi-people"></i> Tím
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_contact_cta">
+                      <i class="bi bi-megaphone"></i> CTA
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_contact_form">
+                      <i class="bi bi-envelope"></i> Kontakt formulár
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_channels">
+                      <i class="bi bi-signpost-2"></i> Kanály
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_office">
+                      <i class="bi bi-geo-alt"></i> Kancelária
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_key_value">
+                      <i class="bi bi-list-columns"></i> Kľúč-hodnota
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_rights">
+                      <i class="bi bi-shield-check"></i> Práva
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_cookies">
+                      <i class="bi bi-table"></i> Cookies
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_summary">
+                      <i class="bi bi-chat-square-text"></i> TL;DR
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" data-add-block="sp_legal_meta">
+                      <i class="bi bi-card-list"></i> Právne info
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <%# SEO %>
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                  <h6 class="mb-0"><i class="bi bi-search me-2"></i>SEO</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="seo_title" class="form-label">SEO Title</label>
+                    <input type="text" class="form-control" id="seo_title" name="seo_title"
+                           value="<%= pg.seo_title || '' %>" maxlength="255"
+                           placeholder="Ak prázdne, použije sa názov stránky">
+                    <div class="form-text">Odporúčaná dĺžka: 50–60 znakov.</div>
+                  </div>
+                  <div class="mb-0">
+                    <label for="seo_description" class="form-label">Meta description</label>
+                    <textarea class="form-control" id="seo_description" name="seo_description"
+                              rows="2" maxlength="320" placeholder="Krátky popis pre vyhľadávače…"><%= pg.seo_description || '' %></textarea>
+                    <div class="form-text">Odporúčaná dĺžka: 120–160 znakov.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <%# ===== RIGHT COLUMN — settings ===== %>
+            <div class="col-lg-4">
+
+              <%# Template %>
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                  <h6 class="mb-0"><i class="bi bi-layout-text-sidebar me-2"></i>Šablóna</h6>
+                </div>
+                <div class="card-body">
+                  <select class="form-select" id="template" name="template" data-page-template>
+                    <option value="default" <%= pg.template === 'default' ? 'selected' : '' %>>Prázdna stránka</option>
+                    <option value="about" <%= pg.template === 'about' ? 'selected' : '' %>>O nás</option>
+                    <option value="contact" <%= pg.template === 'contact' ? 'selected' : '' %>>Kontakt</option>
+                    <option value="legal" <%= pg.template === 'legal' ? 'selected' : '' %>>Právny dokument</option>
+                  </select>
+                  <% if (!isNew) { %>
+                    <div class="form-text mt-2">
+                      <i class="bi bi-info-circle me-1"></i>Zmena šablóny nezmení existujúci obsah.
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <%# Status %>
+              <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                  <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Nastavenia</h6>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="status" class="form-label">Stav</label>
+                    <select class="form-select" id="status" name="status">
+                      <option value="draft" <%= pg.status === 'draft' ? 'selected' : '' %>>Koncept</option>
+                      <option value="published" <%= pg.status === 'published' ? 'selected' : '' %>>Publikovaná</option>
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="display_order" class="form-label">Poradie zobrazenia</label>
+                    <input type="number" class="form-control" id="display_order" name="display_order"
+                           value="<%= pg.display_order %>" min="0">
+                  </div>
+                  <div class="form-check mb-2">
+                    <input type="checkbox" class="form-check-input" id="show_in_header" name="show_in_header"
+                           value="1" <%= pg.show_in_header ? 'checked' : '' %>>
+                    <label class="form-check-label" for="show_in_header">Zobraziť v headeri</label>
+                  </div>
+                  <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="show_in_footer" name="show_in_footer"
+                           value="1" <%= pg.show_in_footer ? 'checked' : '' %>>
+                    <label class="form-check-label" for="show_in_footer">Zobraziť vo footeri</label>
+                  </div>
+                </div>
+              </div>
+
+              <% if (!isNew) { %>
+                <%# Danger zone %>
+                <div class="card border-0 shadow-sm border-danger">
+                  <div class="card-body">
+                    <h6 class="text-danger mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Nebezpečná zóna</h6>
+                    <form method="POST" action="/admin/pages/<%= pg.id %>/delete"
+                          data-confirm="Naozaj zmazať stránku &quot;<%= pg.title %>&quot;? Toto sa nedá vrátiť.">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                        <i class="bi bi-trash me-1"></i>Zmazať stránku
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              <% } %>
+
+            </div>
+          </div>
+        </form>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =================================================================
+       BLOCK TEMPLATES (hidden, used by admin-page-editor.js)
+       ================================================================= -->
+
+  <%# Standard blocks %>
+  <template data-block-template="paragraph">
+    <div class="bz-block" data-block-type="paragraph">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-paragraph me-1"></i>Odsek</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <textarea class="form-control" rows="4" data-field="text" placeholder="Text odseku…"></textarea>
+    </div>
+  </template>
+
+  <template data-block-template="heading">
+    <div class="bz-block" data-block-type="heading">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-type-h2 me-1"></i>Nadpis</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div class="d-flex gap-2">
+        <select class="form-select form-select-sm" data-field="level" style="width:90px;">
+          <option value="2">H2</option><option value="3">H3</option>
+        </select>
+        <input type="text" class="form-control" data-field="text" placeholder="Nadpis…" maxlength="255">
+      </div>
+    </div>
+  </template>
+
+  <template data-block-template="image">
+    <div class="bz-block" data-block-type="image">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-image me-1"></i>Obrázok</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div class="row g-2">
+        <div class="col-md-4">
+          <div data-image-preview class="bz-image-preview"><span class="text-muted small">(žiadny)</span></div>
+        </div>
+        <div class="col-md-8">
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text">Media ID</span>
+            <input type="number" class="form-control" data-field="media_id" min="1" placeholder="napr. 7">
+            <a href="/admin/media" target="_blank" class="btn btn-outline-secondary"><i class="bi bi-images"></i></a>
+          </div>
+          <input type="text" class="form-control form-control-sm mb-2" data-field="alt" placeholder="Alt text" maxlength="255">
+          <input type="text" class="form-control form-control-sm" data-field="caption" placeholder="Popis" maxlength="500">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template data-block-template="divider">
+    <div class="bz-block" data-block-type="divider">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-dash-lg me-1"></i>Oddeľovač</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <hr class="my-1">
+    </div>
+  </template>
+
+  <%# ===== PAGE-SPECIFIC BLOCKS ===== %>
+
+  <template data-block-template="sp_values">
+    <div class="bz-block" data-block-type="sp_values">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-grid-3x3-gap me-1"></i>Hodnoty / vlastnosti</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="items" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="items">
+        <i class="bi bi-plus-lg me-1"></i>Pridať hodnotu
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_team">
+    <div class="bz-block" data-block-type="sp_team">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-people me-1"></i>Tím</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="members" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="members">
+        <i class="bi bi-plus-lg me-1"></i>Pridať člena
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_contact_cta">
+    <div class="bz-block" data-block-type="sp_contact_cta">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-megaphone me-1"></i>Kontakt CTA</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <input type="text" class="form-control form-control-sm mb-2" data-field="title" placeholder="Nadpis CTA" maxlength="200">
+      <textarea class="form-control form-control-sm mb-2" rows="2" data-field="text" placeholder="Text CTA" maxlength="500"></textarea>
+      <input type="email" class="form-control form-control-sm mb-2" data-field="email" placeholder="Email" maxlength="255">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" data-field="show_pgp">
+        <label class="form-check-label small">Zobraziť PGP kľúč tlačidlo</label>
+      </div>
+    </div>
+  </template>
+
+  <template data-block-template="sp_contact_form">
+    <div class="bz-block" data-block-type="sp_contact_form">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-envelope me-1"></i>Kontaktný formulár</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div class="text-muted small p-2 bg-light rounded">
+        <i class="bi bi-info-circle me-1"></i>
+        Zobrazí sa kontaktný formulár (meno, email, téma, správa). Správy sa ukladajú do DB.
+      </div>
+    </div>
+  </template>
+
+  <template data-block-template="sp_channels">
+    <div class="bz-block" data-block-type="sp_channels">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-signpost-2 me-1"></i>Kontaktné kanály</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="channels" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="channels">
+        <i class="bi bi-plus-lg me-1"></i>Pridať kanál
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_office">
+    <div class="bz-block" data-block-type="sp_office">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-geo-alt me-1"></i>Kancelária / sídlo</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <input type="text" class="form-control form-control-sm mb-2" data-field="address" placeholder="Adresa" maxlength="255">
+      <textarea class="form-control form-control-sm mb-2" rows="2" data-field="description" placeholder="Popis (otváracie hodiny…)" maxlength="1000"></textarea>
+      <input type="text" class="form-control form-control-sm mb-2" data-field="map_url" placeholder="URL na mapy (Google Maps link)" maxlength="500">
+      <label class="form-label small text-muted mt-2">Štatistiky (napr. vzdialenosť od stanice)</label>
+      <div data-nested-list="stats" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="stats">
+        <i class="bi bi-plus-lg me-1"></i>Pridať štatistiku
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_key_value">
+    <div class="bz-block" data-block-type="sp_key_value">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-list-columns me-1"></i>Kľúč — hodnota</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="items" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="items">
+        <i class="bi bi-plus-lg me-1"></i>Pridať riadok
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_rights">
+    <div class="bz-block" data-block-type="sp_rights">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-shield-check me-1"></i>Práva (GDPR)</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="items" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="items">
+        <i class="bi bi-plus-lg me-1"></i>Pridať právo
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_cookies">
+    <div class="bz-block" data-block-type="sp_cookies">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-table me-1"></i>Tabuľka cookies</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="rows" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="rows">
+        <i class="bi bi-plus-lg me-1"></i>Pridať cookie
+      </button>
+    </div>
+  </template>
+
+  <template data-block-template="sp_summary">
+    <div class="bz-block" data-block-type="sp_summary">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-chat-square-text me-1"></i>TL;DR + text</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <input type="text" class="form-control form-control-sm mb-2" data-field="tldr" placeholder="TL;DR — jednoveťáčik" maxlength="500">
+      <textarea class="form-control form-control-sm" rows="4" data-field="body" placeholder="Podrobný text…" maxlength="5000"></textarea>
+    </div>
+  </template>
+
+  <template data-block-template="sp_legal_meta">
+    <div class="bz-block" data-block-type="sp_legal_meta">
+      <div class="bz-block-header">
+        <span class="bz-block-label"><i class="bi bi-card-list me-1"></i>Právne informácie</span>
+        <div class="bz-block-actions"></div>
+      </div>
+      <div data-nested-list="items" class="bz-nested-container"></div>
+      <button type="button" class="btn btn-sm btn-outline-info mt-2" data-nested-add="items">
+        <i class="bi bi-plus-lg me-1"></i>Pridať položku
+      </button>
+    </div>
+  </template>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-page-editor.js" defer></script>
+</body>
+</html>
