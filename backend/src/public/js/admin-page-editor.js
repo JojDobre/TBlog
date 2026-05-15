@@ -24,7 +24,9 @@
   try {
     blocks = JSON.parse(hiddenInput.value || '[]');
     if (!Array.isArray(blocks)) blocks = [];
-  } catch (e) { blocks = []; }
+  } catch (e) {
+    blocks = [];
+  }
 
   var mediaCache = {};
 
@@ -36,8 +38,10 @@
 
   function escAttr(s) {
     return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   function currentIndex(node) {
@@ -58,41 +62,78 @@
   function fetchMediaThumb(mediaId) {
     if (mediaCache[mediaId]) return Promise.resolve(mediaCache[mediaId]);
     return fetch('/api/media/' + mediaId)
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { if (d && d.thumbnail_path) { mediaCache[mediaId] = d; return d; } return null; });
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (d) {
+        if (d && d.thumbnail_path) {
+          mediaCache[mediaId] = d;
+          return d;
+        }
+        return null;
+      });
   }
 
   function updateImagePreview(node, mediaId) {
     var el = node.querySelector('[data-image-preview]');
     if (!el) return;
-    if (!mediaId) { el.innerHTML = '<span class="text-muted small">(žiadny)</span>'; return; }
+    if (!mediaId) {
+      el.innerHTML = '<span class="text-muted small">(žiadny)</span>';
+      return;
+    }
     el.innerHTML = '<span class="text-muted small">načítavam…</span>';
-    fetchMediaThumb(mediaId).then(function (d) {
-      el.innerHTML = d
-        ? '<img src="/uploads/' + d.thumbnail_path + '" class="img-fluid rounded" alt="">'
-        : '<span class="text-danger small">ID neexistuje</span>';
-    }).catch(function () { el.innerHTML = '<span class="text-warning small">(chyba)</span>'; });
+    fetchMediaThumb(mediaId)
+      .then(function (d) {
+        el.innerHTML = d
+          ? '<img src="/uploads/' + d.thumbnail_path + '" class="img-fluid rounded" alt="">'
+          : '<span class="text-danger small">ID neexistuje</span>';
+      })
+      .catch(function () {
+        el.innerHTML = '<span class="text-warning small">(chyba)</span>';
+      });
   }
 
   // ---- Default block data ----
   function defaultBlock(type) {
     switch (type) {
-      case 'paragraph': return { type: 'paragraph', text: '' };
-      case 'heading': return { type: 'heading', level: 2, text: '' };
-      case 'image': return { type: 'image', media_id: null, alt: '', caption: '' };
-      case 'divider': return { type: 'divider' };
-      case 'sp_values': return { type: 'sp_values', items: [{ icon: 'flame', title: '', desc: '' }] };
-      case 'sp_team': return { type: 'sp_team', members: [{ name: '', role: '', bio: '' }] };
-      case 'sp_contact_cta': return { type: 'sp_contact_cta', title: '', text: '', email: '', show_pgp: false };
-      case 'sp_contact_form': return { type: 'sp_contact_form' };
-      case 'sp_channels': return { type: 'sp_channels', channels: [{ icon: 'send', label: '', value: '', note: '' }] };
-      case 'sp_office': return { type: 'sp_office', address: '', description: '', stats: [], map_url: '' };
-      case 'sp_key_value': return { type: 'sp_key_value', items: [{ key: '', value: '' }] };
-      case 'sp_rights': return { type: 'sp_rights', items: [{ icon: 'info', title: '', desc: '' }] };
-      case 'sp_cookies': return { type: 'sp_cookies', rows: [{ name: '', purpose: '', ttl: '', cookie_type: 'Nutný' }] };
-      case 'sp_summary': return { type: 'sp_summary', tldr: '', body: '' };
-      case 'sp_legal_meta': return { type: 'sp_legal_meta', items: [{ label: '', value: '' }] };
-      default: return null;
+      case 'paragraph':
+        return { type: 'paragraph', text: '' };
+      case 'heading':
+        return { type: 'heading', level: 2, text: '' };
+      case 'image':
+        return { type: 'image', media_id: null, alt: '', caption: '' };
+      case 'divider':
+        return { type: 'divider' };
+      case 'sp_values':
+        return { type: 'sp_values', items: [{ icon: 'flame', title: '', desc: '' }] };
+      case 'sp_team':
+        return { type: 'sp_team', members: [{ name: '', role: '', bio: '' }] };
+      case 'sp_contact_cta':
+        return { type: 'sp_contact_cta', title: '', text: '', email: '', show_pgp: false };
+      case 'sp_contact_form':
+        return { type: 'sp_contact_form' };
+      case 'sp_channels':
+        return {
+          type: 'sp_channels',
+          channels: [{ icon: 'send', label: '', value: '', note: '' }],
+        };
+      case 'sp_office':
+        return { type: 'sp_office', address: '', description: '', stats: [], map_url: '' };
+      case 'sp_key_value':
+        return { type: 'sp_key_value', items: [{ key: '', value: '' }] };
+      case 'sp_rights':
+        return { type: 'sp_rights', items: [{ icon: 'info', title: '', desc: '' }] };
+      case 'sp_cookies':
+        return {
+          type: 'sp_cookies',
+          rows: [{ name: '', purpose: '', ttl: '', cookie_type: 'Nutný' }],
+        };
+      case 'sp_summary':
+        return { type: 'sp_summary', tldr: '', body: '' };
+      case 'sp_legal_meta':
+        return { type: 'sp_legal_meta', items: [{ label: '', value: '' }] };
+      default:
+        return null;
     }
   }
 
@@ -166,45 +207,69 @@
   // ---- Nested items rendering ----
   // Each nested block type has a config: { arrayKey, fields: [...] }
   var NESTED_CONFIGS = {
-    sp_values: { arrayKey: 'items', fields: [
-      { key: 'icon', placeholder: 'Ikona (flame, scale, users…)', maxlen: 40 },
-      { key: 'title', placeholder: 'Nadpis hodnoty', maxlen: 160 },
-      { key: 'desc', placeholder: 'Popis', maxlen: 500, textarea: true },
-    ]},
-    sp_team: { arrayKey: 'members', fields: [
-      { key: 'name', placeholder: 'Meno a priezvisko', maxlen: 120 },
-      { key: 'role', placeholder: 'Rola / pozícia', maxlen: 160 },
-      { key: 'bio', placeholder: 'Bio (krátky popis)', maxlen: 500 },
-    ]},
-    sp_channels: { arrayKey: 'channels', fields: [
-      { key: 'icon', placeholder: 'Ikona (send, tag, lock…)', maxlen: 40 },
-      { key: 'label', placeholder: 'Označenie (Redakcia, DPO…)', maxlen: 80 },
-      { key: 'value', placeholder: 'Hodnota (email, URL…)', maxlen: 255 },
-      { key: 'note', placeholder: 'Poznámka', maxlen: 160 },
-    ]},
-    sp_office: { arrayKey: 'stats', fields: [
-      { key: 'value', placeholder: 'Hodnota (14 min)', maxlen: 40 },
-      { key: 'label', placeholder: 'Popis (od Hlavnej stanice)', maxlen: 80 },
-    ]},
-    sp_key_value: { arrayKey: 'items', fields: [
-      { key: 'key', placeholder: 'Kľúč', maxlen: 200 },
-      { key: 'value', placeholder: 'Hodnota', maxlen: 1000 },
-    ]},
-    sp_rights: { arrayKey: 'items', fields: [
-      { key: 'icon', placeholder: 'Ikona (eye, edit, trash…)', maxlen: 40 },
-      { key: 'title', placeholder: 'Názov práva', maxlen: 160 },
-      { key: 'desc', placeholder: 'Popis', maxlen: 500 },
-    ]},
-    sp_cookies: { arrayKey: 'rows', fields: [
-      { key: 'name', placeholder: 'Názov cookie', maxlen: 80 },
-      { key: 'purpose', placeholder: 'Účel', maxlen: 255 },
-      { key: 'ttl', placeholder: 'Platnosť (30 dní, 1 rok…)', maxlen: 60 },
-      { key: 'cookie_type', placeholder: 'Typ (Nutný, Funkčný, Analytický)', maxlen: 40 },
-    ]},
-    sp_legal_meta: { arrayKey: 'items', fields: [
-      { key: 'label', placeholder: 'Označenie (Prevádzkovateľ, IČO…)', maxlen: 80 },
-      { key: 'value', placeholder: 'Hodnota', maxlen: 255 },
-    ]},
+    sp_values: {
+      arrayKey: 'items',
+      fields: [
+        { key: 'icon', placeholder: 'Ikona (flame, scale, users…)', maxlen: 40 },
+        { key: 'title', placeholder: 'Nadpis hodnoty', maxlen: 160 },
+        { key: 'desc', placeholder: 'Popis', maxlen: 500, textarea: true },
+      ],
+    },
+    sp_team: {
+      arrayKey: 'members',
+      fields: [
+        { key: 'name', placeholder: 'Meno a priezvisko', maxlen: 120 },
+        { key: 'role', placeholder: 'Rola / pozícia', maxlen: 160 },
+        { key: 'bio', placeholder: 'Bio (krátky popis)', maxlen: 500 },
+      ],
+    },
+    sp_channels: {
+      arrayKey: 'channels',
+      fields: [
+        { key: 'icon', placeholder: 'Ikona (send, tag, lock…)', maxlen: 40 },
+        { key: 'label', placeholder: 'Označenie (Redakcia, DPO…)', maxlen: 80 },
+        { key: 'value', placeholder: 'Hodnota (email, URL…)', maxlen: 255 },
+        { key: 'note', placeholder: 'Poznámka', maxlen: 160 },
+      ],
+    },
+    sp_office: {
+      arrayKey: 'stats',
+      fields: [
+        { key: 'value', placeholder: 'Hodnota (14 min)', maxlen: 40 },
+        { key: 'label', placeholder: 'Popis (od Hlavnej stanice)', maxlen: 80 },
+      ],
+    },
+    sp_key_value: {
+      arrayKey: 'items',
+      fields: [
+        { key: 'key', placeholder: 'Kľúč', maxlen: 200 },
+        { key: 'value', placeholder: 'Hodnota', maxlen: 1000 },
+      ],
+    },
+    sp_rights: {
+      arrayKey: 'items',
+      fields: [
+        { key: 'icon', placeholder: 'Ikona (eye, edit, trash…)', maxlen: 40 },
+        { key: 'title', placeholder: 'Názov práva', maxlen: 160 },
+        { key: 'desc', placeholder: 'Popis', maxlen: 500 },
+      ],
+    },
+    sp_cookies: {
+      arrayKey: 'rows',
+      fields: [
+        { key: 'name', placeholder: 'Názov cookie', maxlen: 80 },
+        { key: 'purpose', placeholder: 'Účel', maxlen: 255 },
+        { key: 'ttl', placeholder: 'Platnosť (30 dní, 1 rok…)', maxlen: 60 },
+        { key: 'cookie_type', placeholder: 'Typ (Nutný, Funkčný, Analytický)', maxlen: 40 },
+      ],
+    },
+    sp_legal_meta: {
+      arrayKey: 'items',
+      fields: [
+        { key: 'label', placeholder: 'Označenie (Prevádzkovateľ, IČO…)', maxlen: 80 },
+        { key: 'value', placeholder: 'Hodnota', maxlen: 255 },
+      ],
+    },
   };
 
   function setupNestedBlock(node, type) {
@@ -228,18 +293,32 @@
 
         config.fields.forEach(function (f) {
           if (f.textarea) {
-            html += '<textarea class="form-control form-control-sm mb-1" placeholder="' +
-              escAttr(f.placeholder) + '" maxlength="' + f.maxlen +
-              '" data-nested-field="' + f.key + '" rows="2">' +
-              escAttr(item[f.key]) + '</textarea>';
+            html +=
+              '<textarea class="form-control form-control-sm mb-1" placeholder="' +
+              escAttr(f.placeholder) +
+              '" maxlength="' +
+              f.maxlen +
+              '" data-nested-field="' +
+              f.key +
+              '" rows="2">' +
+              escAttr(item[f.key]) +
+              '</textarea>';
           } else {
-            html += '<input type="text" class="form-control form-control-sm" style="flex:1;min-width:100px;" placeholder="' +
-              escAttr(f.placeholder) + '" maxlength="' + f.maxlen +
-              '" data-nested-field="' + f.key + '" value="' + escAttr(item[f.key]) + '">';
+            html +=
+              '<input type="text" class="form-control form-control-sm" style="flex:1;min-width:100px;" placeholder="' +
+              escAttr(f.placeholder) +
+              '" maxlength="' +
+              f.maxlen +
+              '" data-nested-field="' +
+              f.key +
+              '" value="' +
+              escAttr(item[f.key]) +
+              '">';
           }
         });
 
-        html += '<button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0" title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
+        html +=
+          '<button type="button" class="btn btn-sm btn-outline-danger flex-shrink-0" title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
         html += '</div>';
         row.innerHTML = html;
 
@@ -275,7 +354,9 @@
 
         // Create empty item from config fields
         var newItem = {};
-        config.fields.forEach(function (f) { newItem[f.key] = ''; });
+        config.fields.forEach(function (f) {
+          newItem[f.key] = '';
+        });
         blocks[ci][config.arrayKey].push(newItem);
         syncHidden();
         renderItems();
@@ -356,15 +437,24 @@
     tplSelect.addEventListener('change', function () {
       // Only load defaults if editor is empty or user confirms
       if (blocks.length > 0) {
-        if (!window.confirm('Načítať predvolené bloky pre túto šablónu? Existujúce bloky budú nahradené.')) return;
+        if (
+          !window.confirm(
+            'Načítať predvolené bloky pre túto šablónu? Existujúce bloky budú nahradené.'
+          )
+        )
+          return;
       }
       var tpl = tplSelect.value;
       fetch('/admin/pages/api/template-defaults/' + encodeURIComponent(tpl))
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          return r.json();
+        })
         .then(function (data) {
           if (data && Array.isArray(data.blocks)) {
             blocks.length = 0;
-            data.blocks.forEach(function (b) { blocks.push(b); });
+            data.blocks.forEach(function (b) {
+              blocks.push(b);
+            });
             renderAll();
           }
         })
@@ -375,8 +465,36 @@
   }
 
   // ---- Submit ----
-  form.addEventListener('submit', function () { syncHidden(); });
+  form.addEventListener('submit', function () {
+    syncHidden();
+  });
 
   // ---- Init ----
   renderAll();
+})();
+
+(function () {
+  'use strict';
+
+  var btn = document.querySelector('[data-page-delete]');
+  if (!btn) return;
+
+  btn.addEventListener('click', function () {
+    var msg = btn.getAttribute('data-confirm') || 'Naozaj zmazať?';
+    if (!window.confirm(msg)) return;
+
+    var f = document.createElement('form');
+    f.method = 'POST';
+    f.action = btn.getAttribute('data-delete-url');
+    f.style.display = 'none';
+
+    var csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = '_csrf';
+    csrf.value = btn.getAttribute('data-csrf');
+    f.appendChild(csrf);
+
+    document.body.appendChild(f);
+    f.submit();
+  });
 })();

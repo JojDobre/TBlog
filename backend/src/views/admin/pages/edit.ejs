@@ -232,17 +232,17 @@
               </div>
 
               <% if (!isNew) { %>
-                <%# Danger zone %>
+                <%# Danger zone — button, nie vnorený <form>, aby sa nelámal page-form a CSRF %>
                 <div class="card border-0 shadow-sm border-danger">
                   <div class="card-body">
                     <h6 class="text-danger mb-2"><i class="bi bi-exclamation-triangle me-1"></i>Nebezpečná zóna</h6>
-                    <form method="POST" action="/admin/pages/<%= pg.id %>/delete"
-                          data-confirm="Naozaj zmazať stránku &quot;<%= pg.title %>&quot;? Toto sa nedá vrátiť.">
-                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <button type="submit" class="btn btn-sm btn-outline-danger w-100">
-                        <i class="bi bi-trash me-1"></i>Zmazať stránku
-                      </button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100"
+                            data-page-delete
+                            data-delete-url="/admin/pages/<%= pg.id %>/delete"
+                            data-csrf="<%= csrfToken %>"
+                            data-confirm="Naozaj zmazať stránku &quot;<%= pg.title %>&quot;? Toto sa nedá vrátiť.">
+                      <i class="bi bi-trash me-1"></i>Zmazať stránku
+                    </button>
                   </div>
                 </div>
               <% } %>
@@ -469,6 +469,6 @@
   </template>
 
   <%- include('../partials/scripts') %>
-  <script src="/admin/public/js/admin-page-editor.js" defer></script>
+  <script src="/admin/static/js/admin-page-editor.js" defer></script>
 </body>
 </html>
