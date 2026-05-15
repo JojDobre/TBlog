@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="sk" data-theme="dark">
+<head>
+  <%- include('../partials/head', {
+    title: pg.seo_title || pg.title,
+    description: pg.seo_description || ''
+  }) %>
+  <link rel="stylesheet" href="/css/static-pages.css">
+  <link rel="canonical" href="<%= baseUrl %>/<%= pg.slug %>">
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/' + pg.slug }) %>
+
+  <main class="page sp-page">
+
+    <!-- Hero -->
+    <header class="sp-hero sp-hero-<%= pg.template %>">
+      <div class="sp-hero-bg"></div>
+      <div class="container sp-hero-inner">
+        <nav class="sp-breadcrumb">
+          <a href="/">Domov</a>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          <span><%= pg.title %></span>
+        </nav>
+
+        <span class="eyebrow sp-eyebrow"><%= pg.title %></span>
+        <h1 class="sp-title"><%= pg.title %></h1>
+
+        <% if (pg.seo_description) { %>
+          <p class="sp-lead"><%= pg.seo_description %></p>
+        <% } %>
+
+        <% if (pg.updated_at) { %>
+          <div class="sp-updated">
+            <span class="dot dot-green"></span>
+            Aktualizované <%= new Date(pg.updated_at).toLocaleDateString('sk-SK', { day:'numeric', month:'long', year:'numeric' }) %>
+          </div>
+        <% } %>
+
+        <%# Legal meta block (rendered if first block is sp_legal_meta) %>
+        <% if (legalMeta) { %>
+          <div class="sp-legal-meta">
+            <% legalMeta.items.forEach(m => { %>
+              <div class="sp-legal-meta-item">
+                <span class="sp-legal-meta-label"><%= m.label %></span>
+                <span class="sp-legal-meta-value"><%= m.value %></span>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </header>
+
+    <!-- Body — TOC + content -->
+    <div class="container sp-body">
+
+      <% if (sections.length > 0) { %>
+        <aside class="sp-toc">
+          <div class="sp-toc-inner">
+            <span class="sp-toc-label">Na stránke</span>
+            <nav class="sp-toc-list">
+              <% sections.forEach((s, i) => { %>
+                <a class="sp-toc-link" href="#<%= s.id %>" data-toc-link>
+                  <span class="sp-toc-num"><%= String(s.num).padStart(2, '0') %></span>
+                  <span><%= s.text %></span>
+                </a>
+              <% }) %>
+            </nav>
+            <div class="sp-toc-actions">
+              <button class="btn btn-sm btn-ghost" onclick="navigator.share ? navigator.share({url:location.href}) : navigator.clipboard.writeText(location.href)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5"/></svg>
+                Zdieľať
+              </button>
+            </div>
+          </div>
+        </aside>
+      <% } %>
+
+      <div class="sp-content <%= sections.length === 0 ? 'sp-content-full' : '' %>">
+
+        <% if (typeof flashSuccess !== 'undefined' && flashSuccess) { %>
+          <div class="sp-alert sp-alert-success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <%= flashSuccess %>
+          </div>
+        <% } %>
+        <% if (typeof flashError !== 'undefined' && flashError) { %>
+          <div class="sp-alert sp-alert-error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <%= flashError %>
+          </div>
+        <% } %>
+
+        <%- contentHtml %>
+
+        <div class="sp-foot">
+          <div class="sp-foot-meta">
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);letter-spacing:0.05em;text-transform:uppercase;">Verzia</span>
+            <span style="font-size:13px;">
+              <%= new Date(pg.updated_at).toLocaleDateString('sk-SK', { day:'numeric', month:'long', year:'numeric' }) %>
+            </span>
+          </div>
+          <div class="sp-foot-help">
+            <span style="color:var(--text-muted);font-size:14px;">Niečo nie je jasné?</span>
+            <a href="/kontakt" class="btn btn-sm">Napíš nám →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+  // TOC active section tracking
+  (function(){
+    var links = document.querySelectorAll('[data-toc-link]');
+    if (!links.length) return;
+    var ids = Array.prototype.map.call(links, function(l){ return l.getAttribute('href').slice(1); });
+    function onScroll(){
+      var cur = ids[0];
+      ids.forEach(function(id){
+        var el = document.getElementById(id);
+        if(el && el.getBoundingClientRect().top - 140 <= 0) cur = id;
+      });
+      links.forEach(function(l){
+        l.classList.toggle('active', l.getAttribute('href') === '#' + cur);
+      });
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+    // Smooth scroll
+    links.forEach(function(l){
+      l.addEventListener('click', function(e){
+        e.preventDefault();
+        var el = document.getElementById(l.getAttribute('href').slice(1));
+        if(el) window.scrollTo({top: el.offsetTop - 100, behavior:'smooth'});
+      });
+    });
+  })();
+  </script>
+</body>
+</html>

@@ -13,12 +13,7 @@
 const { doubleCsrf } = require('csrf-csrf');
 const config = require('../../../config');
 
-const {
-  invalidCsrfTokenError,
-  generateToken,
-  validateRequest,
-  doubleCsrfProtection,
-} = doubleCsrf({
+const { invalidCsrfTokenError, generateToken, validateRequest, doubleCsrfProtection } = doubleCsrf({
   getSecret: () => config.session.secret,
   getSessionIdentifier: (req) => req.sessionID || 'anonymous',
   cookieName: config.app.isProd ? '__Host-bytezone.csrf' : 'bytezone.csrf',
@@ -30,12 +25,15 @@ const {
   },
   size: 64,
   ignoredMethods: ['GET', 'HEAD', 'OPTIONS'],
-  getTokenFromRequest: (req) =>
-    req.headers['x-csrf-token'] || (req.body && req.body._csrf),
+  getTokenFromRequest: (req) => req.headers['x-csrf-token'] || (req.body && req.body._csrf),
 });
 
 function setCsrfToken(req, res, next) {
-  res.locals.csrfToken = generateToken(req, res, false, false);
+  // Skipnúť na POST/PUT/DELETE/PATCH — tie maj už token z GET
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+    return next();
+  }
+  res.locals.csrfToken = generateToken(req, res);
   next();
 }
 

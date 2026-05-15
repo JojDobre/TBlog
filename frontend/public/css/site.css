@@ -6035,3 +6035,44 @@ img {
   color: var(--text-subtle);
   letter-spacing: 0.05em;
 }
+
+/* === Cookie consent banner === */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  padding: 16px 0;
+}
+.cookie-banner-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--s-8);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.cookie-banner-text {
+  flex: 1;
+  min-width: 240px;
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cookie-banner-text strong {
+  color: var(--text);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.cookie-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}

@@ -18,10 +18,13 @@ const rankingRoutes = require('./ranking-routes');
 const adminRankingsRouter = require('./admin-rankings');
 const adminCommentsRouter = require('./admin-comments');
 const adminPagesRouter = require('./admin-pages');
+const adminMessagesRouter = require('./admin-messages');
 const apiCommentsRouter = require('./api-comments');
 const apiNotificationsRouter = require('./api-notifications');
 const apiRouter = require('./api');
 const blockRenderer = require('../utils/block-renderer');
+const pageRenderer = require('../utils/page-renderer');
+const crypto = require('crypto');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
 const healthRouter = require('./health');
@@ -40,6 +43,7 @@ router.use('/admin/rankings', adminRankingsRouter);
 router.use('/admin/articles', adminArticlesRouter);
 router.use('/admin/comments', adminCommentsRouter);
 router.use('/admin/pages', adminPagesRouter);
+router.use('/admin/messages', adminMessagesRouter);
 router.use('/admin', adminRouter);
 router.use('/api/notifications', apiNotificationsRouter);
 router.use('/api/comments', apiCommentsRouter);
@@ -658,6 +662,27 @@ router.get('/clanok/:slug', async (req, res, next) => {
 
     const viewTemplate = article.type === 'review' ? 'article/review' : 'article/show';
 
+    // JSON-LD
+    const baseUrl = config.baseUrl || `${req.protocol}://${req.get('host')}`;
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': article.type === 'review' ? 'Review' : 'Article',
+      headline: article.title,
+      description: article.excerpt || '',
+      author: { '@type': 'Person', name: article.author_name || 'Redakcia' },
+      datePublished: article.published_at
+        ? new Date(article.published_at).toISOString()
+        : undefined,
+      dateModified: new Date(article.updated_at).toISOString(),
+      publisher: { '@type': 'Organization', name: config.app.name },
+      url: baseUrl + '/clanok/' + article.slug,
+    };
+    if (ogImage) jsonLd.image = baseUrl + ogImage;
+    if (article.type === 'review' && reviewData.score) {
+      jsonLd.reviewRating = { '@type': 'Rating', ratingValue: reviewData.score, bestRating: 10 };
+    }
+    const canonicalUrl = baseUrl + '/clanok/' + article.slug;
+
     res.render(viewTemplate, {
       title: article.seo_title || article.title,
       currentPath: '/clanok/' + article.slug,
@@ -672,6 +697,11 @@ router.get('/clanok/:slug', async (req, res, next) => {
       readTime,
       viewsFormatted,
       reviewData,
+      jsonLd,
+      canonicalUrl,
+      ogType: 'article',
+      ogTitle: article.seo_title || article.title,
+      ogDescription: article.seo_description || article.excerpt || '',
     });
   } catch (err) {
     log.error('article detail failed', { err: err.message });
@@ -885,6 +915,7 @@ router.get('/', async (req, res, next) => {
       trending: trending.map(enrich),
       editorsPick: editorsPick ? enrich(editorsPick) : null,
       reviews: reviews.map(enrich),
+      canonicalUrl: config.baseUrl || '/',
     });
   } catch (err) {
     log.error('homepage query failed', { err: err.message });
@@ -901,6 +932,226 @@ router.get('/dev', (req, res) => {
     serverTime: new Date().toISOString(),
   });
 });
+
+// ---------------------------------------------------------------------------
+// ROBOTS.TXT
+// ---------------------------------------------------------------------------
+router.get('/robots.txt', (req, res) => {
+  const baseUrl = config.baseUrl || `${req.protocol}://${req.get('host')}`;
+  res
+    .type('text/plain')
+    .send(
+      `User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/\nDisallow: /profil/\n\nSitemap: ${baseUrl}/sitemap.xml`
+    );
+});
+
+// ---------------------------------------------------------------------------
+// SITEMAP.XML
+// ---------------------------------------------------------------------------
+router.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const baseUrl = config.baseUrl || `${req.protocol}://${req.get('host')}`;
+    const urls = [];
+
+    // Homepage
+    urls.push({ loc: baseUrl + '/', priority: '1.0', changefreq: 'daily' });
+
+    // Published articles
+    const articles = await db('articles')
+      .where('status', 'published')
+      .select('slug', 'type', 'updated_at')
+      .orderBy('published_at', 'desc');
+    for (const a of articles) {
+      urls.push({
+        loc: baseUrl + '/clanok/' + a.slug,
+        lastmod: new Date(a.updated_at).toISOString().slice(0, 10),
+        priority: a.type === 'review' ? '0.9' : '0.8',
+        changefreq: 'monthly',
+      });
+    }
+
+    // Rankings
+    const rankings = await db('rankings').where('status', 'active').select('slug', 'updated_at');
+    for (const r of rankings) {
+      urls.push({
+        loc: baseUrl + '/rebricky/' + r.slug,
+        lastmod: new Date(r.updated_at).toISOString().slice(0, 10),
+        priority: '0.7',
+        changefreq: 'weekly',
+      });
+    }
+
+    // Categories
+    const cats = await db('categories').select('slug');
+    for (const c of cats) {
+      urls.push({ loc: baseUrl + '/kategorie/' + c.slug, priority: '0.6', changefreq: 'weekly' });
+    }
+
+    // Static pages
+    const pages = await db('pages').where('status', 'published').select('slug', 'updated_at');
+    for (const p of pages) {
+      urls.push({
+        loc: baseUrl + '/' + p.slug,
+        lastmod: new Date(p.updated_at).toISOString().slice(0, 10),
+        priority: '0.5',
+        changefreq: 'monthly',
+      });
+    }
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    for (const u of urls) {
+      xml += '  <url>\n';
+      xml += '    <loc>' + u.loc + '</loc>\n';
+      if (u.lastmod) xml += '    <lastmod>' + u.lastmod + '</lastmod>\n';
+      if (u.changefreq) xml += '    <changefreq>' + u.changefreq + '</changefreq>\n';
+      if (u.priority) xml += '    <priority>' + u.priority + '</priority>\n';
+      xml += '  </url>\n';
+    }
+    xml += '</urlset>';
+
+    res.type('application/xml').send(xml);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// CONTACT FORM — POST /kontakt
+// ---------------------------------------------------------------------------
+router.post('/kontakt', async (req, res, next) => {
+  try {
+    const name = String(req.body.name || '')
+      .trim()
+      .slice(0, 120);
+    const email = String(req.body.email || '')
+      .trim()
+      .slice(0, 255);
+    const subject =
+      String(req.body.subject || '')
+        .trim()
+        .slice(0, 255) || null;
+    const message = String(req.body.message || '')
+      .trim()
+      .slice(0, 5000);
+
+    if (!name || !email || !message) {
+      return renderStaticPage(req, res, next, 'kontakt', {
+        flashError: 'Vyplň všetky povinné polia (meno, email, správa).',
+      });
+    }
+
+    // Basic email validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return renderStaticPage(req, res, next, 'kontakt', {
+        flashError: 'Zadaj platnú emailovú adresu.',
+      });
+    }
+
+    // IP hash (GDPR)
+    const ip = req.ip || req.connection.remoteAddress || '';
+    const dailySalt = new Date().toISOString().slice(0, 10);
+    const ipHash = crypto
+      .createHash('sha256')
+      .update(ip + dailySalt)
+      .digest('hex');
+
+    await db('contact_messages').insert({
+      name,
+      email,
+      subject,
+      message,
+      ip_hash: ipHash,
+    });
+
+    log.info('contact form submitted', { email, subject });
+
+    return renderStaticPage(req, res, next, 'kontakt', {
+      flashSuccess: 'Ďakujeme! Tvoja správa bola odoslaná. Ozveme sa čo najskôr.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// STATIC PAGES — GET /:slug (MUSÍ byť posledná route!)
+// ---------------------------------------------------------------------------
+router.get('/:slug', async (req, res, next) => {
+  try {
+    await renderStaticPage(req, res, next, req.params.slug);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Helper funkcia
+async function renderStaticPage(req, res, next, slug, extras = {}) {
+  const pg = await db('pages').where('slug', slug).where('status', 'published').first();
+
+  if (!pg) return next(); // 404 fallback
+
+  let content = [];
+  try {
+    content = typeof pg.content === 'string' ? JSON.parse(pg.content) : pg.content || [];
+    if (!Array.isArray(content)) content = [];
+  } catch {
+    content = [];
+  }
+
+  // Extract sp_legal_meta from first block (for hero rendering)
+  let legalMeta = null;
+  let renderContent = content;
+  if (content.length > 0 && content[0].type === 'sp_legal_meta') {
+    legalMeta = content[0];
+    renderContent = content.slice(1);
+  }
+
+  // Load media IDs used in image blocks
+  const mediaIds = renderContent
+    .filter((b) => b.type === 'image' && b.media_id)
+    .map((b) => b.media_id);
+  let mediaMap = new Map();
+  if (mediaIds.length > 0) {
+    const rows = await db('media').whereIn('id', mediaIds);
+    mediaMap = new Map(rows.map((r) => [r.id, r]));
+  }
+
+  // CSRF token for contact form
+  let csrfToken = null;
+  if (renderContent.some((b) => b.type === 'sp_contact_form')) {
+    const { generateToken } = require('../middleware/csrf');
+    csrfToken = generateToken(req, res);
+  }
+
+  const { html: contentHtml, sections } = pageRenderer.renderPageBlocks(renderContent, {
+    mediaMap,
+  });
+
+  // Inject CSRF token into contact form
+  let finalHtml = contentHtml;
+  if (csrfToken) {
+    finalHtml = contentHtml.replace(
+      'name="_csrf" value=""',
+      'name="_csrf" value="' + csrfToken + '"'
+    );
+  }
+
+  res.render('page/show', {
+    title: pg.seo_title || pg.title,
+    currentPath: '/' + pg.slug,
+    pg,
+    legalMeta,
+    contentHtml: finalHtml,
+    sections,
+    baseUrl: config.baseUrl || '',
+    flashSuccess: extras.flashSuccess || null,
+    flashError: extras.flashError || null,
+    csrfToken,
+    canonicalUrl: (config.baseUrl || '') + '/' + pg.slug,
+    ogType: 'website',
+  });
+}
 
 router.use((req, res) => {
   res.status(404).render('errors/404', {

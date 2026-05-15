@@ -8,6 +8,9 @@
 
 const express = require('express');
 const router = express.Router();
+const { requireAuth, requireRole } = require('../middleware/auth');
+router.use(requireAuth());
+router.use(requireRole('admin', 'editor'));
 const db = require('../db');
 const log = require('../logger');
 const pages = require('../utils/pages');
@@ -47,7 +50,7 @@ router.get('/', async (req, res, next) => {
       items,
       query: { q },
       pagination: { page, totalPages, total },
-      csrfToken: generateToken(req, res),
+      csrfToken: res.locals.csrfToken,
       flash: {
         created: !!req.query.created,
         updated: !!req.query.updated,
@@ -86,7 +89,7 @@ router.get('/new', (req, res) => {
     },
     content: defaultContent,
     errors: {},
-    csrfToken: generateToken(req, res),
+    csrfToken: res.locals.csrfToken,
     isNew: true,
     templates: pages.TEMPLATES,
     flash: {},
@@ -125,7 +128,7 @@ router.post('/', async (req, res, next) => {
         pg: { ...value, slug: finalSlug },
         content: cleanBlocks,
         errors,
-        csrfToken: generateToken(req, res),
+        csrfToken: res.locals.csrfToken,
         isNew: true,
         templates: pages.TEMPLATES,
         flash: {},
@@ -181,7 +184,7 @@ router.get('/:id/edit', async (req, res, next) => {
       pg,
       content,
       errors: {},
-      csrfToken: generateToken(req, res),
+      csrfToken: res.locals.csrfToken,
       isNew: false,
       templates: pages.TEMPLATES,
       flash: {
@@ -228,7 +231,7 @@ router.post('/:id', async (req, res, next) => {
         pg: { ...existing, ...value, slug: finalSlug },
         content: cleanBlocks,
         errors,
-        csrfToken: generateToken(req, res),
+        csrfToken: res.locals.csrfToken,
         isNew: false,
         templates: pages.TEMPLATES,
         flash: {},

@@ -53,9 +53,9 @@
               data-page-form>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="content_json" data-content-json
-                 value="<%- JSON.stringify(content).replace(/</g, '\\u003c') %>">
+                 value="<%= JSON.stringify(content) %>">
 
-          <div class="row g-4">
+            <div class="row g-4">
             <%# ===== LEFT COLUMN — content ===== %>
             <div class="col-lg-8">
 
@@ -469,6 +469,6 @@
   </template>
 
   <%- include('../partials/scripts') %>
-  <script src="/admin/static/js/admin-page-editor.js" defer></script>
+  <script src="/admin/public/js/admin-page-editor.js" defer></script>
 </body>
 </html>

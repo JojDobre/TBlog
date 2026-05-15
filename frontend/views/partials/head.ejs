@@ -4,6 +4,25 @@
   <% if (typeof description !== 'undefined' && description) { %>
     <meta name="description" content="<%= description %>">
   <% } %>
+
+  <%# === OG Meta Tags === %>
+  <meta property="og:title" content="<%= (typeof ogTitle !== 'undefined' && ogTitle) ? ogTitle : ((typeof title !== 'undefined' && title) ? title : appName) %>">
+  <meta property="og:description" content="<%= (typeof ogDescription !== 'undefined' && ogDescription) ? ogDescription : ((typeof description !== 'undefined' && description) ? description : '') %>">
+  <meta property="og:type" content="<%= (typeof ogType !== 'undefined' && ogType) ? ogType : 'website' %>">
+  <% if (typeof ogImage !== 'undefined' && ogImage) { %>
+    <meta property="og:image" content="<%= ogImage %>">
+  <% } %>
+  <% if (typeof canonicalUrl !== 'undefined' && canonicalUrl) { %>
+    <meta property="og:url" content="<%= canonicalUrl %>">
+    <link rel="canonical" href="<%= canonicalUrl %>">
+  <% } %>
+  <meta property="og:site_name" content="<%= appName %>">
+
+  <%# === JSON-LD Structured Data === %>
+  <% if (typeof jsonLd !== 'undefined' && jsonLd) { %>
+    <script type="application/ld+json"><%- JSON.stringify(jsonLd) %></script>
+  <% } %>
+
   <script src="/js/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
