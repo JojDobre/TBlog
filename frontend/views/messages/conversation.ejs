@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable">
+<head>
+  <%- include('../partials/head', { title: 'Konverzácia' }) %>
+  <link rel="stylesheet" href="/css/messages.css" />
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: currentPath }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <a href="/spravy">Správy</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-current" id="conv-breadcrumb">Konverzácia</span>
+      </nav>
+
+      <!-- Conversation header -->
+      <div class="conv-header" id="conv-header">
+        <a href="/spravy" class="conv-back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 5l-7 7 7 7"/>
+          </svg>
+        </a>
+        <div class="conv-header-user" id="conv-user-info">
+          <span class="conv-header-loading">Načítavam...</span>
+        </div>
+      </div>
+
+      <!-- Messages thread -->
+      <div class="conv-messages" id="conv-messages">
+        <div class="msg-loading">Načítavam správy...</div>
+      </div>
+
+      <!-- Reply form -->
+      <div class="conv-reply" id="conv-reply">
+        <textarea class="msg-textarea" id="conv-reply-text" rows="2" placeholder="Napíš odpoveď..."></textarea>
+        <div class="conv-reply-actions">
+          <span class="conv-reply-hint" id="conv-reply-hint"></span>
+          <button class="btn btn-sm btn-primary" id="conv-reply-send">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Odoslať
+          </button>
+        </div>
+        <div class="msg-modal-error" id="conv-reply-error" style="display:none"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script>window.__CONV_ID = <%= conversationId %>;</script>
+  <script src="/js/messages.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+<head>
+  <%- include('../partials/head', { title: 'Broadcast správa' }) %>
+</head>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: 'Broadcast správa' }) %>
+
+    <main class="bz-content">
+      <div class="bz-art-wrap">
+
+        <%# Breadcrumb %>
+        <div class="bz-art-breadcrumb" style="margin-bottom:20px">
+          <a href="/admin/dashboard">Admin</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <a href="/admin/messages">Správy</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <span class="bz-art-breadcrumb-current">Broadcast</span>
+        </div>
+
+        <%# Flash %>
+        <% if (flash.success) { %>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> <%= flash.success %>
+            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
+          </div>
+        <% } %>
+        <% if (flash.error) { %>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.error %>
+            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
+          </div>
+        <% } %>
+
+        <%# Header %>
+        <div class="bz-art-header">
+          <div>
+            <h1 class="bz-art-header-title">Broadcast správa</h1>
+            <p class="bz-art-header-sub">Odoslať systémovú správu všetkým registrovaným používateľom.</p>
+          </div>
+          <a href="/admin/messages" class="bz-art-btn bz-art-btn-sm">
+            <i class="bi bi-arrow-left"></i> Späť na správy
+          </a>
+        </div>
+
+        <div class="row g-4">
+          <%# Formulár %>
+          <div class="col-lg-8">
+            <div class="bz-art-content-card">
+              <div class="bz-art-content-head">
+                <span class="bz-art-content-title">
+                  <i class="bi bi-megaphone me-2"></i>Obsah broadcast správy
+                </span>
+              </div>
+              <div class="bz-art-content-body">
+                <form method="POST" action="/admin/messages/broadcast"
+                      data-confirm="Odoslať broadcast správu <%= userCount %> používateľom?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                  <div style="margin-bottom:16px">
+                    <label class="bz-art-field-label">Obsah správy</label>
+                    <textarea class="form-control" name="content" rows="6"
+                              maxlength="5000" required
+                              placeholder="Napíšte text broadcast správy..."><%= typeof lastContent !== 'undefined' ? lastContent : '' %></textarea>
+                    <span class="bz-art-hint" style="margin-top:4px">Max 5000 znakov.</span>
+                  </div>
+
+                  <div style="display:flex; gap:8px">
+                    <button type="submit" class="bz-art-btn bz-art-btn-accent">
+                      <i class="bi bi-send"></i> Odoslať broadcast
+                    </button>
+                    <a href="/admin/messages" class="bz-art-btn bz-art-btn-sm">Zrušiť</a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <%# Info sidebar %>
+          <div class="col-lg-4">
+            <div class="bz-art-side-card">
+              <div class="bz-art-side-head">
+                <i class="bi bi-info-circle"></i> Informácie
+              </div>
+              <div class="bz-art-side-body" style="font-size:12px; color:var(--art-text-muted); line-height:1.7">
+                <p style="margin:0 0 8px">Broadcast vytvorí pre každého používateľa konverzáciu s názvom „Admin", kde sa mu zobrazí správa.</p>
+                <p style="margin:0 0 8px">Ak už konverzácia typu broadcast existuje, nová správa sa pridá do existujúcej.</p>
+                <p style="margin:0 0 8px">Používateľ dostane aj notifikáciu (zvonček).</p>
+                <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--art-border)">
+                  <span class="bz-art-field-label" style="margin:0">Celkom príjemcov</span>
+                  <span style="font-family:var(--art-mono); font-size:18px; font-weight:700; color:var(--art-text); display:block; margin-top:4px"><%= userCount %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

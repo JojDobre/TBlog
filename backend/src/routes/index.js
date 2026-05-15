@@ -20,11 +20,13 @@ const adminCommentsRouter = require('./admin-comments');
 const adminPagesRouter = require('./admin-pages');
 const adminMessagesRouter = require('./admin-messages');
 const apiCommentsRouter = require('./api-comments');
+const apiMessagesRouter = require('./api-messages');
 const apiNotificationsRouter = require('./api-notifications');
 const apiRouter = require('./api');
 const blockRenderer = require('../utils/block-renderer');
 const pageRenderer = require('../utils/page-renderer');
 const crypto = require('crypto');
+const messagesRouter = require('./messages');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
 const healthRouter = require('./health');
@@ -45,6 +47,7 @@ router.use('/admin/comments', adminCommentsRouter);
 router.use('/admin/pages', adminPagesRouter);
 router.use('/admin/messages', adminMessagesRouter);
 router.use('/admin', adminRouter);
+router.use('/api/messages', apiMessagesRouter);
 router.use('/api/notifications', apiNotificationsRouter);
 router.use('/api/comments', apiCommentsRouter);
 
@@ -53,6 +56,7 @@ router.use('/api', apiRouter);
 router.use('/', rankingRoutes);
 router.use('/', authRouter);
 router.use('/', profileRouter);
+router.use('/', messagesRouter);
 
 // ---------------------------------------------------------------------------
 // SEARCH
@@ -1063,6 +1067,55 @@ router.post('/kontakt', async (req, res, next) => {
       message,
       ip_hash: ipHash,
     });
+
+    // Prepojenie na messaging — ak existuje registrovaný user s týmto emailom
+    const registeredUser = await db('users')
+      .where('email', email)
+      .where('is_banned', false)
+      .first();
+
+    if (registeredUser) {
+      // Nájdi admin usera (prvý admin v systéme)
+      const admin = await db('users').where('role', 'admin').first();
+
+      if (admin) {
+        // Nájdi alebo vytvor contact konverzáciu
+        let contactConv = await db('conversation_participants as cp1')
+          .join('conversation_participants as cp2', 'cp1.conversation_id', 'cp2.conversation_id')
+          .join('conversations as c', 'cp1.conversation_id', 'c.id')
+          .where('cp1.user_id', admin.id)
+          .where('cp2.user_id', registeredUser.id)
+          .where('c.type', 'contact')
+          .select('c.id')
+          .first();
+
+        let convId;
+        if (contactConv) {
+          convId = contactConv.id;
+        } else {
+          const [newId] = await db('conversations').insert({
+            type: 'contact',
+            last_message_at: new Date(),
+          });
+          convId = newId;
+          await db('conversation_participants').insert([
+            { conversation_id: convId, user_id: admin.id },
+            { conversation_id: convId, user_id: registeredUser.id },
+          ]);
+        }
+
+        // Vlož kontaktnú správu do konverzácie
+        const msgContent = (subject ? '[' + subject + '] ' : '') + message;
+        await db('messages').insert({
+          conversation_id: convId,
+          sender_id: registeredUser.id,
+          content: msgContent,
+          is_system: false,
+        });
+
+        await db('conversations').where('id', convId).update({ last_message_at: new Date() });
+      }
+    }
 
     log.info('contact form submitted', { email, subject });
 

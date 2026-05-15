@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable">
+<head>
+  <%- include('../partials/head', { title: 'Správy' }) %>
+  <link rel="stylesheet" href="/css/messages.css" />
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: currentPath }) %>
+
+  <main class="page">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <nav class="article-breadcrumb">
+        <a href="/">Domov</a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-current">Správy</span>
+      </nav>
+
+      <!-- Header -->
+      <div class="msg-header">
+        <div class="msg-header-left">
+          <h1 class="h-2">Správy</h1>
+          <span class="msg-unread-badge" id="msg-total-unread" style="display:none"></span>
+        </div>
+        <button class="btn btn-sm btn-primary" id="msg-new-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Nová správa
+        </button>
+      </div>
+
+      <!-- New message modal -->
+      <div class="msg-modal-overlay" id="msg-new-modal" style="display:none">
+        <div class="msg-modal">
+          <div class="msg-modal-header">
+            <h3>Nová správa</h3>
+            <button class="msg-modal-close" id="msg-modal-close">&times;</button>
+          </div>
+          <div class="msg-modal-body">
+            <div class="msg-field">
+              <label class="msg-label">Príjemca</label>
+              <input type="text" class="msg-input" id="msg-recipient" placeholder="Zadaj nickname..." autocomplete="off">
+              <div class="msg-autocomplete" id="msg-autocomplete"></div>
+            </div>
+            <div class="msg-field">
+              <label class="msg-label">Správa</label>
+              <textarea class="msg-textarea" id="msg-new-content" rows="4" placeholder="Napíš správu..."></textarea>
+            </div>
+            <div class="msg-modal-error" id="msg-new-error" style="display:none"></div>
+          </div>
+          <div class="msg-modal-footer">
+            <button class="btn btn-sm" id="msg-cancel-btn">Zrušiť</button>
+            <button class="btn btn-sm btn-primary" id="msg-send-btn">Odoslať</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversations list -->
+      <div class="msg-list" id="msg-list">
+        <div class="msg-loading">Načítavam konverzácie...</div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="msg-pagination" id="msg-pagination"></div>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/messages.js" defer></script>
+</body>
+</html>

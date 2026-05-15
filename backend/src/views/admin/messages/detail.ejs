@@ -21,6 +21,14 @@
           <span class="bz-art-breadcrumb-current">#<%= msg.id %></span>
         </div>
 
+        <%# Reply flash %>
+        <% if (typeof flash !== 'undefined' && flash && flash.replied) { %>
+          <div class="bz-art-alert bz-art-alert-success" style="margin-bottom:16px">
+            <i class="bi bi-check-circle-fill"></i> Odpoveď bola odoslaná do správ používateľa.
+            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
+          </div>
+        <% } %>
+
         <div class="row g-4">
           <!-- Message content -->
           <div class="col-lg-8">
@@ -53,6 +61,27 @@
                   </div>
                 </div>
                 <div style="white-space:pre-wrap; font-size:14px; line-height:1.7; color:var(--art-text-muted)"><%= msg.message %></div>
+              </div>
+            </div>
+
+              <%# Reply to messaging %>
+            <div class="bz-art-content-card" style="margin-top:16px">
+              <div class="bz-art-side-head">
+                <i class="bi bi-reply"></i> Odpovedať do správ
+              </div>
+              <div class="bz-art-side-body">
+                <form method="POST" action="/admin/messages/<%= msg.id %>/reply">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <textarea class="form-control" name="reply" rows="3"
+                            placeholder="Napíšte odpoveď..." required maxlength="5000"
+                            style="margin-bottom:8px"></textarea>
+                  <span class="bz-art-hint" style="display:block; margin-bottom:10px">
+                    Odpoveď sa odošle do správ používateľa s emailom <strong><%= msg.email %></strong> (ak je registrovaný).
+                  </span>
+                  <button type="submit" class="bz-art-btn bz-art-btn-accent bz-art-btn-sm" style="justify-content:center; width:100%">
+                    <i class="bi bi-send"></i> Odoslať do správ
+                  </button>
+                </form>
               </div>
             </div>
           </div>

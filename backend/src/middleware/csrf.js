@@ -29,11 +29,7 @@ const { invalidCsrfTokenError, generateToken, validateRequest, doubleCsrfProtect
 });
 
 function setCsrfToken(req, res, next) {
-  // Skipnúť na POST/PUT/DELETE/PATCH — tie maj už token z GET
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
-    return next();
-  }
-  res.locals.csrfToken = generateToken(req, res);
+  res.locals.csrfToken = generateToken(req, res, false, false);
   next();
 }
 

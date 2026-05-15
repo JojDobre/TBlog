@@ -15,7 +15,10 @@ const log = require('../logger');
  * @param {import('knex').Knex} db
  * @param {{ commentOwnerId: number, actorId: number, actorNickname: string, commentId: number, articleId: number, articleTitle: string }}
  */
-async function notifyCommentReply(db, { commentOwnerId, actorId, actorNickname, commentId, articleId, articleTitle }) {
+async function notifyCommentReply(
+  db,
+  { commentOwnerId, actorId, actorNickname, commentId, articleId, articleTitle }
+) {
   // Nenotifikuj sám seba
   if (commentOwnerId === actorId) return;
 
@@ -42,7 +45,10 @@ async function notifyCommentReply(db, { commentOwnerId, actorId, actorNickname, 
  * @param {import('knex').Knex} db
  * @param {{ commentOwnerId: number, actorId: number, actorNickname: string, commentId: number, articleId: number, articleTitle: string }}
  */
-async function notifyCommentLike(db, { commentOwnerId, actorId, actorNickname, commentId, articleId, articleTitle }) {
+async function notifyCommentLike(
+  db,
+  { commentOwnerId, actorId, actorNickname, commentId, articleId, articleTitle }
+) {
   if (commentOwnerId === actorId) return;
 
   const title = articleTitle.length > 60 ? articleTitle.slice(0, 60) + '…' : articleTitle;
@@ -51,7 +57,12 @@ async function notifyCommentLike(db, { commentOwnerId, actorId, actorNickname, c
   // Deduplikácia — ak rovnaký actor už lajkol ten istý komentár, nenotifikuj znova
   try {
     const existing = await db('notifications')
-      .where({ user_id: commentOwnerId, actor_id: actorId, type: 'comment_like', comment_id: commentId })
+      .where({
+        user_id: commentOwnerId,
+        actor_id: actorId,
+        type: 'comment_like',
+        comment_id: commentId,
+      })
       .first();
     if (existing) return;
 
@@ -79,8 +90,29 @@ async function unreadCount(db, userId) {
   return Number(row.c);
 }
 
+/**
+ * Notifikácia o novej správe.
+ */
+async function notifyNewMessage(db, { recipientId, senderId, senderNickname, conversationId }) {
+  if (recipientId === senderId) return;
+
+  const message = `${senderNickname} ti poslal/a novú správu`;
+
+  try {
+    await db('notifications').insert({
+      user_id: recipientId,
+      actor_id: senderId,
+      type: 'new_message',
+      message,
+    });
+  } catch (err) {
+    log.warn('notification insert failed (message)', { err: err.message, recipientId, senderId });
+  }
+}
+
 module.exports = {
   notifyCommentReply,
   notifyCommentLike,
   unreadCount,
+  notifyNewMessage,
 };
