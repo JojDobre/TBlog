@@ -1,26 +1,26 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Prihlásenie' }) %>
 </head>
 <body class="bz-auth-body">
   <main class="bz-auth-wrap">
-    <div class="bz-auth-card">
+    <div class="bz-auth-card" style="background:oklch(0.21 0.007 240); border:1px solid oklch(0.28 0.008 240); box-shadow:0 10px 40px oklch(0 0 0/0.4)">
       <div class="bz-auth-header">
-        <i class="bi bi-hdd-stack bz-auth-logo"></i>
-        <h1 class="h4 mb-0">Bytezone Admin</h1>
-        <p class="text-muted small mt-1 mb-0">Prihlásenie do administrácie</p>
+        <div class="bz-sidebar-logo" style="width:44px; height:44px; font-size:18px; border-radius:12px; margin:0 auto 10px">Bz</div>
+        <h1 style="font-family:'Inter Tight',system-ui,sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.03em; color:oklch(0.95 0.005 240); margin:0">Bytezone Admin</h1>
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.48 0.01 240); margin:6px 0 0">Prihlásenie do administrácie</p>
       </div>
 
       <% if (typeof error !== 'undefined' && error) { %>
-        <div class="alert alert-danger" role="alert">
-          <i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+        <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:16px">
+          <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
         </div>
       <% } %>
 
       <% if (typeof info !== 'undefined' && info) { %>
-        <div class="alert alert-success" role="alert">
-          <i class="bi bi-check-circle me-2"></i><%= info %>
+        <div class="bz-art-alert bz-art-alert-success" style="margin-bottom:16px">
+          <i class="bi bi-check-circle-fill"></i> <%= info %>
         </div>
       <% } %>
 
@@ -30,8 +30,8 @@
           <input type="hidden" name="next" value="<%= nextUrl %>" />
         <% } %>
 
-        <div class="mb-3">
-          <label for="nickname" class="form-label">Nickname</label>
+        <div style="margin-bottom:14px">
+          <label for="nickname" class="bz-art-field-label">Nickname</label>
           <input
             type="text"
             class="form-control"
@@ -42,10 +42,11 @@
             autocomplete="username"
             autofocus
             maxlength="64"
+            style="background:oklch(0.16 0.005 240); border-color:oklch(0.3 0.008 240); color:oklch(0.95 0.005 240)"
           />
         </div>
-        <div class="mb-3">
-          <label for="password" class="form-label">Heslo</label>
+        <div style="margin-bottom:18px">
+          <label for="password" class="bz-art-field-label">Heslo</label>
           <input
             type="password"
             class="form-control"
@@ -54,21 +55,21 @@
             required
             autocomplete="current-password"
             maxlength="200"
+            style="background:oklch(0.16 0.005 240); border-color:oklch(0.3 0.008 240); color:oklch(0.95 0.005 240)"
           />
         </div>
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-box-arrow-in-right me-1"></i>
-          Prihlásiť sa
+        <button type="submit" class="bz-art-btn bz-art-btn-accent" style="width:100%; background:oklch(0.72 0.17 155); justify-content:center; padding:10px 16px; font-size:14px">
+          <i class="bi bi-box-arrow-in-right" style="background:oklch(0.72 0.17 155)"></i> Prihlásiť sa
         </button>
       </form>
 
-      <div class="bz-auth-footer">
-        <a href="/admin/forgot" class="text-muted small">Zabudnuté heslo?</a>
+      <div style="margin-top:18px; text-align:center; border-top:1px solid oklch(0.28 0.008 240); padding-top:14px">
+        <a href="/admin/forgot" style="font-size:12px; color:oklch(0.55 0.01 240); text-decoration:none">Zabudnuté heslo?</a>
       </div>
     </div>
 
-    <p class="text-muted small text-center mt-4">
-      <a href="/" class="text-decoration-none text-white-50">← Späť na web</a>
+    <p style="text-align:center; margin-top:20px">
+      <a href="/" style="font-size:12px; color:oklch(0.5 0.01 240); text-decoration:none">← Späť na web</a>
     </p>
   </main>
 

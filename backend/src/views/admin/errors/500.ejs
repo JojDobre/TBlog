@@ -1,34 +1,32 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: title }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: title }) %>
 
     <main class="bz-content">
-      <div class="container py-5">
-        <div class="text-center mb-4">
-          <div class="display-1 text-muted"><%= status %></div>
-          <h1 class="h3 mb-3"><%= title %></h1>
-          <p class="text-muted"><%= message %></p>
-        </div>
+      <div class="bz-art-wrap" style="text-align:center; padding-top:80px; padding-bottom:80px; max-width:860px">
+        <div style="font-family:var(--art-mono); font-size:clamp(64px,10vw,120px); font-weight:800; letter-spacing:-0.06em; color:var(--art-text-subtle); line-height:1"><%= status %></div>
+        <h1 style="font-family:var(--art-font); font-size:22px; font-weight:700; color:var(--art-text); margin:16px 0 8px"><%= title %></h1>
+        <p style="font-size:13px; color:var(--art-text-muted)"><%= message %></p>
 
         <% if (stack) { %>
-          <details class="mt-4">
-            <summary class="text-muted small mb-2">Detail chyby (dev only)</summary>
-            <pre class="bg-body-secondary p-3 rounded small"><code><%= stack %></code></pre>
+          <details style="margin-top:28px; text-align:left">
+            <summary style="font-family:var(--art-mono); font-size:11px; color:var(--art-text-subtle); cursor:pointer; margin-bottom:8px">Detail chyby (dev only)</summary>
+            <pre style="background:var(--art-bg-inset); border:1px solid var(--art-border); border-radius:var(--art-r-md); padding:14px 16px; font-family:var(--art-mono); font-size:11px; color:var(--art-text-muted); overflow-x:auto"><code><%= stack %></code></pre>
           </details>
         <% } %>
 
-        <p class="text-center mt-4">
-          <a href="/admin/dashboard" class="btn btn-primary">
-            <i class="bi bi-arrow-left me-1"></i>Späť na dashboard
+        <div style="margin-top:28px">
+          <a href="/admin/dashboard" class="bz-art-btn bz-art-btn-accent">
+            <i class="bi bi-arrow-left"></i> Späť na dashboard
           </a>
-        </p>
+        </div>
       </div>
     </main>
   </div>

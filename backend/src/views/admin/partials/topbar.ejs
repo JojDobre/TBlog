@@ -9,6 +9,10 @@
 %>
 <%
   const csrf = (typeof csrfToken === 'string') ? csrfToken : '';
+  const _u = (typeof user !== 'undefined' && user) ? user : null;
+  const _initials = _u
+    ? (_u.nickname || _u.email || '?').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
 %>
 <header class="bz-topbar">
   <button
@@ -38,19 +42,26 @@
         type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
+        style="display:inline-flex; align-items:center; gap:6px"
       >
-        <i class="bi bi-person-circle me-1"></i>
-        <% if (typeof user !== 'undefined' && user) { %>
-          <%= user.nickname %>
-          <% if (user.role === 'admin') { %>
+        <% if (_u && _u.avatar_path) { %>
+          <img src="/uploads/<%= _u.avatar_path %>" alt=""
+               style="width:22px; height:22px; border-radius:50%; object-fit:cover">
+        <% } else { %>
+          <div class="bz-topbar-avatar"><%= _initials %></div>
+        <% } %>
+        <% if (_u) { %>
+          <%= _u.nickname %>
+          <% if (_u.role === 'admin') { %>
             <span class="badge text-bg-danger ms-1">admin</span>
-          <% } else if (user.role === 'editor') { %>
+          <% } else if (_u.role === 'editor') { %>
             <span class="badge text-bg-primary ms-1">editor</span>
           <% } %>
         <% } else { %>
           Hosť
         <% } %>
       </button>
+
       <ul class="dropdown-menu dropdown-menu-end">
         <% if (typeof user !== 'undefined' && user) { %>
           <li>

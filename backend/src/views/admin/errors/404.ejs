@@ -1,26 +1,26 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Stránka nenájdená' }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Stránka nenájdená' }) %>
 
     <main class="bz-content">
-      <div class="container py-5 text-center">
-        <div class="display-1 text-muted">404</div>
-        <h1 class="h3 mb-3">Stránka nenájdená</h1>
-        <p class="text-muted">
-          Adresa <code><%= url %></code> v administrácii neexistuje.
+      <div class="bz-art-wrap" style="text-align:center; padding-top:80px; padding-bottom:80px">
+        <div style="font-family:var(--art-mono); font-size:clamp(64px,10vw,120px); font-weight:800; letter-spacing:-0.06em; color:var(--art-text-subtle); line-height:1">404</div>
+        <h1 style="font-family:var(--art-font); font-size:22px; font-weight:700; color:var(--art-text); margin:16px 0 8px">Stránka nenájdená</h1>
+        <p style="font-size:13px; color:var(--art-text-muted)">
+          Adresa <span style="font-family:var(--art-mono); color:var(--art-accent)"><%= url %></span> v administrácii neexistuje.
         </p>
-        <p class="mt-4">
-          <a href="/admin/dashboard" class="btn btn-primary">
-            <i class="bi bi-arrow-left me-1"></i>Späť na dashboard
+        <div style="margin-top:28px">
+          <a href="/admin/dashboard" class="bz-art-btn bz-art-btn-accent">
+            <i class="bi bi-arrow-left"></i> Späť na dashboard
           </a>
-        </p>
+        </div>
       </div>
     </main>
   </div>

@@ -1,66 +1,97 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Úprava média' }) %>
 </head>
-<body class="bz-admin-body">
-  <%- include('../partials/sidebar') %>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Úprava média' }) %>
 
     <main class="bz-content">
-      <div class="container-fluid p-4">
+      <div class="bz-art-wrap" style="max-width:1100px">
+
+<div class="bz-art-breadcrumb" style="margin-bottom:20px">
+  <a href="/admin/dashboard">Dashboard</a>
+  <span class="bz-art-breadcrumb-sep">›</span>
+  <a href="/admin/media">Médiá</a>
+  <span class="bz-art-breadcrumb-sep">›</span>
+  <span class="bz-art-breadcrumb-current"><%= item.original_filename %></span>
+</div>
+
         <div class="row g-4">
+          <!-- Preview + info -->
           <div class="col-md-5">
-            <div class="card border-0 shadow-sm">
-              <a href="/uploads/<%= item.original_path %>" target="_blank" rel="noopener">
-                <img src="/uploads/<%= item.thumbnail_path %>" alt="<%= item.alt_text || item.original_filename %>" class="card-img-top" />
+            <div class="bz-art-content-card">
+              <a href="/uploads/<%= item.original_path %>" target="_blank" rel="noopener"
+                 style="display:block; background:oklch(0.13 0.005 240); overflow:hidden; border-radius:var(--art-r-xl) var(--art-r-xl) 0 0">
+                <img src="/uploads/<%= item.thumbnail_path %>" alt="<%= item.alt_text || item.original_filename %>"
+                     style="width:100%; display:block; object-fit:contain" />
               </a>
-              <div class="card-body small">
-                <dl class="row mb-0">
-                  <dt class="col-5 text-muted">Pôvodný názov</dt><dd class="col-7"><%= item.original_filename %></dd>
-                  <dt class="col-5 text-muted">Rozmer</dt><dd class="col-7"><%= item.width || '?' %>×<%= item.height || '?' %></dd>
-                  <dt class="col-5 text-muted">Veľkosť</dt><dd class="col-7"><%= Math.round(item.size_bytes / 1024) %> KB</dd>
-                  <dt class="col-5 text-muted">Typ</dt><dd class="col-7"><%= item.mime %></dd>
-                  <dt class="col-5 text-muted">Nahrané</dt><dd class="col-7"><%= new Date(item.created_at).toLocaleString('sk-SK') %></dd>
-                  <dt class="col-5 text-muted">Nahral</dt><dd class="col-7"><%= item.uploader_nickname || '—' %></dd>
-                </dl>
+              <div class="bz-art-content-body" style="display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:12px">
+                <span class="bz-art-field-label" style="margin:0">Pôvodný názov</span>
+                <span style="color:var(--art-text-muted)"><%= item.original_filename %></span>
+
+                <span class="bz-art-field-label" style="margin:0">Rozmer</span>
+                <span style="color:var(--art-text-muted)"><%= item.width || '?' %>×<%= item.height || '?' %></span>
+
+                <span class="bz-art-field-label" style="margin:0">Veľkosť</span>
+                <span style="color:var(--art-text-muted)"><%= Math.round(item.size_bytes / 1024) %> KB</span>
+
+                <span class="bz-art-field-label" style="margin:0">Typ</span>
+                <span style="color:var(--art-text-muted)"><%= item.mime %></span>
+
+                <span class="bz-art-field-label" style="margin:0">Nahrané</span>
+                <span style="color:var(--art-text-muted)"><%= new Date(item.created_at).toLocaleString('sk-SK') %></span>
+
+                <span class="bz-art-field-label" style="margin:0">Nahral</span>
+                <span style="color:var(--art-text-muted)"><%= item.uploader_nickname || '—' %></span>
               </div>
             </div>
           </div>
 
+          <!-- Form -->
           <div class="col-md-7">
-            <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white"><h2 class="h6 mb-0">Metadáta</h2></div>
-              <div class="card-body">
-                <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+            <div class="bz-art-content-card">
+              <div class="bz-art-content-head">
+                <span class="bz-art-content-title">Metadáta</span>
+              </div>
+              <div class="bz-art-content-body">
+                <% if (error) { %>
+                  <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:14px">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
+                  </div>
+                <% } %>
 
                 <form method="POST" action="/admin/media/<%= item.id %>/edit">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-                  <div class="mb-3">
-                    <label for="alt_text" class="form-label">Alt text</label>
+                  <div style="margin-bottom:14px">
+                    <label for="alt_text" class="bz-art-field-label">Alt text</label>
                     <input type="text" id="alt_text" name="alt_text" class="form-control"
                            value="<%= item.alt_text || '' %>" maxlength="255" />
-                    <div class="form-text">Krátky popis pre prístupnosť (čítačky obrazovky, vyhľadávače).</div>
+                    <span class="bz-art-hint" style="margin-top:4px">Krátky popis pre prístupnosť (čítačky obrazovky, vyhľadávače).</span>
                   </div>
 
-                  <div class="mb-3">
-                    <label for="caption" class="form-label">Popis</label>
+                  <div style="margin-bottom:18px">
+                    <label for="caption" class="bz-art-field-label">Popis</label>
                     <textarea id="caption" name="caption" class="form-control" rows="3" maxlength="1000"><%= item.caption || '' %></textarea>
-                    <div class="form-text">Voliteľný dlhší popis alebo zdroj/autor.</div>
+                    <span class="bz-art-hint" style="margin-top:4px">Voliteľný dlhší popis alebo zdroj/autor.</span>
                   </div>
 
-                  <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Uložiť</button>
-                    <a href="/admin/media" class="btn btn-link">Späť</a>
+                  <div style="display:flex; gap:8px">
+                    <button type="submit" class="bz-art-btn bz-art-btn-accent">
+                      <i class="bi bi-check-lg"></i> Uložiť
+                    </button>
+                    <a href="/admin/media" class="bz-art-btn bz-art-btn-ghost">Späť</a>
                   </div>
                 </form>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </main>
   </div>

@@ -65,6 +65,11 @@
     const path = icons[name] || `<circle cx="12" cy="12" r="9"/>`;
     return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
   }
+
+  const logoMark = `<svg viewBox="0 0 36 32" aria-hidden="true" style="height:20px; width:auto; display:block">
+    <rect x="0" y="2" width="22" height="13" rx="6.5" fill="oklch(0.95 0.005 240)"/>
+    <rect x="0" y="17" width="28" height="13" rx="6.5" fill="oklch(0.72 0.17 155)"/>
+  </svg>`;
 %>
 
 <aside
@@ -77,7 +82,7 @@
   <!-- Mobile header -->
   <div class="offcanvas-header d-lg-none" style="padding: 14px 16px; border-bottom: 1px solid oklch(0.22 0.008 240);">
     <div style="display:flex; align-items:center; gap:10px;">
-      <div class="bz-sidebar-logo">BZ</div>
+      <%- logoMark %>
       <span class="bz-sidebar-brand-name" id="bzSidebarLabel">ByteZone</span>
     </div>
     <button
@@ -95,10 +100,9 @@
 
   <!-- Desktop brand -->
   <a href="/admin/dashboard" class="bz-sidebar-brand d-none d-lg-flex">
-    <div class="bz-sidebar-logo">BZ</div>
+    <%- logoMark %>
     <div class="bz-sidebar-brand-text">
       <span class="bz-sidebar-brand-name">ByteZone</span>
-      <span class="bz-sidebar-brand-sub">Admin · Redakcia</span>
     </div>
   </a>
 
@@ -135,7 +139,12 @@
     const role = user.role || 'editor';
   %>
   <div class="bz-sidebar-footer">
-    <div class="bz-sidebar-footer-avatar"><%= initials %></div>
+    <% if (user.avatar_path) { %>
+      <img src="/uploads/<%= user.avatar_path %>" alt="<%= displayName %>"
+           style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0">
+    <% } else { %>
+      <div class="bz-sidebar-footer-avatar"><%= initials %></div>
+    <% } %>
     <div class="bz-sidebar-footer-info">
       <div class="bz-sidebar-footer-name"><%= displayName %></div>
       <div class="bz-sidebar-footer-role"><%= role %></div>

@@ -1,59 +1,63 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: title }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
 
     <main class="bz-content">
-      <div class="container-fluid py-4">
+      <div class="bz-art-wrap">
 
-        <a href="/admin/comments" class="btn btn-sm btn-outline-secondary mb-3">
-          <i class="bi bi-arrow-left me-1"></i>Späť na zoznam
-        </a>
+<div class="bz-art-breadcrumb" style="margin-bottom:20px">
+  <a href="/admin/dashboard">Dashboard</a>
+  <span class="bz-art-breadcrumb-sep">›</span>
+  <a href="/admin/comments">Komentáre</a>
+  <span class="bz-art-breadcrumb-sep">›</span>
+  <span class="bz-art-breadcrumb-current">#<%= comment.id %></span>
+</div>
 
         <div class="row g-4">
-          <%# Comment detail %>
+          <!-- Comment detail -->
           <div class="col-lg-8">
-            <div class="card">
-              <div class="card-header d-flex align-items-center justify-content-between">
-                <span>
-                  <strong><%= comment.nickname || '[zmazaný]' %></strong>
-                  <small class="text-muted ms-2">
+            <div class="bz-art-content-card">
+              <div class="bz-art-content-head">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                  <strong style="font-size:13px; color:var(--art-text)"><%= comment.nickname || '[zmazaný]' %></strong>
+                  <span style="font-family:var(--art-mono); font-size:10px; color:var(--art-text-subtle)">
                     <%= new Date(comment.created_at).toLocaleString('sk-SK') %>
-                  </small>
+                  </span>
                   <% if (comment.parent_id) { %>
-                    <span class="badge bg-light text-muted ms-1">odpoveď na #<%= comment.parent_id %></span>
+                    <span class="bz-art-badge bz-art-badge-article">odpoveď na #<%= comment.parent_id %></span>
                   <% } %>
-                </span>
+                </div>
                 <% if (comment.is_deleted_by_admin) { %>
-                  <span class="badge bg-danger">Zmazané</span>
+                  <span class="bz-art-badge bz-art-badge-trash">Zmazané</span>
                 <% } %>
               </div>
-              <div class="card-body">
+              <div class="bz-art-content-body">
                 <% if (comment.is_deleted_by_admin) { %>
-                  <p class="text-muted fst-italic mb-2">[Tento komentár bol skrytý administrátorom]</p>
-                  <p class="mb-0" style="opacity:0.5;"><%= comment.content %></p>
+                  <p style="color:var(--art-text-subtle); font-style:italic; margin-bottom:8px">[Tento komentár bol skrytý administrátorom]</p>
+                  <p style="margin:0; opacity:0.5; white-space:pre-wrap; color:var(--art-text-muted)"><%= comment.content %></p>
                 <% } else { %>
-                  <p class="mb-0" style="white-space:pre-wrap;"><%= comment.content %></p>
+                  <p style="margin:0; white-space:pre-wrap; color:var(--art-text)"><%= comment.content %></p>
                 <% } %>
               </div>
-              <div class="card-footer d-flex gap-2 flex-wrap">
+              <div style="padding:12px 20px; border-top:1px solid var(--art-border); display:flex; gap:8px; flex-wrap:wrap">
                 <% if (comment.article_title) { %>
                   <a href="/<%= comment.article_type === 'review' ? 'recenzia' : 'clanok' %>/<%= comment.article_slug %>"
-                     class="btn btn-sm btn-outline-secondary" target="_blank">
-                    <i class="bi bi-box-arrow-up-right me-1"></i><%= comment.article_title %>
+                     class="bz-art-btn bz-art-btn-sm" target="_blank">
+                    <i class="bi bi-box-arrow-up-right"></i> <%= comment.article_title %>
                   </a>
                 <% } %>
 
                 <form method="POST" action="/admin/comments/<%= comment.id %>/toggle-delete">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                  <button class="btn btn-sm <%= comment.is_deleted_by_admin ? 'btn-success' : 'btn-warning' %>">
-                    <i class="bi bi-<%= comment.is_deleted_by_admin ? 'arrow-counterclockwise' : 'eye-slash' %> me-1"></i>
+                  <button class="bz-art-btn bz-art-btn-sm <%= comment.is_deleted_by_admin ? '' : 'bz-art-btn-danger' %>">
+                    <i class="bi bi-<%= comment.is_deleted_by_admin ? 'arrow-counterclockwise' : 'eye-slash' %>"></i>
                     <%= comment.is_deleted_by_admin ? 'Obnoviť' : 'Skryť komentár' %>
                   </button>
                 </form>
@@ -61,89 +65,90 @@
                 <form method="POST" action="/admin/comments/<%= comment.id %>/hard-delete"
                       data-confirm="Permanentne zmazať komentár #<%= comment.id %>? Táto akcia je nevratná.">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                  <button class="btn btn-sm btn-danger">
-                    <i class="bi bi-trash me-1"></i>Permanentne zmazať
+                  <button class="bz-art-btn bz-art-btn-sm bz-art-btn-danger">
+                    <i class="bi bi-trash"></i> Permanentne zmazať
                   </button>
                 </form>
               </div>
             </div>
 
-            <%# Meta info %>
-            <div class="card mt-3">
-              <div class="card-body">
-                <div class="row text-muted small">
-                  <div class="col-sm-4">
-                    <strong>ID:</strong> <%= comment.id %>
-                  </div>
-                  <div class="col-sm-4">
-                    <strong>Článok:</strong>
-                    <a href="/admin/comments?article=<%= comment.article_id %>">#<%= comment.article_id %></a>
-                  </div>
-                  <div class="col-sm-4">
-                    <strong>User:</strong> <%= comment.nickname %> (#<%= comment.user_id %>)
-                  </div>
-                  <div class="col-sm-4 mt-2">
-                    <strong>Vytvorený:</strong> <%= new Date(comment.created_at).toLocaleString('sk-SK') %>
-                  </div>
-                  <div class="col-sm-4 mt-2">
-                    <strong>Upravený:</strong> <%= new Date(comment.updated_at).toLocaleString('sk-SK') %>
-                  </div>
+            <!-- Meta info -->
+            <div class="bz-art-content-card" style="margin-top:14px">
+              <div class="bz-art-content-body" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px">
+                <div>
+                  <span class="bz-art-field-label">ID</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= comment.id %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Článok</span>
+                  <a href="/admin/comments?article=<%= comment.article_id %>" style="font-size:13px; color:var(--art-accent); text-decoration:none">#<%= comment.article_id %></a>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">User</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= comment.nickname %> (#<%= comment.user_id %>)</span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Vytvorený</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= new Date(comment.created_at).toLocaleString('sk-SK') %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Upravený</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= new Date(comment.updated_at).toLocaleString('sk-SK') %></span>
                 </div>
               </div>
             </div>
           </div>
 
-          <%# Reports %>
+          <!-- Reports -->
           <div class="col-lg-4">
-            <div class="card">
-              <div class="card-header">
-                <i class="bi bi-flag me-1"></i>
-                Nahlásenia
-                <span class="badge bg-secondary ms-1"><%= reports.length %></span>
+            <div class="bz-art-side-card">
+              <div class="bz-art-side-head">
+                <i class="bi bi-flag"></i> Nahlásenia
+                <span class="bz-art-status-tab-badge" style="margin-left:auto"><%= reports.length %></span>
               </div>
               <% if (reports.length === 0) { %>
-                <div class="card-body text-center text-muted py-4">
-                  <i class="bi bi-check-circle display-6"></i>
-                  <p class="mt-2 mb-0">Žiadne nahlásenia</p>
+                <div style="text-align:center; padding:28px 14px; color:var(--art-text-subtle)">
+                  <i class="bi bi-check-circle" style="font-size:2rem; display:block; margin-bottom:8px"></i>
+                  <span style="font-size:12px">Žiadne nahlásenia</span>
                 </div>
               <% } else { %>
-                <ul class="list-group list-group-flush">
+                <div style="display:flex; flex-direction:column">
                   <% reports.forEach(r => { %>
-                    <li class="list-group-item <%= r.is_resolved ? 'bg-light' : '' %>">
-                      <div class="d-flex justify-content-between align-items-start mb-1">
-                        <small class="fw-bold"><%= r.reporter_nickname || '[zmazaný]' %></small>
+                    <div style="padding:12px 14px; border-bottom:1px solid oklch(from var(--art-border) l c h/.5); <%= r.is_resolved ? 'opacity:0.7' : '' %>">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+                        <strong style="font-size:12px; color:var(--art-text)"><%= r.reporter_nickname || '[zmazaný]' %></strong>
                         <% if (r.is_resolved) { %>
-                          <span class="badge bg-success">Vyriešené</span>
+                          <span class="bz-art-badge bz-art-badge-published">Vyriešené</span>
                         <% } else { %>
-                          <span class="badge bg-warning text-dark">Otvorené</span>
+                          <span class="bz-art-badge bz-art-badge-scheduled">Otvorené</span>
                         <% } %>
                       </div>
                       <% if (r.reason) { %>
-                        <p class="small mb-1"><%= r.reason %></p>
+                        <p style="font-size:12px; color:var(--art-text-muted); margin:0 0 6px"><%= r.reason %></p>
                       <% } else { %>
-                        <p class="small text-muted fst-italic mb-1">Bez udania dôvodu</p>
+                        <p style="font-size:12px; color:var(--art-text-subtle); font-style:italic; margin:0 0 6px">Bez udania dôvodu</p>
                       <% } %>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted"><%= new Date(r.created_at).toLocaleString('sk-SK') %></small>
+                      <div style="display:flex; justify-content:space-between; align-items:center">
+                        <span style="font-family:var(--art-mono); font-size:10px; color:var(--art-text-subtle)"><%= new Date(r.created_at).toLocaleString('sk-SK') %></span>
                         <% if (!r.is_resolved) { %>
                           <form method="POST" action="/admin/comments/reports/<%= r.id %>/resolve" class="d-inline">
                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <button class="btn btn-sm btn-outline-success py-0 px-2">
-                              <i class="bi bi-check-lg me-1"></i>Vyriešiť
+                            <button class="bz-art-btn bz-art-btn-sm" style="padding:3px 8px; font-size:11px">
+                              <i class="bi bi-check-lg"></i> Vyriešiť
                             </button>
                           </form>
                         <% } else { %>
-                          <small class="text-muted">
+                          <span style="font-family:var(--art-mono); font-size:10px; color:var(--art-text-subtle)">
                             <%= r.resolver_nickname || '' %>
                             <% if (r.resolved_at) { %>
                               · <%= new Date(r.resolved_at).toLocaleDateString('sk-SK') %>
                             <% } %>
-                          </small>
+                          </span>
                         <% } %>
                       </div>
-                    </li>
+                    </div>
                   <% }) %>
-                </ul>
+                </div>
               <% } %>
             </div>
           </div>

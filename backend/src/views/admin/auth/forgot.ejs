@@ -1,15 +1,17 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Zabudnuté heslo' }) %>
 </head>
 <body class="bz-auth-body">
   <main class="bz-auth-wrap">
-    <div class="bz-auth-card">
+    <div class="bz-auth-card" style="background:oklch(0.21 0.007 240); border:1px solid oklch(0.28 0.008 240); box-shadow:0 10px 40px oklch(0 0 0/0.4)">
       <div class="bz-auth-header">
-        <i class="bi bi-key bz-auth-logo"></i>
-        <h1 class="h4 mb-0">Zabudnuté heslo</h1>
-        <p class="text-muted small mt-1 mb-0">
+        <div style="width:44px; height:44px; border-radius:12px; background:oklch(0.72 0.17 155); display:flex; align-items:center; justify-content:center; margin:0 auto 10px">
+          <i class="bi bi-key" style="font-size:20px; color:oklch(0.14 0.04 155)"></i>
+        </div>
+        <h1 style="font-family:'Inter Tight',system-ui,sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.03em; color:oklch(0.95 0.005 240); margin:0">Zabudnuté heslo</h1>
+        <p style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:oklch(0.48 0.01 240); margin:6px 0 0">
           <% if (step === 'identify') { %>
             Identifikácia účtu
           <% } else { %>
@@ -19,24 +21,23 @@
       </div>
 
       <% if (error) { %>
-        <div class="alert alert-danger" role="alert">
-          <i class="bi bi-exclamation-triangle me-2"></i><%= error %>
+        <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:16px">
+          <i class="bi bi-exclamation-triangle-fill"></i> <%= error %>
         </div>
       <% } %>
 
       <% if (info) { %>
-        <div class="alert alert-info" role="alert">
-          <i class="bi bi-info-circle me-2"></i><%= info %>
+        <div class="bz-art-alert bz-art-alert-success" style="margin-bottom:16px">
+          <i class="bi bi-info-circle-fill"></i> <%= info %>
         </div>
       <% } %>
 
       <% if (step === 'identify') { %>
-        <%# ============================== KROK 1: nickname ============================== %>
         <form method="POST" action="/admin/forgot" novalidate>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-          <div class="mb-3">
-            <label for="nickname" class="form-label">Nickname</label>
+          <div style="margin-bottom:14px">
+            <label for="nickname" class="bz-art-field-label">Nickname</label>
             <input
               type="text"
               class="form-control"
@@ -46,34 +47,32 @@
               required
               autofocus
               maxlength="64"
+              style="background:oklch(0.16 0.005 240); border-color:oklch(0.3 0.008 240); color:oklch(0.95 0.005 240)"
             />
-            <div class="form-text">
-              Po zadaní sa ti zobrazí tvoja bezpečnostná otázka.
-            </div>
+            <span class="bz-art-hint" style="margin-top:4px">Po zadaní sa ti zobrazí tvoja bezpečnostná otázka.</span>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100">
-            Pokračovať <i class="bi bi-arrow-right ms-1"></i>
+          <button type="submit" class="bz-art-btn bz-art-btn-accent" style="width:100%; background:oklch(0.72 0.17 155); justify-content:center; padding:10px 16px; font-size:14px">
+            Pokračovať <i class="bi bi-arrow-right"></i>
           </button>
         </form>
 
       <% } else if (step === 'reset') { %>
-        <%# ====================== KROK 2: otázka + odpoveď + nové heslo ====================== %>
-        <div class="alert alert-secondary">
-          <small class="text-muted d-block">Účet:</small>
-          <strong><%= nickname %></strong>
+        <div style="background:oklch(0.16 0.005 240); border:1px solid oklch(0.28 0.008 240); border-radius:var(--art-r-md,10px); padding:10px 14px; margin-bottom:14px">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:oklch(0.48 0.01 240); display:block; margin-bottom:2px">Účet:</span>
+          <strong style="font-size:14px; color:oklch(0.95 0.005 240)"><%= nickname %></strong>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Bezpečnostná otázka</label>
-          <p class="border rounded p-2 bg-body-tertiary mb-0"><%= question %></p>
+        <div style="margin-bottom:14px">
+          <label class="bz-art-field-label">Bezpečnostná otázka</label>
+          <p style="background:oklch(0.16 0.005 240); border:1px solid oklch(0.28 0.008 240); border-radius:var(--art-r-md,10px); padding:10px 14px; margin:0; font-size:13px; color:oklch(0.88 0.006 240)"><%= question %></p>
         </div>
 
         <form method="POST" action="/admin/forgot" novalidate>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
 
-          <div class="mb-3">
-            <label for="answer" class="form-label">Tvoja odpoveď</label>
+          <div style="margin-bottom:14px">
+            <label for="answer" class="bz-art-field-label">Tvoja odpoveď</label>
             <input
               type="text"
               class="form-control"
@@ -82,16 +81,15 @@
               required
               autofocus
               autocomplete="off"
+              style="background:oklch(0.16 0.005 240); border-color:oklch(0.3 0.008 240); color:oklch(0.95 0.005 240)"
             />
-            <div class="form-text">
-              Odpoveď nie je citlivá na veľkosť písmen ani medzery.
-            </div>
+            <span class="bz-art-hint" style="margin-top:4px">Odpoveď nie je citlivá na veľkosť písmen ani medzery.</span>
           </div>
 
-          <hr class="my-4" />
+          <div style="height:1px; background:oklch(0.28 0.008 240); margin:18px 0"></div>
 
-          <div class="mb-3">
-            <label for="password" class="form-label">Nové heslo</label>
+          <div style="margin-bottom:14px">
+            <label for="password" class="bz-art-field-label">Nové heslo</label>
             <input
               type="password"
               class="form-control"
@@ -101,12 +99,13 @@
               minlength="<%= minPasswordLength %>"
               maxlength="200"
               autocomplete="new-password"
+              style="background:oklch(0.16 0.005 240); border-color:oklch(0.3 0.008 240); color:oklch(0.95 0.005 240)"
             />
-            <div class="form-text">Minimálne <%= minPasswordLength %> znakov.</div>
+            <span class="bz-art-hint" style="margin-top:4px">Minimálne <%= minPasswordLength %> znakov.</span>
           </div>
 
-          <div class="mb-3">
-            <label for="password2" class="form-label">Nové heslo (znova)</label>
+          <div style="margin-bottom:18px">
+            <label for="password2" class="bz-art-field-label">Nové heslo (znova)</label>
             <input
               type="password"
               class="form-control"
@@ -116,27 +115,27 @@
               minlength="<%= minPasswordLength %>"
               maxlength="200"
               autocomplete="new-password"
+              style="background:oklch(0.16 0.005 240); border-color:oklch(0.3 0.008 240); color:oklch(0.95 0.005 240)"
             />
           </div>
 
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-check-lg me-1"></i>
-            Zmeniť heslo
+          <button type="submit" class="bz-art-btn bz-art-btn-accent" style="width:100%; justify-content:center; padding:10px 16px; font-size:14px">
+            <i class="bi bi-check-lg"></i> Zmeniť heslo
           </button>
         </form>
 
-        <div class="text-center mt-3">
-          <a href="/admin/forgot" class="text-muted small">← Začať odznova</a>
+        <div style="text-align:center; margin-top:14px">
+          <a href="/admin/forgot" style="font-size:12px; color:oklch(0.55 0.01 240); text-decoration:none">← Začať odznova</a>
         </div>
       <% } %>
 
-      <div class="bz-auth-footer">
-        <a href="/admin/login" class="text-muted small">← Späť na prihlásenie</a>
+      <div style="margin-top:18px; text-align:center; border-top:1px solid oklch(0.28 0.008 240); padding-top:14px">
+        <a href="/admin/login" style="font-size:12px; color:oklch(0.55 0.01 240); text-decoration:none">← Späť na prihlásenie</a>
       </div>
     </div>
 
-    <p class="text-muted small text-center mt-4">
-      <a href="/" class="text-decoration-none text-white-50">← Späť na web</a>
+    <p style="text-align:center; margin-top:20px">
+      <a href="/" style="font-size:12px; color:oklch(0.5 0.01 240); text-decoration:none">← Späť na web</a>
     </p>
   </main>
 

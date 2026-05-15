@@ -1,52 +1,51 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Stránky' }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Stránky' }) %>
 
     <main class="bz-content">
-      <div class="container-fluid py-4">
+      <div class="bz-art-wrap">
 
-        <%# Flash messages %>
         <% if (flash.created) { %>
-          <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>Stránka vytvorená.
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Stránka vytvorená.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (flash.updated) { %>
-          <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>Zmeny uložené.
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Zmeny uložené.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (flash.deleted) { %>
-          <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle me-2"></i>Stránka zmazaná.
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Stránka zmazaná.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (flash.err) { %>
-          <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-triangle me-2"></i><%= flash.err %>
-            <button class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
 
-        <%# Header %>
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- Header -->
+        <div class="bz-art-header">
           <div>
-            <h5 class="mb-1">Statické stránky</h5>
-            <p class="text-muted small mb-0">O nás, Kontakt, GDPR, Podmienky a ďalšie.</p>
+            <h1 class="bz-art-header-title">Stránky</h1>
+            <p class="bz-art-header-sub">O nás, Kontakt, GDPR, Podmienky a ďalšie.</p>
           </div>
           <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-              <i class="bi bi-plus-lg me-1"></i>Nová stránka
+            <button class="bz-art-btn bz-art-btn-accent dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="bi bi-plus-lg"></i> Nová stránka
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><a class="dropdown-item" href="/admin/pages/new?template=default"><i class="bi bi-file-earmark me-2"></i>Prázdna stránka</a></li>
@@ -57,123 +56,125 @@
           </div>
         </div>
 
-        <%# Search %>
-        <div class="card border-0 shadow-sm mb-3">
-          <div class="card-body py-2">
-            <form method="GET" action="/admin/pages" class="d-flex gap-2">
-              <input type="search" name="q" class="form-control form-control-sm" placeholder="Hľadať podľa názvu…" value="<%= query.q || '' %>">
-              <button class="btn btn-sm btn-outline-secondary" type="submit"><i class="bi bi-search"></i></button>
-              <% if (query.q) { %>
-                <a href="/admin/pages" class="btn btn-sm btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
-              <% } %>
-            </form>
-          </div>
+        <!-- Search -->
+        <div class="bz-art-search">
+          <form method="GET" action="/admin/pages" class="bz-art-search-wrap" style="display:flex; gap:8px;">
+            <div class="bz-art-search-wrap" style="flex:1">
+              <i class="bi bi-search bz-art-search-icon"></i>
+              <input type="search" name="q" class="bz-art-search-input" placeholder="Hľadať podľa názvu…" value="<%= query.q || '' %>">
+            </div>
+            <button class="bz-art-btn bz-art-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+            <% if (query.q) { %>
+              <a href="/admin/pages" class="bz-art-btn bz-art-btn-sm"><i class="bi bi-x-lg"></i></a>
+            <% } %>
+          </form>
         </div>
 
-        <%# Table %>
+        <!-- Table -->
         <% if (items.length === 0) { %>
-          <div class="text-center text-muted py-5">
-            <i class="bi bi-file-earmark-text" style="font-size:2rem;"></i>
-            <p class="mt-2 mb-0"><%= query.q ? 'Žiadne výsledky.' : 'Zatiaľ žiadne stránky.' %></p>
+          <div class="bz-art-empty">
+            <i class="bi bi-file-earmark-text bz-art-empty-icon"></i>
+            <p class="bz-art-empty-text"><%= query.q ? 'Žiadne výsledky.' : 'Zatiaľ žiadne stránky.' %></p>
           </div>
         <% } else { %>
-          <div class="card border-0 shadow-sm">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead>
+          <div class="bz-art-table-wrap">
+            <table class="bz-art-table">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th>Názov</th>
+                  <th style="width:120px">Šablóna</th>
+                  <th style="width:100px">Stav</th>
+                  <th style="width:80px">Header</th>
+                  <th style="width:80px">Footer</th>
+                  <th style="width:100px">Poradie</th>
+                  <th style="width:140px">Aktualizované</th>
+                  <th style="width:120px; text-align:right">Akcie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% items.forEach(p => { %>
+                  <%
+                    const tplLabels = { default: 'Prázdna', about: 'O nás', contact: 'Kontakt', legal: 'Právna' };
+                    const tplLabel = tplLabels[p.template] || p.template;
+                  %>
                   <tr>
-                    <th style="width:40px">#</th>
-                    <th>Názov</th>
-                    <th style="width:120px">Šablóna</th>
-                    <th style="width:100px">Stav</th>
-                    <th style="width:80px">Header</th>
-                    <th style="width:80px">Footer</th>
-                    <th style="width:100px">Poradie</th>
-                    <th style="width:140px">Aktualizované</th>
-                    <th style="width:120px" class="text-end">Akcie</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% items.forEach(p => { %>
-                    <%
-                      const tplLabels = { default: 'Prázdna', about: 'O nás', contact: 'Kontakt', legal: 'Právna' };
-                      const tplLabel = tplLabels[p.template] || p.template;
-                      const statusBadge = p.status === 'published'
-                        ? '<span class="badge bg-success">Publikovaná</span>'
-                        : '<span class="badge bg-secondary">Koncept</span>';
-                    %>
-                    <tr>
-                      <td class="text-muted"><%= p.id %></td>
-                      <td>
-                        <a href="/admin/pages/<%= p.id %>/edit" class="fw-semibold text-decoration-none"><%= p.title %></a>
-                        <div class="text-muted small">/<%= p.slug %></div>
-                      </td>
-                      <td><span class="badge bg-info bg-opacity-25 text-info"><%= tplLabel %></span></td>
-                      <td><%- statusBadge %></td>
-                      <td class="text-center"><%= p.show_in_header ? '✓' : '—' %></td>
-                      <td class="text-center"><%= p.show_in_footer ? '✓' : '—' %></td>
-                      <td class="text-center"><%= p.display_order %></td>
-                      <td class="text-muted small">
+                    <td>
+                      <span style="color:var(--art-text-subtle); font-family:var(--art-mono); font-size:11px"><%= p.id %></span>
+                    </td>
+                    <td>
+                      <a href="/admin/pages/<%= p.id %>/edit" class="bz-art-title-link"><%= p.title %></a>
+                      <span class="bz-art-slug-cell">/<%= p.slug %></span>
+                    </td>
+                    <td>
+                      <span class="bz-art-badge bz-art-badge-review"><%= tplLabel %></span>
+                    </td>
+                    <td>
+                      <% if (p.status === 'published') { %>
+                        <span class="bz-art-badge bz-art-badge-published"><i class="bi bi-check-circle"></i> Publikovaná</span>
+                      <% } else { %>
+                        <span class="bz-art-badge bz-art-badge-draft"><i class="bi bi-pencil-square"></i> Koncept</span>
+                      <% } %>
+                    </td>
+                    <td style="text-align:center; color:var(--art-text-muted)"><%= p.show_in_header ? '✓' : '—' %></td>
+                    <td style="text-align:center; color:var(--art-text-muted)"><%= p.show_in_footer ? '✓' : '—' %></td>
+                    <td style="text-align:center">
+                      <span class="bz-art-badge bz-art-badge-article"><%= p.display_order %></span>
+                    </td>
+                    <td>
+                      <span class="bz-art-time-val">
                         <%= new Date(p.updated_at).toLocaleDateString('sk-SK', { day:'numeric', month:'short', year:'numeric' }) %>
-                      </td>
-                      <td class="text-end">
-                        <div class="d-flex gap-1 justify-content-end">
-                          <a href="/admin/pages/<%= p.id %>/edit" class="btn btn-sm btn-outline-primary" title="Upraviť">
-                            <i class="bi bi-pencil"></i>
+                      </span>
+                    </td>
+                    <td>
+                      <div class="bz-art-row-actions" style="width:180px; text-align:right">
+                        <a href="/admin/pages/<%= p.id %>/edit" class="bz-art-btn bz-art-btn-sm" title="Upraviť">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <% if (p.status === 'published') { %>
+                          <a href="/<%= p.slug %>" target="_blank" class="bz-art-btn bz-art-btn-sm" title="Zobraziť">
+                            <i class="bi bi-box-arrow-up-right"></i>
                           </a>
-                          <% if (p.status === 'published') { %>
-                            <a href="/<%= p.slug %>" target="_blank" class="btn btn-sm btn-outline-secondary" title="Zobraziť">
-                              <i class="bi bi-box-arrow-up-right"></i>
-                            </a>
-                          <% } %>
-                          <form method="POST" action="/admin/pages/<%= p.id %>/delete" class="d-inline"
-                                data-confirm="Naozaj zmazať stránku &quot;<%= p.title %>&quot;?">
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Zmazať">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
+                        <% } %>
+                        <form method="POST" action="/admin/pages/<%= p.id %>/delete" class="d-inline"
+                              data-confirm="Naozaj zmazať stránku &quot;<%= p.title %>&quot;?">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button type="submit" class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" title="Zmazať">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
           </div>
 
           <% if (pagination.totalPages > 1) { %>
-            <nav class="mt-3">
-              <ul class="pagination justify-content-center mb-0">
-                <%
-                  const buildHref = (p) => {
-                    const params = new URLSearchParams();
-                    if (query.q) params.set('q', query.q);
-                    if (p > 1) params.set('page', p);
-                    const qs = params.toString();
-                    return '/admin/pages' + (qs ? '?' + qs : '');
-                  };
-                  const cur = pagination.page;
-                  const tot = pagination.totalPages;
-                  const show = new Set([1, tot, cur-1, cur, cur+1]);
-                  const pgs = [...show].filter(p => p >= 1 && p <= tot).sort((a,b) => a-b);
-                %>
-                <li class="page-item <%= cur <= 1 ? 'disabled' : '' %>">
-                  <a class="page-link" href="<%= cur > 1 ? buildHref(cur-1) : '#' %>">‹</a>
-                </li>
-                <% pgs.forEach((p, idx) => { %>
-                  <% if (idx > 0 && pgs[idx-1] < p - 1) { %>
-                    <li class="page-item disabled"><span class="page-link">…</span></li>
-                  <% } %>
-                  <li class="page-item <%= p === cur ? 'active' : '' %>">
-                    <a class="page-link" href="<%= buildHref(p) %>"><%= p %></a>
-                  </li>
-                <% }) %>
-                <li class="page-item <%= cur >= tot ? 'disabled' : '' %>">
-                  <a class="page-link" href="<%= cur < tot ? buildHref(cur+1) : '#' %>">›</a>
-                </li>
-              </ul>
-            </nav>
+            <%
+              const buildHref = (pg) => {
+                const params = new URLSearchParams();
+                if (query.q) params.set('q', query.q);
+                if (pg > 1) params.set('page', pg);
+                const qs = params.toString();
+                return '/admin/pages' + (qs ? '?' + qs : '');
+              };
+              const cur = pagination.page;
+              const tot = pagination.totalPages;
+              const show = new Set([1, tot, cur-1, cur, cur+1]);
+              const pgs = [...show].filter(pg => pg >= 1 && pg <= tot).sort((a,b) => a-b);
+            %>
+            <div class="bz-art-pagination">
+              <a href="<%= cur > 1 ? buildHref(cur-1) : '#' %>" class="bz-art-page-btn <%= cur <= 1 ? 'disabled' : '' %>">‹</a>
+              <% pgs.forEach((pg, idx) => { %>
+                <% if (idx > 0 && pgs[idx-1] < pg - 1) { %>
+                  <span class="bz-art-page-ellipsis">…</span>
+                <% } %>
+                <a href="<%= buildHref(pg) %>" class="bz-art-page-btn <%= pg === cur ? 'active' : '' %>"><%= pg %></a>
+              <% }) %>
+              <a href="<%= cur < tot ? buildHref(cur+1) : '#' %>" class="bz-art-page-btn <%= cur >= tot ? 'disabled' : '' %>">›</a>
+            </div>
           <% } %>
         <% } %>
 
@@ -182,5 +183,6 @@
   </div>
 
   <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-taxonomy.js" defer></script>
 </body>
 </html>

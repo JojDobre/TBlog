@@ -1,154 +1,144 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: pageTitle }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
 
     <main class="bz-content">
-      <div class="container-fluid p-4">
+      <div class="bz-art-wrap" style="max-width:860px">
 
-        <nav aria-label="breadcrumb" class="mb-3">
-          <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="/admin/categories">Kategórie</a></li>
-            <li class="breadcrumb-item active" aria-current="page">
-              <%= isNew ? 'Nová' : (category.name || 'Upraviť') %>
-            </li>
-          </ol>
-        </nav>
+        <!-- Breadcrumb -->
+        <div class="bz-art-breadcrumb" style="margin-bottom:20px">
+          <a href="/admin/dashboard">Dashboard</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <a href="/admin/categories">Kategórie</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <span class="bz-art-breadcrumb-current"><%= isNew ? 'Nová' : (category.name || 'Upraviť') %></span>
+        </div>
 
-        <div class="row">
-          <div class="col-lg-8 col-xl-7">
-            <div class="card border-0 shadow-sm">
-              <div class="card-header bg-white">
-                <h2 class="h5 mb-0"><%= pageTitle %></h2>
-                <% if (!isNew && category.path) { %>
-                  <small class="text-muted">Aktuálna cesta: <code><%= category.path %></code></small>
-                <% } %>
-              </div>
-              <div class="card-body">
-
-                <% if (Object.keys(errors).length > 0) { %>
-                  <div class="alert alert-danger" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    Skontroluj chyby vo formulári nižšie.
-                  </div>
-                <% } %>
-
-                <form
-                  method="POST"
-                  action="<%= isNew ? '/admin/categories' : ('/admin/categories/' + category.id) %>"
-                  novalidate
-                >
-                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-
-                  <div class="mb-3">
-                    <label for="name" class="form-label">
-                      Názov <span class="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      class="form-control <%= errors.name ? 'is-invalid' : '' %>"
-                      id="name"
-                      name="name"
-                      maxlength="80"
-                      required
-                      autofocus
-                      value="<%= category.name || '' %>"
-                    >
-                    <% if (errors.name) { %>
-                      <div class="invalid-feedback"><%= errors.name %></div>
-                    <% } else { %>
-                      <div class="form-text">Max 80 znakov.</div>
-                    <% } %>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="parent_id" class="form-label">Nadradená kategória</label>
-                    <select
-                      class="form-select <%= errors.parent_id ? 'is-invalid' : '' %>"
-                      id="parent_id"
-                      name="parent_id"
-                    >
-                      <option value="">— (root, žiadna nadradená)</option>
-                      <% parents.forEach(p => { %>
-                        <option
-                          value="<%= p.id %>"
-                          <%= (category.parent_id && Number(category.parent_id) === p.id) ? 'selected' : '' %>
-                        ><%= p.label %></option>
-                      <% }) %>
-                    </select>
-                    <% if (errors.parent_id) { %>
-                      <div class="invalid-feedback"><%= errors.parent_id %></div>
-                    <% } else { %>
-                      <div class="form-text">
-                        Ak vyberieš inú nadradenú, prepočítajú sa cesty (path) všetkých podkategórií.
-                      </div>
-                    <% } %>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="slug" class="form-label">Slug</label>
-                    <input
-                      type="text"
-                      class="form-control <%= errors.slug ? 'is-invalid' : '' %>"
-                      id="slug"
-                      name="slug"
-                      maxlength="120"
-                      pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                      value="<%= category.slug || '' %>"
-                      placeholder="<%= isNew ? 'Nechaj prázdne pre automatické generovanie' : '' %>"
-                    >
-                    <% if (errors.slug) { %>
-                      <div class="invalid-feedback"><%= errors.slug %></div>
-                    <% } else { %>
-                      <div class="form-text">
-                        Časť URL — globálne unikátny. Len <code>a-z</code>, <code>0-9</code> a pomlčky.
-                      </div>
-                    <% } %>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="description" class="form-label">Popis</label>
-                    <textarea class="form-control" id="description" name="description" rows="3"><%= category.description || '' %></textarea>
-                    <div class="form-text">Voliteľný popis (zobrazí sa na listing stránke).</div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label for="display_order" class="form-label">Poradie zobrazenia</label>
-                    <input
-                      type="number"
-                      class="form-control <%= errors.display_order ? 'is-invalid' : '' %>"
-                      id="display_order"
-                      name="display_order"
-                      min="0"
-                      max="99999"
-                      style="max-width: 140px;"
-                      value="<%= category.display_order != null ? category.display_order : 0 %>"
-                    >
-                    <% if (errors.display_order) { %>
-                      <div class="invalid-feedback"><%= errors.display_order %></div>
-                    <% } else { %>
-                      <div class="form-text">Nižšie číslo = vyššie v rámci úrovne. Default 0.</div>
-                    <% } %>
-                  </div>
-
-                  <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                      <i class="bi bi-check-lg me-1"></i>
-                      <%= isNew ? 'Vytvoriť kategóriu' : 'Uložiť zmeny' %>
-                    </button>
-                    <a href="/admin/categories" class="btn btn-outline-secondary">Zrušiť</a>
-                  </div>
-                </form>
-
-              </div>
+        <div class="bz-art-content-card">
+          <div class="bz-art-content-head">
+            <div>
+              <span class="bz-art-content-title"><%= pageTitle %></span>
+              <% if (!isNew && category.path) { %>
+                <span class="bz-art-hint" style="margin-left:12px">Cesta: <span style="color:var(--art-accent)"><%= category.path %></span></span>
+              <% } %>
             </div>
+          </div>
+          <div class="bz-art-content-body">
+
+            <% if (Object.keys(errors).length > 0) { %>
+              <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:16px">
+                <i class="bi bi-exclamation-triangle-fill"></i> Skontroluj chyby vo formulári nižšie.
+              </div>
+            <% } %>
+
+            <form
+              method="POST"
+              action="<%= isNew ? '/admin/categories' : ('/admin/categories/' + category.id) %>"
+              novalidate
+            >
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+              <div style="margin-bottom:14px">
+                <label for="name" class="bz-art-field-label">Názov <span style="color:oklch(0.68 0.18 25)">*</span></label>
+                <input
+                  type="text"
+                  class="form-control <%= errors.name ? 'is-invalid' : '' %>"
+                  id="name"
+                  name="name"
+                  maxlength="80"
+                  required
+                  autofocus
+                  value="<%= category.name || '' %>"
+                >
+                <% if (errors.name) { %>
+                  <div class="invalid-feedback"><%= errors.name %></div>
+                <% } else { %>
+                  <span class="bz-art-hint" style="margin-top:4px">Max 80 znakov.</span>
+                <% } %>
+              </div>
+
+              <div style="margin-bottom:14px">
+                <label for="parent_id" class="bz-art-field-label">Nadradená kategória</label>
+                <select
+                  class="form-select <%= errors.parent_id ? 'is-invalid' : '' %>"
+                  id="parent_id"
+                  name="parent_id"
+                >
+                  <option value="">— (root, žiadna nadradená)</option>
+                  <% parents.forEach(p => { %>
+                    <option
+                      value="<%= p.id %>"
+                      <%= (category.parent_id && Number(category.parent_id) === p.id) ? 'selected' : '' %>
+                    ><%= p.label %></option>
+                  <% }) %>
+                </select>
+                <% if (errors.parent_id) { %>
+                  <div class="invalid-feedback"><%= errors.parent_id %></div>
+                <% } else { %>
+                  <span class="bz-art-hint" style="margin-top:4px">Ak vyberieš inú nadradenú, prepočítajú sa cesty (path) všetkých podkategórií.</span>
+                <% } %>
+              </div>
+
+              <div style="margin-bottom:14px">
+                <label for="slug" class="bz-art-field-label">Slug</label>
+                <input
+                  type="text"
+                  class="form-control <%= errors.slug ? 'is-invalid' : '' %>"
+                  id="slug"
+                  name="slug"
+                  maxlength="120"
+                  pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                  value="<%= category.slug || '' %>"
+                  placeholder="<%= isNew ? 'Nechaj prázdne pre automatické generovanie' : '' %>"
+                >
+                <% if (errors.slug) { %>
+                  <div class="invalid-feedback"><%= errors.slug %></div>
+                <% } else { %>
+                  <span class="bz-art-hint" style="margin-top:4px">Časť URL — globálne unikátny. Len a-z, 0-9 a pomlčky.</span>
+                <% } %>
+              </div>
+
+              <div style="margin-bottom:14px">
+                <label for="description" class="bz-art-field-label">Popis</label>
+                <textarea class="form-control" id="description" name="description" rows="3"><%= category.description || '' %></textarea>
+                <span class="bz-art-hint" style="margin-top:4px">Voliteľný popis (zobrazí sa na listing stránke).</span>
+              </div>
+
+              <div style="margin-bottom:20px">
+                <label for="display_order" class="bz-art-field-label">Poradie zobrazenia</label>
+                <input
+                  type="number"
+                  class="form-control <%= errors.display_order ? 'is-invalid' : '' %>"
+                  id="display_order"
+                  name="display_order"
+                  min="0"
+                  max="99999"
+                  style="max-width:140px"
+                  value="<%= category.display_order != null ? category.display_order : 0 %>"
+                >
+                <% if (errors.display_order) { %>
+                  <div class="invalid-feedback"><%= errors.display_order %></div>
+                <% } else { %>
+                  <span class="bz-art-hint" style="margin-top:4px">Nižšie číslo = vyššie v rámci úrovne. Default 0.</span>
+                <% } %>
+              </div>
+
+              <div style="display:flex; gap:8px">
+                <button type="submit" class="bz-art-btn bz-art-btn-accent">
+                  <i class="bi bi-check-lg"></i>
+                  <%= isNew ? 'Vytvoriť kategóriu' : 'Uložiť zmeny' %>
+                </button>
+                <a href="/admin/categories" class="bz-art-btn">Zrušiť</a>
+              </div>
+            </form>
+
           </div>
         </div>
 

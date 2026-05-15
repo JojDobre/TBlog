@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: pageTitle }) %>
 </head>
-<body class="bz-admin-body">
+<body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div
@@ -14,37 +14,35 @@
     <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
 
     <main class="bz-content">
-      <div class="container-fluid p-4">
+      <div class="bz-art-wrap">
 
-        <nav aria-label="breadcrumb" class="mb-3">
-          <ol class="breadcrumb mb-0 small">
-            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="/admin/rankings">Rebríčky</a></li>
-            <li class="breadcrumb-item active"><%= isNew ? 'Nový' : ranking.name %></li>
-          </ol>
-        </nav>
+        <div class="bz-art-breadcrumb" style="margin-bottom:20px">
+          <a href="/admin/dashboard">Dashboard</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <a href="/admin/rankings">Rebríčky</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <span class="bz-art-breadcrumb-current"><%= isNew ? 'Nový' : ranking.name %></span>
+        </div>
 
         <% if (typeof flash !== 'undefined' && flash && flash.created) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Rebríček vytvorený. Teraz pridaj kritériá.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Rebríček vytvorený. Teraz pridaj kritériá.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (typeof flash !== 'undefined' && flash && flash.updated) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>Zmeny uložené.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Zmeny uložené.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
           </div>
         <% } %>
         <% if (Object.keys(errors).length > 0) { %>
-          <div class="alert alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>Skontroluj chyby vo formulári.
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> Skontroluj chyby vo formulári.
           </div>
         <% } %>
 
-        <!-- ============================================================
-             RANKING FORM
-             ============================================================ -->
+        <!-- RANKING FORM -->
         <form method="POST"
               action="<%= isNew ? '/admin/rankings' : ('/admin/rankings/' + ranking.id) %>"
               novalidate>
@@ -53,44 +51,46 @@
           <div class="row g-4">
             <!-- Left column — main fields -->
             <div class="col-lg-8">
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="name" class="form-label">Názov rebríčka <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control form-control-lg <%= errors.name ? 'is-invalid' : '' %>"
-                           id="name" name="name" value="<%= ranking.name %>" maxlength="160" required>
-                    <% if (errors.name) { %><div class="invalid-feedback"><%= errors.name %></div><% } %>
-                  </div>
+              <div class="bz-art-hero" style="margin-bottom:20px">
+                <div style="margin-bottom:14px">
+                  <label for="name" class="bz-art-field-label">Názov rebríčka <span style="color:oklch(0.68 0.18 25)">*</span></label>
+                  <input type="text" class="form-control <%= errors.name ? 'is-invalid' : '' %>"
+                         id="name" name="name" value="<%= ranking.name %>" maxlength="160" required
+                         style="font-size:18px; font-weight:700">
+                  <% if (errors.name) { %><div class="invalid-feedback"><%= errors.name %></div><% } %>
+                </div>
 
-                  <div class="mb-3">
-                    <label for="slug" class="form-label">Slug</label>
-                    <input type="text" class="form-control" id="slug" name="slug"
+                <div style="margin-bottom:14px">
+                  <label for="slug" class="bz-art-field-label">Slug</label>
+                  <div class="bz-art-slug-row">
+                    <span class="bz-art-slug-prefix">/rebricek/</span>
+                    <input type="text" class="bz-art-slug-inp" id="slug" name="slug"
                            value="<%= ranking.slug %>" maxlength="180"
                            placeholder="automaticky z názvu">
-                    <div class="form-text">Ponechaj prázdne pre automatické vygenerovanie.</div>
                   </div>
+                  <span class="bz-art-hint" style="margin-top:4px">Ponechaj prázdne pre automatické vygenerovanie.</span>
+                </div>
 
-                  <div class="mb-3">
-                    <label for="description" class="form-label">Popis</label>
-                    <textarea class="form-control" id="description" name="description"
-                              rows="3" maxlength="5000"><%= ranking.description || '' %></textarea>
-                  </div>
+                <div>
+                  <label for="description" class="bz-art-field-label">Popis</label>
+                  <textarea class="form-control" id="description" name="description"
+                            rows="3" maxlength="5000"><%= ranking.description || '' %></textarea>
                 </div>
               </div>
 
               <!-- SEO -->
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                  <h6 class="mb-0"><i class="bi bi-search me-2"></i>SEO</h6>
+              <div class="bz-art-content-card" style="margin-bottom:20px">
+                <div class="bz-art-content-head">
+                  <span class="bz-art-content-title"><i class="bi bi-search me-2"></i>SEO</span>
                 </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="seo_title" class="form-label">SEO titulok</label>
+                <div class="bz-art-content-body">
+                  <div style="margin-bottom:14px">
+                    <label for="seo_title" class="bz-art-field-label">SEO titulok</label>
                     <input type="text" class="form-control" id="seo_title" name="seo_title"
                            value="<%= ranking.seo_title || '' %>" maxlength="255">
                   </div>
-                  <div class="mb-0">
-                    <label for="seo_description" class="form-label">SEO popis</label>
+                  <div>
+                    <label for="seo_description" class="bz-art-field-label">SEO popis</label>
                     <textarea class="form-control" id="seo_description" name="seo_description"
                               rows="2" maxlength="320"><%= ranking.seo_description || '' %></textarea>
                   </div>
@@ -99,29 +99,29 @@
             </div>
 
             <!-- Right column — settings -->
-            <div class="col-lg-4">
-              <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                  <h6 class="mb-0"><i class="bi bi-gear me-2"></i>Nastavenia</h6>
+            <div class="col-lg-4 d-flex flex-column gap-3">
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-gear"></i> Nastavenia
                 </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="status" class="form-label">Stav</label>
+                <div class="bz-art-side-body">
+                  <div style="margin-bottom:10px">
+                    <label for="status" class="bz-art-field-label">Stav</label>
                     <select class="form-select" id="status" name="status">
                       <option value="active" <%= ranking.status === 'active' ? 'selected' : '' %>>Aktívny</option>
                       <option value="archived" <%= ranking.status === 'archived' ? 'selected' : '' %>>Archivovaný</option>
                     </select>
                   </div>
 
-                  <div class="mb-3">
-                    <label for="sort_direction" class="form-label">Smer zoradenia</label>
+                  <div style="margin-bottom:10px">
+                    <label for="sort_direction" class="bz-art-field-label">Smer zoradenia</label>
                     <select class="form-select" id="sort_direction" name="sort_direction">
                       <option value="desc" <%= ranking.sort_direction === 'desc' ? 'selected' : '' %>>Zostupne (najvyššie skóre hore)</option>
                       <option value="asc" <%= ranking.sort_direction === 'asc' ? 'selected' : '' %>>Vzostupne (najnižšie skóre hore)</option>
                     </select>
                   </div>
 
-                  <div class="mb-3">
+                  <div style="margin-bottom:10px">
                     <div class="form-check form-switch">
                       <input class="form-check-input" type="checkbox" id="admin_override"
                              name="admin_override" value="1"
@@ -130,188 +130,169 @@
                         Ručné poradie (drag & drop)
                       </label>
                     </div>
-                    <div class="form-text">Ak zapnuté, poradie sa riadi ručne namiesto skóre.</div>
+                    <span class="bz-art-hint" style="margin-top:4px">Ak zapnuté, poradie sa riadi ručne namiesto skóre.</span>
                   </div>
 
-                  <div class="mb-0">
-                    <label for="max_age_months" class="form-label">Max. vek článkov (mesiace)</label>
+                  <div>
+                    <label for="max_age_months" class="bz-art-field-label">Max. vek článkov (mesiace)</label>
                     <input type="number" class="form-control <%= errors.max_age_months ? 'is-invalid' : '' %>"
                            id="max_age_months" name="max_age_months"
                            value="<%= ranking.max_age_months || '' %>" min="1" placeholder="bez limitu">
                     <% if (errors.max_age_months) { %><div class="invalid-feedback"><%= errors.max_age_months %></div><% } %>
-                    <div class="form-text">Prázdne = zobrazujú sa všetky.</div>
+                    <span class="bz-art-hint" style="margin-top:4px">Prázdne = zobrazujú sa všetky.</span>
                   </div>
                 </div>
               </div>
 
               <!-- Actions -->
-              <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">
-                  <i class="bi bi-check-lg me-1"></i>
+              <div style="display:flex; flex-direction:column; gap:8px">
+                <button type="submit" class="bz-art-btn bz-art-btn-accent" style="justify-content:center">
+                  <i class="bi bi-check-lg"></i>
                   <%= isNew ? 'Vytvoriť rebríček' : 'Uložiť zmeny' %>
                 </button>
-                <a href="/admin/rankings" class="btn btn-outline-secondary">Späť na zoznam</a>
+                <a href="/admin/rankings" class="bz-art-btn" style="justify-content:center">Späť na zoznam</a>
               </div>
             </div>
           </div>
         </form>
 
         <% if (!isNew) { %>
-        <!-- ============================================================
-             CRITERIA SECTION
-             ============================================================ -->
-        <div class="card border-0 shadow-sm mt-4" id="criteria-section">
-          <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
-            <h6 class="mb-0"><i class="bi bi-sliders me-2"></i>Kritériá hodnotenia</h6>
-            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#criterionModal"
+        <!-- CRITERIA SECTION -->
+        <div class="bz-art-content-card" style="margin-top:24px" id="criteria-section">
+          <div class="bz-art-content-head">
+            <span class="bz-art-content-title"><i class="bi bi-sliders me-2"></i>Kritériá hodnotenia</span>
+            <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent" data-bs-toggle="modal" data-bs-target="#criterionModal"
                     id="open-criterion-btn">
-              <i class="bi bi-plus-lg me-1"></i>Pridať kritérium
+              <i class="bi bi-plus-lg"></i> Pridať kritérium
             </button>
           </div>
-          <div class="card-body p-0">
-            <% if (criteria.length === 0) { %>
-              <div class="text-center text-muted py-4">
-                <i class="bi bi-sliders d-block fs-3 mb-2 text-body-tertiary"></i>
-                Žiadne kritériá. Pridaj prvé cez tlačidlo vyššie.
-              </div>
-            <% } else { %>
-              <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" id="criteria-table">
-                  <thead class="table-light">
-                    <tr>
-                      <th style="width:40px"></th>
-                      <th>Názov</th>
-                      <th style="width:130px">Typ</th>
-                      <th style="width:80px">Jednotka</th>
-                      <th class="text-center" style="width:90px">Filtrovateľné</th>
-                      <th class="text-center" style="width:90px">Celkové</th>
-                      <th class="text-end" style="width:120px">Akcie</th>
-                    </tr>
-                  </thead>
-                  <tbody id="criteria-tbody">
-                    <% criteria.forEach((c, idx) => { %>
-                      <tr data-criterion-id="<%= c.id %>">
-                        <td class="text-center text-muted" style="cursor:grab" title="Pretiahni na preradenie">
-                          <i class="bi bi-grip-vertical"></i>
-                        </td>
-                        <td class="fw-medium"><%= c.name %></td>
-                        <td>
-                          <span class="badge text-bg-light"><%= c.field_type %></span>
-                        </td>
-                        <td class="text-muted small"><%= c.unit || '—' %></td>
-                        <td class="text-center">
-                          <% if (c.is_filterable) { %>
-                            <i class="bi bi-check-circle-fill text-success"></i>
-                          <% } else { %>
-                            <span class="text-body-tertiary">—</span>
-                          <% } %>
-                        </td>
-                        <td class="text-center">
-                          <% if (c.is_total) { %>
-                            <i class="bi bi-star-fill text-warning"></i>
-                          <% } else { %>
-                            <span class="text-body-tertiary">—</span>
-                          <% } %>
-                        </td>
-                        <td class="text-end">
-                          <button
-                            type="button"
-                            class="btn btn-sm btn-outline-secondary btn-edit-criterion"
-                            title="Upraviť"
-                            data-criterion='<%- JSON.stringify(c) %>'>
+          <% if (criteria.length === 0) { %>
+            <div style="text-align:center; padding:28px 16px; color:var(--art-text-subtle)">
+              <i class="bi bi-sliders" style="font-size:1.8rem; display:block; margin-bottom:8px"></i>
+              <span style="font-size:12px">Žiadne kritériá. Pridaj prvé cez tlačidlo vyššie.</span>
+            </div>
+          <% } else { %>
+            <div style="overflow-x:auto">
+              <table class="bz-art-table" id="criteria-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px"></th>
+                    <th>Názov</th>
+                    <th style="width:130px">Typ</th>
+                    <th style="width:80px">Jednotka</th>
+                    <th style="width:90px; text-align:center">Filtrovateľné</th>
+                    <th style="width:90px; text-align:center">Celkové</th>
+                    <th style="width:120px; text-align:right">Akcie</th>
+                  </tr>
+                </thead>
+                <tbody id="criteria-tbody">
+                  <% criteria.forEach((c, idx) => { %>
+                    <tr data-criterion-id="<%= c.id %>">
+                      <td style="text-align:center; color:var(--art-text-subtle); cursor:grab" title="Pretiahni na preradenie">
+                        <i class="bi bi-grip-vertical"></i>
+                      </td>
+                      <td style="font-weight:600; color:var(--art-text)"><%= c.name %></td>
+                      <td>
+                        <span class="bz-art-badge bz-art-badge-article"><%= c.field_type %></span>
+                      </td>
+                      <td style="color:var(--art-text-muted); font-size:12px"><%= c.unit || '—' %></td>
+                      <td style="text-align:center">
+                        <% if (c.is_filterable) { %>
+                          <i class="bi bi-check-circle-fill" style="color:oklch(0.72 0.16 150)"></i>
+                        <% } else { %>
+                          <span style="color:var(--art-text-subtle)">—</span>
+                        <% } %>
+                      </td>
+                      <td style="text-align:center">
+                        <% if (c.is_total) { %>
+                          <i class="bi bi-star-fill" style="color:oklch(0.78 0.15 75)"></i>
+                        <% } else { %>
+                          <span style="color:var(--art-text-subtle)">—</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <div class="bz-art-row-actions">
+                          <button type="button" class="bz-art-btn bz-art-btn-sm btn-edit-criterion" title="Upraviť"
+                                  data-criterion='<%- JSON.stringify(c) %>'>
                             <i class="bi bi-pencil"></i>
                           </button>
-                          <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger btn-delete-criterion"
-                          title="Zmazať"
-                          data-id="<%= c.id %>"
-                          data-name="<%= c.name %>">
-                          <i class="bi bi-trash"></i>
-                        </button>
-
-                        </td>
-                      </tr>
-                    <% }) %>
-                  </tbody>
-                </table>
-              </div>
-            <% } %>
-          </div>
+                          <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-danger btn-delete-criterion" title="Zmazať"
+                                  data-id="<%= c.id %>" data-name="<%= c.name %>">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
         </div>
 
-            <!-- ============================================================
-             ITEMS SECTION — interaktívna správa položiek
-             ============================================================ -->
-        <div class="card border-0 shadow-sm mt-4">
-          <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
-            <h6 class="mb-0">
+        <!-- ITEMS SECTION -->
+        <div class="bz-art-content-card" style="margin-top:20px">
+          <div class="bz-art-content-head">
+            <span class="bz-art-content-title">
               <i class="bi bi-list-ol me-2"></i>Položky v rebríčku
               (<%= typeof items !== 'undefined' ? items.length : 0 %>)
-            </h6>
+            </span>
             <% if (criteria.length > 0) { %>
-              <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#addItemPanel">
-                <i class="bi bi-plus-lg me-1"></i>Pridať položku
+              <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent" data-bs-toggle="collapse" data-bs-target="#addItemPanel">
+                <i class="bi bi-plus-lg"></i> Pridať položku
               </button>
             <% } else { %>
-              <span class="text-muted small">Najprv pridaj kritériá</span>
+              <span style="font-size:12px; color:var(--art-text-subtle)">Najprv pridaj kritériá</span>
             <% } %>
           </div>
 
           <% if (criteria.length > 0) { %>
           <!-- Add item panel (collapsible) -->
           <div class="collapse" id="addItemPanel">
-            <div class="card-body border-bottom bg-light">
+            <div style="padding:16px 20px; border-bottom:1px solid var(--art-border); background:var(--art-bg-inset)">
               <div id="add-item-form">
 
-                <!-- Tabs: Článok / Vlastný produkt -->
-                <ul class="nav nav-tabs nav-tabs-sm mb-3">
-                  <li class="nav-item">
-                    <button type="button" class="nav-link active" id="tab-item-article">
-                      <i class="bi bi-file-earmark-text me-1"></i>Článok / Recenzia
-                    </button>
-                  </li>
-                  <li class="nav-item">
-                    <button type="button" class="nav-link" id="tab-item-custom">
-                      <i class="bi bi-box-seam me-1"></i>Vlastný produkt
-                    </button>
-                  </li>
-                </ul>
+                <!-- Tabs -->
+                <div class="bz-art-tabs-bar" style="margin-bottom:14px">
+                  <button type="button" class="bz-art-tab-btn active" id="tab-item-article">
+                    <i class="bi bi-file-earmark-text"></i> Článok / Recenzia
+                  </button>
+                  <button type="button" class="bz-art-tab-btn" id="tab-item-custom">
+                    <i class="bi bi-box-seam"></i> Vlastný produkt
+                  </button>
+                </div>
 
                 <!-- Panel: vyhľadanie článku -->
                 <div id="item-article-panel">
                   <input type="hidden" name="article_id" id="item-article-id" value="">
-                  <div class="mb-3 position-relative">
-                    <label class="form-label small">Vyhľadať článok</label>
+                  <div style="margin-bottom:14px; position:relative">
+                    <label class="bz-art-field-label">Vyhľadať článok</label>
                     <input type="text" class="form-control" id="item-article-search"
                            placeholder="Začni písať názov článku…" autocomplete="off">
-                    <div id="item-search-results"
-                         class="dropdown-menu w-100 shadow-sm"
-                         style="display:none; position:absolute; z-index:10; max-height:260px; overflow-y:auto;">
-                    </div>
+                    <div id="item-search-results" class="bz-related-results" style="display:none"></div>
                   </div>
-                  <div id="item-selected-article" class="mb-3"></div>
+                  <div id="item-selected-article" style="margin-bottom:14px"></div>
                 </div>
 
                 <!-- Panel: vlastný produkt -->
                 <div id="item-custom-panel" style="display:none">
-                  <div class="row g-3 mb-3">
+                  <div class="row g-3" style="margin-bottom:14px">
                     <div class="col-md-8">
-                      <label class="form-label small">Názov produktu <span class="text-danger">*</span></label>
+                      <label class="bz-art-field-label">Názov produktu <span style="color:oklch(0.68 0.18 25)">*</span></label>
                       <input type="text" class="form-control" name="custom_name" maxlength="200" placeholder="napr. Samsung Galaxy S26 Ultra">
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label small">Značka</label>
+                      <label class="bz-art-field-label">Značka</label>
                       <input type="text" class="form-control" name="custom_brand" maxlength="100" placeholder="napr. Samsung">
                     </div>
                   </div>
                 </div>
 
                 <!-- Hodnoty kritérií -->
-                <div class="row g-2 mb-3">
+                <div class="row g-2" style="margin-bottom:14px">
                   <% criteria.forEach(c => { %>
                     <div class="col-md-3 col-sm-4">
-                      <label class="form-label small mb-1"><%= c.name %> <% if (c.unit) { %><span class="text-muted">(<%= c.unit %>)</span><% } %></label>
+                      <label class="bz-art-field-label"><%= c.name %> <% if (c.unit) { %><span style="color:var(--art-text-subtle); text-transform:none; font-weight:400">(<%= c.unit %>)</span><% } %></label>
                       <input type="<%= ['score_1_10','decimal','integer','price'].includes(c.field_type) ? 'number' : 'text' %>"
                              class="form-control form-control-sm" name="crit_<%= c.id %>"
                              <% if (c.field_type === 'score_1_10') { %>min="1" max="10" step="0.1"<% } %>
@@ -321,17 +302,17 @@
                   <% }) %>
                 </div>
 
-                <div class="row g-2 mb-3">
+                <div class="row g-2" style="margin-bottom:14px">
                   <div class="col-md-3">
-                    <label class="form-label small mb-1">Celkové skóre (override)</label>
+                    <label class="bz-art-field-label">Celkové skóre (override)</label>
                     <input type="number" class="form-control form-control-sm" name="override_score"
                            min="0" max="10" step="0.1" placeholder="auto priemer">
                   </div>
                 </div>
 
-                <div id="item-add-errors" class="alert alert-danger py-2 small" style="display:none"></div>
-                <button type="button" class="btn btn-primary btn-sm" id="add-item-btn">
-                  <i class="bi bi-plus-lg me-1"></i>Pridať do rebríčka
+                <div id="item-add-errors" class="bz-art-alert bz-art-alert-error" style="display:none; margin-bottom:10px"></div>
+                <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent" id="add-item-btn">
+                  <i class="bi bi-plus-lg"></i> Pridať do rebríčka
                 </button>
               </div>
             </div>
@@ -340,78 +321,79 @@
 
           <!-- Items table -->
           <% if (typeof items !== 'undefined' && items.length > 0) { %>
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width:40px"></th>
-                    <th style="width:50px">#</th>
-                    <th>Produkt</th>
-                    <th style="width:90px">Typ</th>
-                    <th class="text-center" style="width:90px">Skóre</th>
-                    <% criteria.forEach(c => { %>
-                      <th class="text-center small" style="width:80px"><%= c.name %></th>
+          <div style="overflow-x:auto">
+            <table class="bz-art-table">
+              <thead>
+                <tr>
+                  <th style="width:40px"></th>
+                  <th style="width:50px">#</th>
+                  <th>Produkt</th>
+                  <th style="width:90px">Typ</th>
+                  <th style="width:90px; text-align:center">Skóre</th>
+                  <% criteria.forEach(c => { %>
+                    <th style="width:80px; text-align:center; font-size:9px"><%= c.name %></th>
+                  <% }) %>
+                  <th style="width:110px; text-align:right">Akcie</th>
+                </tr>
+              </thead>
+              <tbody id="items-tbody">
+                <% items.forEach((item, idx) => { %>
+                  <tr data-item-id="<%= item.id %>">
+                    <td style="text-align:center; color:var(--art-text-subtle); cursor:grab" title="Pretiahni na preradenie">
+                      <i class="bi bi-grip-vertical"></i>
+                    </td>
+                    <td class="item-rank-num" style="font-weight:700; color:var(--art-text-muted)"><%= idx + 1 %></td>
+                    <td>
+                      <div style="font-weight:600; color:var(--art-text); font-size:13px">
+                        <% if (item.display_brand) { %>
+                          <span style="color:var(--art-text-muted); font-weight:400; font-size:12px"><%= item.display_brand %></span>
+                        <% } %>
+                        <%= item.display_name || '(bez názvu)' %>
+                      </div>
+                      <% if (item.article_id) { %>
+                        <a href="/admin/articles/<%= item.article_id %>/edit" style="font-size:11px; color:var(--art-accent); text-decoration:none">
+                          <i class="bi bi-link-45deg"></i> Otvoriť článok
+                        </a>
+                      <% } else { %>
+                        <span style="font-size:11px; color:var(--art-text-subtle)"><i class="bi bi-box-seam"></i> Vlastný produkt</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (item.article_id) { %>
+                        <span class="bz-art-badge bz-art-badge-review"><%= item.article_type === 'review' ? 'Recenzia' : 'Článok' %></span>
+                      <% } else { %>
+                        <span class="bz-art-badge bz-art-badge-article">Produkt</span>
+                      <% } %>
+                    </td>
+                    <td style="text-align:center">
+                      <% if (item.computed_score !== null) { %>
+                        <span class="bz-art-badge <%= item.computed_score >= 8 ? 'bz-art-badge-published' : item.computed_score >= 6 ? 'bz-art-badge-scheduled' : 'bz-art-badge-trash' %>"
+                              style="font-size:13px; font-weight:700">
+                          <%= item.computed_score.toFixed(1) %>
+                        </span>
+                        <% if (item.override_score !== null && item.override_score !== undefined) { %>
+                          <br><span style="font-family:var(--art-mono); font-size:9px; color:var(--art-text-subtle)">(ručné)</span>
+                        <% } %>
+                      <% } else { %>
+                        <span style="color:var(--art-text-subtle)">—</span>
+                      <% } %>
+                    </td>
+                    <% criteria.forEach(c => {
+                      const val = item.values.find(v => Number(v.criterion_id) === c.id);
+                    %>
+                      <td style="text-align:center; font-size:12px; color:var(--art-text-muted)">
+                        <% if (val && val.value_decimal !== null) { %>
+                          <%= Number(val.value_decimal).toFixed(1) %>
+                        <% } else if (val && val.value_text) { %>
+                          <%= val.value_text %>
+                        <% } else { %>
+                          <span style="color:var(--art-text-subtle)">—</span>
+                        <% } %>
+                      </td>
                     <% }) %>
-                    <th class="text-end" style="width:110px">Akcie</th>
-                  </tr>
-                </thead>
-                <tbody id="items-tbody">
-                  <% items.forEach((item, idx) => { %>
-                    <tr data-item-id="<%= item.id %>">
-                      <td class="text-center text-muted" title="Pretiahni na preradenie">
-                        <i class="bi bi-grip-vertical"></i>
-                      </td>
-                      <td class="fw-bold text-muted item-rank-num"><%= idx + 1 %></td>
-                      <td>
-                        <div class="fw-medium">
-                          <% if (item.display_brand) { %>
-                            <span class="text-muted small"><%= item.display_brand %></span>
-                          <% } %>
-                          <%= item.display_name || '(bez názvu)' %>
-                        </div>
-                        <% if (item.article_id) { %>
-                          <a href="/admin/articles/<%= item.article_id %>/edit" class="small text-decoration-none">
-                            <i class="bi bi-link-45deg"></i> Otvoriť článok
-                          </a>
-                        <% } else { %>
-                          <span class="small text-muted"><i class="bi bi-box-seam"></i> Vlastný produkt</span>
-                        <% } %>
-                      </td>
-                      <td>
-                        <% if (item.article_id) { %>
-                          <span class="badge text-bg-primary"><%= item.article_type === 'review' ? 'Recenzia' : 'Článok' %></span>
-                        <% } else { %>
-                          <span class="badge text-bg-secondary">Produkt</span>
-                        <% } %>
-                      </td>
-                      <td class="text-center">
-                        <% if (item.computed_score !== null) { %>
-                          <span class="badge fs-6 <%= item.computed_score >= 8 ? 'text-bg-success' : item.computed_score >= 6 ? 'text-bg-warning' : 'text-bg-danger' %>">
-                            <%= item.computed_score.toFixed(1) %>
-                          </span>
-                          <% if (item.override_score !== null && item.override_score !== undefined) { %>
-                            <br><span class="small text-muted">(ručné)</span>
-                          <% } %>
-                        <% } else { %>
-                          <span class="text-body-tertiary">—</span>
-                        <% } %>
-                      </td>
-                      <% criteria.forEach(c => {
-                        const val = item.values.find(v => Number(v.criterion_id) === c.id);
-                      %>
-                        <td class="text-center small">
-                          <% if (val && val.value_decimal !== null) { %>
-                            <%= Number(val.value_decimal).toFixed(1) %>
-                          <% } else if (val && val.value_text) { %>
-                            <%= val.value_text %>
-                          <% } else { %>
-                            <span class="text-body-tertiary">—</span>
-                          <% } %>
-                        </td>
-                      <% }) %>
-                      <td class="text-end">
-                        <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-item" title="Upraviť"
+                    <td>
+                      <div class="bz-art-row-actions">
+                        <button type="button" class="bz-art-btn bz-art-btn-sm btn-edit-item" title="Upraviť"
                                 data-item-id="<%= item.id %>"
                                 data-custom-name="<%= item.custom_name || '' %>"
                                 data-custom-brand="<%= item.custom_brand || '' %>"
@@ -423,53 +405,51 @@
                                 %>data-crit<%= c.id %>="<%= numVal || txtVal %>"<% }) %>>
                           <i class="bi bi-pencil"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete-item" title="Odobrať"
+                        <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-danger btn-delete-item" title="Odobrať"
                                 data-item-id="<%= item.id %>"
                                 data-name="<%= (item.display_name || '').replace(/"/g, '&quot;') %>">
                           <i class="bi bi-trash"></i>
                         </button>
-                      </td>
-                    </tr>
-                  <% }) %>
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
           </div>
           <% } else if (typeof items !== 'undefined' && items.length === 0 && criteria.length > 0) { %>
-          <div class="card-body text-center text-muted py-4">
-            <i class="bi bi-inbox d-block fs-3 mb-2 text-body-tertiary"></i>
-            Žiadne položky. Pridaj prvú cez tlačidlo vyššie.
+          <div style="text-align:center; padding:28px 16px; color:var(--art-text-subtle)">
+            <i class="bi bi-inbox" style="font-size:1.8rem; display:block; margin-bottom:8px"></i>
+            <span style="font-size:12px">Žiadne položky. Pridaj prvú cez tlačidlo vyššie.</span>
           </div>
           <% } %>
         </div>
 
-        <!-- ============================================================
-             EDIT ITEM MODAL
-             ============================================================ -->
+        <!-- EDIT ITEM MODAL -->
         <div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Upraviť položku</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-content" style="background:var(--art-bg-card); border:1px solid var(--art-border); color:var(--art-text)">
+              <div class="modal-header" style="border-color:var(--art-border)">
+                <h5 class="modal-title" style="font-family:var(--art-font); font-size:16px; font-weight:700">Upraviť položku</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
                 <div id="edit-item-form">
                   <input type="hidden" id="edit-item-id" value="">
-                  <div class="row g-3 mb-3">
+                  <div class="row g-3" style="margin-bottom:14px">
                     <div class="col-md-8">
-                      <label class="form-label">Názov (vlastný produkt)</label>
+                      <label class="bz-art-field-label">Názov (vlastný produkt)</label>
                       <input type="text" class="form-control" id="edit-custom-name" name="custom_name" maxlength="200">
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label">Značka</label>
+                      <label class="bz-art-field-label">Značka</label>
                       <input type="text" class="form-control" id="edit-custom-brand" name="custom_brand" maxlength="100">
                     </div>
                   </div>
-                  <div class="row g-2 mb-3" id="edit-criteria-values">
+                  <div class="row g-2" style="margin-bottom:14px" id="edit-criteria-values">
                     <% criteria.forEach(c => { %>
                       <div class="col-md-4 col-6">
-                        <label class="form-label small mb-1"><%= c.name %></label>
+                        <label class="bz-art-field-label"><%= c.name %></label>
                         <input type="<%= ['score_1_10','decimal','integer','price'].includes(c.field_type) ? 'number' : 'text' %>"
                                class="form-control form-control-sm" name="crit_<%= c.id %>" data-edit-crit="<%= c.id %>"
                                <% if (c.field_type === 'score_1_10') { %>min="1" max="10" step="0.1"<% } %>
@@ -477,43 +457,40 @@
                       </div>
                     <% }) %>
                   </div>
-                  <div class="mb-0">
-                    <label class="form-label small mb-1">Celkové skóre (override)</label>
+                  <div>
+                    <label class="bz-art-field-label">Celkové skóre (override)</label>
                     <input type="number" class="form-control form-control-sm" id="edit-override-score"
                            name="override_score" min="0" max="10" step="0.1" placeholder="auto priemer" style="max-width:150px">
                   </div>
                 </div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušiť</button>
-                <button type="button" class="btn btn-primary" id="save-edit-item">
-                  <i class="bi bi-check-lg me-1"></i>Uložiť
+              <div class="modal-footer" style="border-color:var(--art-border)">
+                <button type="button" class="bz-art-btn bz-art-btn-sm" data-bs-dismiss="modal">Zrušiť</button>
+                <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent" id="save-edit-item">
+                  <i class="bi bi-check-lg"></i> Uložiť
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-
-        <!-- ============================================================
-             CRITERION MODAL
-             ============================================================ -->
+        <!-- CRITERION MODAL -->
         <div class="modal fade" id="criterionModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="criterionModalTitle">Pridať kritérium</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-content" style="background:var(--art-bg-card); border:1px solid var(--art-border); color:var(--art-text)">
+              <div class="modal-header" style="border-color:var(--art-border)">
+                <h5 class="modal-title" id="criterionModalTitle" style="font-family:var(--art-font); font-size:16px; font-weight:700">Pridať kritérium</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body">
                 <input type="hidden" id="crit-id" value="">
-                <div class="mb-3">
-                  <label for="crit-name" class="form-label">Názov <span class="text-danger">*</span></label>
+                <div style="margin-bottom:14px">
+                  <label for="crit-name" class="bz-art-field-label">Názov <span style="color:oklch(0.68 0.18 25)">*</span></label>
                   <input type="text" class="form-control" id="crit-name" maxlength="80" placeholder="napr. Displej, Batéria, Výkon…">
                 </div>
                 <div class="row g-3">
                   <div class="col-md-6">
-                    <label for="crit-field-type" class="form-label">Typ hodnoty</label>
+                    <label for="crit-field-type" class="bz-art-field-label">Typ hodnoty</label>
                     <select class="form-select" id="crit-field-type">
                       <option value="score_1_10">Skóre 1–10</option>
                       <option value="decimal">Desatinné číslo</option>
@@ -524,11 +501,11 @@
                     </select>
                   </div>
                   <div class="col-md-6">
-                    <label for="crit-unit" class="form-label">Jednotka</label>
+                    <label for="crit-unit" class="bz-art-field-label">Jednotka</label>
                     <input type="text" class="form-control" id="crit-unit" maxlength="20" placeholder="napr. €, mAh, palcov">
                   </div>
                 </div>
-                <div class="mt-3 d-flex gap-4">
+                <div style="margin-top:14px; display:flex; gap:16px">
                   <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="crit-filterable">
                     <label class="form-check-label" for="crit-filterable">Filtrovateľné</label>
@@ -538,12 +515,12 @@
                     <label class="form-check-label" for="crit-total">Celkové skóre</label>
                   </div>
                 </div>
-                <div id="crit-errors" class="text-danger small mt-2" style="display:none"></div>
+                <div id="crit-errors" style="display:none; margin-top:10px; font-size:12px; color:oklch(0.75 0.18 25)"></div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zrušiť</button>
-                <button type="button" class="btn btn-primary" id="crit-save-btn">
-                  <i class="bi bi-check-lg me-1"></i>Uložiť
+              <div class="modal-footer" style="border-color:var(--art-border)">
+                <button type="button" class="bz-art-btn bz-art-btn-sm" data-bs-dismiss="modal">Zrušiť</button>
+                <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent" id="crit-save-btn">
+                  <i class="bi bi-check-lg"></i> Uložiť
                 </button>
               </div>
             </div>

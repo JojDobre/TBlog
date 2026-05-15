@@ -1,105 +1,144 @@
 <!doctype html>
-<html lang="sk" data-bs-theme="light">
+<html lang="sk" data-bs-theme="dark">
 <head>
   <%- include('../partials/head', { title: 'Médiá' }) %>
 </head>
-<body class="bz-admin-body">
-  <%- include('../partials/sidebar') %>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Médiá' }) %>
 
     <main class="bz-content">
-      <div class="container-fluid p-4">
+      <div class="bz-art-wrap">
 
         <% if (flash.uploadedCount > 0) { %>
-          <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Nahraných: <%= flash.uploadedCount %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Nahraných: <%= flash.uploadedCount %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
         <% } %>
         <% if (flash.deleted) { %>
-          <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Súbor zmazaný.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Súbor zmazaný.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
         <% } %>
         <% if (flash.saved) { %>
-          <div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle me-2"></i>Zmeny uložené.<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> Zmeny uložené.
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
         <% } %>
         <% if (flash.err) { %>
-          <div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-exclamation-triangle me-2"></i><%= flash.err %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
         <% } %>
 
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white">
-            <h2 class="h6 mb-0"><i class="bi bi-cloud-upload me-2"></i>Nahrať obrázky</h2>
+        <!-- Header -->
+        <div class="bz-art-header">
+          <div>
+            <h1 class="bz-art-header-title">Médiá</h1>
+            <p class="bz-art-header-sub">Nahrávanie a správa obrázkov</p>
           </div>
-          <div class="card-body">
-            <form method="POST" action="/admin/media/upload" enctype="multipart/form-data" class="row g-3"
+        </div>
+
+        <!-- Upload card -->
+        <div class="bz-art-content-card" style="margin-bottom:24px">
+          <div class="bz-art-content-head">
+            <span class="bz-art-content-title"><i class="bi bi-cloud-upload me-2"></i>Nahrať obrázky</span>
+          </div>
+          <div class="bz-art-content-body">
+            <form method="POST" action="/admin/media/upload" enctype="multipart/form-data"
                   data-max-files="<%= maxFiles %>">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-              <div class="col-md-12">
-                <label for="files" class="form-label">Súbory <span class="text-muted small">(JPEG, PNG, WebP, GIF — max <%= maxSizeMb %> MB / súbor, naraz max <%= maxFiles %>)</span></label>
+              <div style="margin-bottom:14px">
+                <label for="files" class="bz-art-field-label">
+                  Súbory <span style="color:var(--art-text-subtle); text-transform:none; letter-spacing:0; font-weight:400">(JPEG, PNG, WebP, GIF — max <%= maxSizeMb %> MB / súbor, naraz max <%= maxFiles %>)</span>
+                </label>
                 <input type="file" class="form-control" id="files" name="files"
                        accept="image/jpeg,image/png,image/webp,image/gif"
                        multiple required data-multi-file-input />
-                <div class="form-text" data-file-count-info>Vyber viacero súborov naraz (Ctrl/Shift + klik).</div>
+                <span class="bz-art-hint" style="margin-top:4px" data-file-count-info>Vyber viacero súborov naraz (Ctrl/Shift + klik).</span>
               </div>
-              <div class="col-md-6">
-                <label for="alt_text" class="form-label">Alt text <span class="text-muted small">(spoločný)</span></label>
-                <input type="text" class="form-control" id="alt_text" name="alt_text" maxlength="255" />
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px">
+                <div>
+                  <label for="alt_text" class="bz-art-field-label">Alt text <span style="color:var(--art-text-subtle); text-transform:none; letter-spacing:0; font-weight:400">(spoločný)</span></label>
+                  <input type="text" class="form-control" id="alt_text" name="alt_text" maxlength="255" />
+                </div>
+                <div>
+                  <label for="caption" class="bz-art-field-label">Popis <span style="color:var(--art-text-subtle); text-transform:none; letter-spacing:0; font-weight:400">(spoločný)</span></label>
+                  <input type="text" class="form-control" id="caption" name="caption" maxlength="1000" />
+                </div>
               </div>
-              <div class="col-md-6">
-                <label for="caption" class="form-label">Popis <span class="text-muted small">(spoločný)</span></label>
-                <input type="text" class="form-control" id="caption" name="caption" maxlength="1000" />
-              </div>
-              <div class="col-12">
-                <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-1"></i>Nahrať</button>
-              </div>
+              <button type="submit" class="bz-art-btn bz-art-btn-accent">
+                <i class="bi bi-upload"></i> Nahrať
+              </button>
             </form>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white d-flex flex-wrap align-items-center gap-2">
-            <h2 class="h6 mb-0 me-3"><i class="bi bi-images me-2"></i>Knižnica</h2>
-            <form method="GET" action="/admin/media" class="d-flex flex-grow-1" style="max-width:400px">
-              <input type="search" name="q" value="<%= q %>" class="form-control form-control-sm" placeholder="Hľadať…" />
-              <button type="submit" class="btn btn-sm btn-outline-secondary ms-2"><i class="bi bi-search"></i></button>
-              <% if (q) { %><a href="/admin/media" class="btn btn-sm btn-link">Zrušiť</a><% } %>
-            </form>
-            <span class="text-muted small ms-auto">
-              <% if (q) { %>Nájdených: <%= totalCount %><% } else { %><%= totalCount %> položiek<% } %>
-            </span>
+        <!-- Library -->
+        <div class="bz-art-content-card">
+          <div class="bz-art-content-head">
+            <span class="bz-art-content-title"><i class="bi bi-images me-2"></i>Knižnica</span>
+            <div style="display:flex; align-items:center; gap:10px">
+              <form method="GET" action="/admin/media" style="display:flex; gap:6px">
+                <div class="bz-art-search-wrap" style="min-width:200px">
+                  <i class="bi bi-search bz-art-search-icon"></i>
+                  <input type="search" name="q" value="<%= q %>" class="bz-art-search-input" placeholder="Hľadať…" />
+                </div>
+                <button type="submit" class="bz-art-btn bz-art-btn-sm"><i class="bi bi-search"></i></button>
+                <% if (q) { %><a href="/admin/media" class="bz-art-btn bz-art-btn-sm"><i class="bi bi-x-lg"></i></a><% } %>
+              </form>
+              <span style="font-family:var(--art-mono); font-size:11px; color:var(--art-text-subtle); white-space:nowrap">
+                <% if (q) { %>Nájdených: <%= totalCount %><% } else { %><%= totalCount %> položiek<% } %>
+              </span>
+            </div>
           </div>
-          <div class="card-body">
+          <div class="bz-art-content-body">
             <% if (items.length === 0) { %>
-              <p class="text-muted text-center py-4 mb-0">
-                <% if (q) { %>Pre hľadaný výraz sa nič nenašlo.<% } else { %>Knižnica je prázdna.<% } %>
-              </p>
+              <div class="bz-art-empty" style="border:none">
+                <i class="bi bi-images bz-art-empty-icon"></i>
+                <p class="bz-art-empty-text">
+                  <% if (q) { %>Pre hľadaný výraz sa nič nenašlo.<% } else { %>Knižnica je prázdna.<% } %>
+                </p>
+              </div>
             <% } else { %>
-              <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+              <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:14px">
                 <% items.forEach(item => { %>
-                  <div class="col">
-                    <div class="card h-100 bz-media-card">
-                      <a href="/uploads/<%= item.original_path %>" target="_blank" rel="noopener">
-                        <img src="/uploads/<%= item.thumbnail_path %>" alt="<%= item.alt_text || item.original_filename %>" loading="lazy" class="card-img-top" />
-                      </a>
-                      <div class="card-body p-2">
-                        <p class="small text-truncate mb-1" title="<%= item.original_filename %>"><%= item.original_filename %></p>
-                        <p class="small text-muted mb-2">
-                          <% if (item.width && item.height) { %><%= item.width %>×<%= item.height %> · <% } %>
-                          <%= Math.round(item.size_bytes / 1024) %> KB
-                        </p>
-                        <div class="d-flex gap-1">
-                          <% if (item.usage_count > 0) { %>
-                            <span class="badge text-bg-secondary flex-grow-1 text-start">Použité <%= item.usage_count %>×</span>
-                          <% } else { %>
-                            <span class="badge text-bg-light text-muted flex-grow-1 text-start">Nepoužité</span>
-                          <% } %>
-                          <a href="/admin/media/<%= item.id %>/edit" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                          <% if (item.usage_count === 0) { %>
-                            <form method="POST" action="/admin/media/<%= item.id %>/delete" class="m-0" onsubmit="return confirm('Naozaj zmazať?');">
-                              <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                              <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                            </form>
-                          <% } %>
-                        </div>
+                  <div style="background:var(--art-bg-inset); border:1px solid var(--art-border); border-radius:var(--art-r-md); overflow:hidden; display:flex; flex-direction:column">
+                    <a href="/uploads/<%= item.original_path %>" target="_blank" rel="noopener"
+                       style="display:block; aspect-ratio:4/3; background:oklch(0.13 0.005 240); overflow:hidden">
+                      <img src="/uploads/<%= item.thumbnail_path %>" alt="<%= item.alt_text || item.original_filename %>"
+                           loading="lazy" style="width:100%; height:100%; object-fit:cover; display:block" />
+                    </a>
+                    <div style="padding:8px 10px; flex:1; display:flex; flex-direction:column; gap:4px">
+                      <p style="font-size:12px; font-weight:500; color:var(--art-text); margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis"
+                         title="<%= item.original_filename %>"><%= item.original_filename %></p>
+                      <p style="font-family:var(--art-mono); font-size:10px; color:var(--art-text-subtle); margin:0">
+                        <% if (item.width && item.height) { %><%= item.width %>×<%= item.height %> · <% } %>
+                        <%= Math.round(item.size_bytes / 1024) %> KB
+                      </p>
+                      <div style="display:flex; gap:4px; align-items:center; margin-top:auto">
+                        <% if (item.usage_count > 0) { %>
+                          <span class="bz-art-badge bz-art-badge-published" style="flex:1; text-align:center">Použité <%= item.usage_count %>×</span>
+                        <% } else { %>
+                          <span class="bz-art-badge bz-art-badge-draft" style="flex:1; text-align:center">Nepoužité</span>
+                        <% } %>
+                        <a href="/admin/media/<%= item.id %>/edit" class="bz-art-btn bz-art-btn-sm" title="Upraviť" style="padding:4px 8px">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <% if (item.usage_count === 0) { %>
+                          <form method="POST" action="/admin/media/<%= item.id %>/delete" style="margin:0" onsubmit="return confirm('Naozaj zmazať?');">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                            <button type="submit" class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" title="Zmazať" style="padding:4px 8px">
+                              <i class="bi bi-trash"></i>
+                            </button>
+                          </form>
+                        <% } %>
                       </div>
                     </div>
                   </div>
@@ -107,16 +146,18 @@
               </div>
 
               <% if (totalPages > 1) { %>
-                <nav class="mt-4 d-flex justify-content-center">
-                  <ul class="pagination mb-0">
-                    <% const qs = q ? '&q=' + encodeURIComponent(q) : ''; %>
-                    <% if (page > 1) { %><li class="page-item"><a class="page-link" href="?page=<%= page-1 %><%= qs %>">‹</a></li><% } %>
-                    <% for (let p = Math.max(1, page-2); p <= Math.min(totalPages, page+2); p++) { %>
-                      <li class="page-item <%= p === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= p %><%= qs %>"><%= p %></a></li>
-                    <% } %>
-                    <% if (page < totalPages) { %><li class="page-item"><a class="page-link" href="?page=<%= page+1 %><%= qs %>">›</a></li><% } %>
-                  </ul>
-                </nav>
+                <% const qs = q ? '&q=' + encodeURIComponent(q) : ''; %>
+                <div class="bz-art-pagination">
+                  <% if (page > 1) { %>
+                    <a href="?page=<%= page-1 %><%= qs %>" class="bz-art-page-btn">‹</a>
+                  <% } %>
+                  <% for (let p = Math.max(1, page-2); p <= Math.min(totalPages, page+2); p++) { %>
+                    <a href="?page=<%= p %><%= qs %>" class="bz-art-page-btn <%= p === page ? 'active' : '' %>"><%= p %></a>
+                  <% } %>
+                  <% if (page < totalPages) { %>
+                    <a href="?page=<%= page+1 %><%= qs %>" class="bz-art-page-btn">›</a>
+                  <% } %>
+                </div>
               <% } %>
             <% } %>
           </div>
