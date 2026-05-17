@@ -45,7 +45,7 @@
   --s-card-pad: var(--s-6);
   --s-stack: var(--s-4);
   --s-section: var(--s-20);
-  --grid-gap: var(--s-6);
+  --grid-gap: var(--s-4);
 }
 
 /* Dark (default) */
@@ -730,7 +730,7 @@ img {
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
-  overflow: hidden;
+  /*overflow: hidden;*/
 }
 
 .hero-banner-lead {
@@ -1412,6 +1412,13 @@ img {
   grid-template-columns: repeat(4, 1fr);
   gap: var(--grid-gap);
 }
+
+.grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--grid-gap);
+}
+
 .minimal-review {
   display: flex;
   flex-direction: column;

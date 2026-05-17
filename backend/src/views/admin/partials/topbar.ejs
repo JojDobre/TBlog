@@ -15,14 +15,7 @@
     : '?';
 %>
 <header class="bz-topbar">
-  <button
-    class="btn btn-link bz-topbar-toggle d-lg-none"
-    type="button"
-    data-bs-toggle="offcanvas"
-    data-bs-target="#bzSidebar"
-    aria-controls="bzSidebar"
-    aria-label="Menu"
-  >
+  <button class="btn btn-link bz-topbar-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#bzSidebar" aria-controls="bzSidebar" aria-label="Menu">
     <i class="bi bi-list"></i>
   </button>
 
@@ -37,53 +30,48 @@
     </a>
 
     <div class="dropdown">
-      <button
-        class="btn btn-sm btn-light dropdown-toggle"
-        type="button"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-        style="display:inline-flex; align-items:center; gap:6px"
-      >
+      <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="display:inline-flex; align-items:center; gap:6px">
         <% if (_u && _u.avatar_path) { %>
-          <img src="/uploads/<%= _u.avatar_path %>" alt=""
-               style="width:22px; height:22px; border-radius:50%; object-fit:cover">
+        <img src="/uploads/<%= _u.avatar_path %>" alt="" style="width:22px; height:22px; border-radius:50%; object-fit:cover">
         <% } else { %>
-          <div class="bz-topbar-avatar"><%= _initials %></div>
+        <div class="bz-topbar-avatar"><%= _initials %></div>
         <% } %>
         <% if (_u) { %>
-          <%= _u.nickname %>
-          <% if (_u.role === 'admin') { %>
-            <span class="badge text-bg-danger ms-1">admin</span>
-          <% } else if (_u.role === 'editor') { %>
-            <span class="badge text-bg-primary ms-1">editor</span>
-          <% } %>
+        <%= _u.nickname %>
+        <% if (_u.role === 'admin') { %>
+        <span class="badge text-bg-danger ms-1">admin</span>
+        <% } else if (_u.role === 'editor') { %>
+        <span class="badge text-bg-primary ms-1">editor</span>
+        <% } %>
         <% } else { %>
-          Hosť
+        Hosť
         <% } %>
       </button>
 
       <ul class="dropdown-menu dropdown-menu-end">
         <% if (typeof user !== 'undefined' && user) { %>
-          <li>
-            <a class="dropdown-item" href="/admin/profile">
-              <i class="bi bi-person me-2"></i>Profil
-            </a>
-          </li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-            <form method="POST" action="/admin/logout" class="m-0">
-              <input type="hidden" name="_csrf" value="<%= csrf %>" />
-              <button type="submit" class="dropdown-item">
-                <i class="bi bi-box-arrow-right me-2"></i>Odhlásiť sa
-              </button>
-            </form>
-          </li>
+        <li>
+          <a class="dropdown-item" href="/u/<%= _u.nickname %>">
+            <i class="bi bi-person me-2"></i>Profil
+          </a>
+        </li>
+        <li>
+          <hr class="dropdown-divider">
+        </li>
+        <li>
+          <form method="POST" action="/admin/logout" class="m-0">
+            <input type="hidden" name="_csrf" value="<%= csrf %>" />
+            <button type="submit" class="dropdown-item">
+              <i class="bi bi-box-arrow-right me-2"></i>Odhlásiť sa
+            </button>
+          </form>
+        </li>
         <% } else { %>
-          <li>
-            <a class="dropdown-item" href="/admin/login">
-              <i class="bi bi-box-arrow-in-right me-2"></i>Prihlásiť sa
-            </a>
-          </li>
+        <li>
+          <a class="dropdown-item" href="/admin/login">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Prihlásiť sa
+          </a>
+        </li>
         <% } %>
       </ul>
     </div>

@@ -78,6 +78,15 @@
                   <% if (errors.slug) { %><span style="color:oklch(0.75 0.18 25); font-size:11px; margin-top:4px; display:block"><%= errors.slug %></span><% } %>
                   <span class="bz-art-hint" style="margin-top:4px">Ponechaj prázdne pre automatické vygenerovanie.</span>
                 </div>
+                <div style="margin-top:14px">
+                  <label for="short_description" class="bz-art-field-label">Krátky popis</label>
+                  <textarea class="form-control <%= errors.short_description ? 'is-invalid' : '' %>"
+                            id="short_description" name="short_description"
+                            rows="2" maxlength="500"
+                            placeholder="Zobrazí sa pod názvom stránky…"><%= pg.short_description || '' %></textarea>
+                  <% if (errors.short_description) { %><div class="invalid-feedback"><%= errors.short_description %></div><% } %>
+                  <span class="bz-art-hint" style="margin-top:4px">Max 500 znakov. Zobrazuje sa na stránke pod nadpisom.</span>
+                </div>
               </div>
 
               <!-- Block editor -->

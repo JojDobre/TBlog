@@ -35,9 +35,13 @@
             <p class="lead" style="max-width:520px;"><%= article.excerpt %></p>
           <% } %>
           <div class="review-header-author">
-            <span class="avatar" style="width:36px;height:36px;font-size:13px;">
-              <%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %>
-            </span>
+            <% if (article.author_avatar) { %>
+              <img src="/uploads/<%= article.author_avatar %>" class="avatar" alt="<%= article.author_name %>" style="width:36px;height:36px;object-fit:cover;border-radius:50%;">
+            <% } else { %>
+              <span class="avatar" style="width:36px;height:36px;font-size:13px;">
+                <%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %>
+              </span>
+            <% } %>
             <div>
               <div style="font-size:14px; font-weight:600;"><%= article.author_name || 'Redakcia' %></div>
               <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">

@@ -76,6 +76,7 @@ router.get('/hladaj', async (req, res, next) => {
     if (q.length >= 2) {
       const qb = db('articles')
         .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
         .leftJoin('media', 'articles.cover_media_id', 'media.id')
         .where('articles.status', 'published')
         .where(function () {
@@ -101,6 +102,7 @@ router.get('/hladaj', async (req, res, next) => {
           'articles.published_at',
           'articles.view_count',
           'users.nickname as author_name',
+          'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb'
         )
         .orderBy('articles.view_count', 'desc')
@@ -168,6 +170,7 @@ async function buildListing(queryBuilder, { page, sort, type }) {
   const rows = await queryBuilder
     .clone()
     .leftJoin('users', 'articles.author_id', 'users.id')
+    .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
     .leftJoin('media', 'articles.cover_media_id', 'media.id')
     .select(
       'articles.id',
@@ -178,6 +181,7 @@ async function buildListing(queryBuilder, { page, sort, type }) {
       'articles.published_at',
       'articles.view_count',
       'users.nickname as author_name',
+      'author_media.thumbnail_path as author_avatar',
       'media.thumbnail_path as cover_thumb',
       'media.original_path as cover_full'
     )
@@ -481,6 +485,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
 
     const article = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
       .leftJoin('media as cover', 'articles.cover_media_id', 'cover.id')
       .leftJoin('media as og', 'articles.og_image_media_id', 'og.id')
       .where('articles.slug', slug)
@@ -488,6 +493,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       .select(
         'articles.*',
         'users.nickname as author_name',
+        'author_media.thumbnail_path as author_avatar',
         'cover.thumbnail_path as cover_thumb',
         'cover.original_path as cover_full',
         'og.original_path as og_path'
@@ -721,6 +727,7 @@ router.get('/', async (req, res, next) => {
     // 1. Featured články pre slider (posledné 4 featured + published)
     const featured = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
       .leftJoin('media', 'articles.cover_media_id', 'media.id')
       .where('articles.status', 'published')
       .where('articles.is_featured', 1)
@@ -733,6 +740,7 @@ router.get('/', async (req, res, next) => {
         'articles.published_at',
         'articles.view_count',
         'users.nickname as author_name',
+        'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
         'media.original_path as cover_full'
       )
@@ -742,6 +750,7 @@ router.get('/', async (req, res, next) => {
     // 2. Najnovšie články (pre Novinky sekciu — bento)
     const latest = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
       .leftJoin('media', 'articles.cover_media_id', 'media.id')
       .where('articles.status', 'published')
       .select(
@@ -753,6 +762,7 @@ router.get('/', async (req, res, next) => {
         'articles.published_at',
         'articles.view_count',
         'users.nickname as author_name',
+        'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
         'media.original_path as cover_full'
       )
@@ -763,6 +773,7 @@ router.get('/', async (req, res, next) => {
     const oneWeekAgo = new Date(Date.now() - 7 * 86_400_000);
     const trending = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
       .leftJoin('media', 'articles.cover_media_id', 'media.id')
       .where('articles.status', 'published')
       .where('articles.published_at', '>=', oneWeekAgo)
@@ -775,6 +786,7 @@ router.get('/', async (req, res, next) => {
         'articles.published_at',
         'articles.view_count',
         'users.nickname as author_name',
+        'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb'
       )
       .orderBy('articles.view_count', 'desc')
@@ -785,6 +797,7 @@ router.get('/', async (req, res, next) => {
       const excludeIds = trending.map((a) => a.id);
       const extra = await db('articles')
         .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
         .leftJoin('media', 'articles.cover_media_id', 'media.id')
         .where('articles.status', 'published')
         .whereNotIn('articles.id', excludeIds)
@@ -797,6 +810,7 @@ router.get('/', async (req, res, next) => {
           'articles.published_at',
           'articles.view_count',
           'users.nickname as author_name',
+          'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb'
         )
         .orderBy('articles.view_count', 'desc')
@@ -807,6 +821,7 @@ router.get('/', async (req, res, next) => {
     // 4. Editor's Pick — najčítanejší published článok
     const editorsPick = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
       .leftJoin('media', 'articles.cover_media_id', 'media.id')
       .where('articles.status', 'published')
       .select(
@@ -818,6 +833,7 @@ router.get('/', async (req, res, next) => {
         'articles.published_at',
         'articles.view_count',
         'users.nickname as author_name',
+        'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
         'media.original_path as cover_full'
       )
@@ -827,6 +843,7 @@ router.get('/', async (req, res, next) => {
     // 5. Reviews — posledné published recenzie
     const reviews = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
+      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
       .leftJoin('media', 'articles.cover_media_id', 'media.id')
       .where('articles.status', 'published')
       .where('articles.type', 'review')
@@ -839,11 +856,42 @@ router.get('/', async (req, res, next) => {
         'articles.published_at',
         'articles.view_count',
         'users.nickname as author_name',
+        'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
         'media.original_path as cover_full'
       )
       .orderBy('articles.published_at', 'desc')
       .limit(6);
+
+    // Načítaj skóre pre všetky recenzie (reviews sekcia + featured slider)
+    const reviewIds = [...new Set([
+      ...reviews.map((r) => r.id),
+      ...featured.filter((a) => a.type === 'review').map((a) => a.id),
+    ])];
+    let reviewScoreMap = new Map();
+    if (reviewIds.length > 0) {
+      const scoreRows = await db('ranking_items as ri')
+        .leftJoin('ranking_item_values as riv', 'riv.ranking_item_id', 'ri.id')
+        .leftJoin('ranking_criteria as rc', 'rc.id', 'riv.criterion_id')
+        .whereIn('ri.article_id', reviewIds)
+        .groupBy('ri.id', 'ri.article_id', 'ri.override_score')
+        .select(
+          'ri.article_id',
+          'ri.override_score',
+          db.raw("AVG(CASE WHEN rc.field_type != 'price' THEN riv.value_decimal END) as avg_score")
+        );
+      for (const row of scoreRows) {
+        const score =
+          row.override_score !== null && row.override_score !== undefined
+            ? Number(row.override_score)
+            : row.avg_score !== null
+            ? Math.round(Number(row.avg_score) * 10) / 10
+            : null;
+        if (score !== null && !reviewScoreMap.has(row.article_id)) {
+          reviewScoreMap.set(Number(row.article_id), score);
+        }
+      }
+    }
 
     // 4. Tagy pre článok (pre bento overlay tag)
     const articleIds = [...new Set([...featured, ...latest, ...trending].map((a) => a.id))];
@@ -894,6 +942,7 @@ router.get('/', async (req, res, next) => {
         rubrics: rubMap.get(a.id) || [],
         readTime: estimateReadTime(a.excerpt),
         viewsFormatted: formatViews(a.view_count),
+        score: reviewScoreMap.get(Number(a.id)) ?? null,
       };
     }
 

@@ -32,7 +32,7 @@
       </div>
 
       <!-- Messages thread -->
-      <div class="conv-messages" id="conv-messages">
+      <div class="conv-messages" id="conv-messages" data-conv-id="<%= conversationId %>">
         <div class="msg-loading">Načítavam správy...</div>
       </div>
 
@@ -55,7 +55,7 @@
   </main>
 
   <%- include('../partials/footer') %>
-  <script>window.__CONV_ID = <%= conversationId %>;</script>
+  <div class="conv-messages" id="conv-messages" data-conv-id="<%= conversationId %>">
   <script src="/js/messages.js" defer></script>
 </body>
 </html>

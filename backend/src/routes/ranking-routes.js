@@ -89,13 +89,11 @@ async function loadRankingItems(rankingId, ranking) {
     if (item.override_score !== null && item.override_score !== undefined) {
       item.score = Number(item.override_score);
     } else {
-      // Priemer z numerických kritérií (okrem price)
       const numericVals = item.values
         .filter((v) => {
           if (v.value_decimal === null) return false;
-          // Vynechaj price kritérium z priemeru
-          if (priceCriterion && Number(v.criterion_id) === priceCriterion.id) return false;
-          return true;
+          const criterion = criteria.find((c) => c.id === Number(v.criterion_id));
+          return criterion && criterion.field_type !== 'price';
         })
         .map((v) => Number(v.value_decimal));
       item.score =

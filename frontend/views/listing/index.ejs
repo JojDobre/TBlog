@@ -113,7 +113,11 @@
                 <p class="acard-excerpt"><%= a.excerpt %></p>
                 <div class="acard-foot">
                   <div class="acard-author">
-                    <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                                        <% if (user.avatar_path) { %>
+                      <span class="avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+                    <% } else { %>
+                      <span class="avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                    <% } %>
                     <span><%= a.author_name || 'Redakcia' %></span>
                   </div>
                   <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle);">

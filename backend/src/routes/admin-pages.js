@@ -79,6 +79,7 @@ router.get('/new', (req, res) => {
     pg: {
       title: '',
       slug: '',
+      short_description: '',
       template,
       status: 'draft',
       seo_title: '',
@@ -138,6 +139,7 @@ router.post('/', async (req, res, next) => {
     const [id] = await db('pages').insert({
       title: value.title,
       slug: finalSlug,
+      short_description: value.short_description,
       template: value.template,
       content: JSON.stringify(cleanBlocks),
       status: value.status,
@@ -243,6 +245,7 @@ router.post('/:id', async (req, res, next) => {
       .update({
         title: value.title,
         slug: finalSlug,
+        short_description: value.short_description,
         template: value.template,
         content: JSON.stringify(cleanBlocks),
         status: value.status,

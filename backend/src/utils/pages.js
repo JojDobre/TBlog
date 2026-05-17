@@ -60,6 +60,10 @@ function validatePageMeta(input, { isNew = true } = {}) {
   const order = parseInt(input.display_order, 10);
   value.display_order = Number.isFinite(order) ? order : 0;
 
+  const shortDesc = String(input.short_description || '').trim();
+  if (shortDesc.length > 500) errors.short_description = 'Krátky popis môže mať max 500 znakov.';
+  value.short_description = shortDesc || null;
+
   // SEO
   const seoTitle = String(input.seo_title || '').trim();
   if (seoTitle.length > 255) errors.seo_title = 'SEO title max 255 znakov.';

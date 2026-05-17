@@ -325,7 +325,8 @@
   // CONVERSATION MODE
   // =========================================================================
 
-  var convId = window.__CONV_ID;
+  var convEl = document.getElementById('conv-messages');
+  var convId = convEl ? parseInt(convEl.dataset.convId, 10) || null : null;
   var convMessages = document.getElementById('conv-messages');
 
   if (convId && convMessages) {
