@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+<head>
+  <%- include('../partials/head', { title: title }) %>
+</head>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="bz-art-wrap">
+
+        <% if (flash.success) { %>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> <%= flash.success %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
+        <% } %>
+        <% if (flash.err) { %>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
+        <% } %>
+
+        <!-- Header -->
+        <div class="bz-art-header">
+          <div>
+            <h1 class="bz-art-header-title">Newsletter</h1>
+            <p class="bz-art-header-sub">Správa odberateľov newslettera</p>
+          </div>
+          <button class="bz-art-btn" id="btn-copy-emails" title="Skopíruje všetky aktívne emaily do schránky">
+            <i class="bi bi-clipboard"></i> Kopírovať emaily (<%= counts.active %>)
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bz-art-status-tabs">
+          <% tabs.forEach(t => { %>
+            <a class="bz-art-status-tab <%= activeTab === t.key ? 'active' : '' %>"
+               href="/admin/newsletter?tab=<%= t.key %>">
+              <%= t.label %>
+              <span class="bz-art-status-tab-badge"><%= counts[t.key] || 0 %></span>
+            </a>
+          <% }) %>
+        </div>
+
+        <!-- Search -->
+        <form method="GET" action="/admin/newsletter" class="bz-art-search">
+          <input type="hidden" name="tab" value="<%= activeTab %>">
+          <div class="bz-art-search-wrap">
+            <i class="bi bi-search bz-art-search-icon"></i>
+            <input type="text" name="q" class="bz-art-search-input"
+                   placeholder="Hľadať podľa emailu..." value="<%= query.q || '' %>">
+          </div>
+          <button class="bz-art-btn bz-art-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+          <% if (query.q) { %>
+            <a href="/admin/newsletter?tab=<%= activeTab %>" class="bz-art-btn bz-art-btn-sm">Zrušiť</a>
+          <% } %>
+        </form>
+
+        <!-- Table -->
+        <% if (subscribers.length === 0) { %>
+          <div class="bz-art-empty">
+            <i class="bi bi-envelope bz-art-empty-icon"></i>
+            <p class="bz-art-empty-text">Žiadni odberatelia.</p>
+          </div>
+        <% } else { %>
+          <div class="bz-art-table-wrap">
+            <table class="bz-art-table">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th>Email</th>
+                  <th style="width:90px">Zdroj</th>
+                  <th style="width:80px">Stav</th>
+                  <th style="width:130px">Prihlásený</th>
+                  <th style="width:130px">Odhlásený</th>
+                  <th style="width:60px; text-align:right">Akcie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% subscribers.forEach(s => { %>
+                  <tr style="<%= !s.is_active ? 'opacity:0.5' : '' %>">
+                    <td>
+                      <span style="color:var(--art-text-subtle); font-family:var(--art-mono); font-size:11px"><%= s.id %></span>
+                    </td>
+                    <td>
+                      <span style="font-size:13px; color:var(--art-text)"><%= s.email %></span>
+                    </td>
+                    <td>
+                      <span style="font-size:11px; color:var(--art-text-muted)"><%= s.source || '—' %></span>
+                    </td>
+                    <td>
+                      <% if (s.is_active) { %>
+                        <span class="bz-art-badge bz-art-badge-published">aktívny</span>
+                      <% } else { %>
+                        <span class="bz-art-badge bz-art-badge-draft">odhlásený</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="bz-art-time-val"><%= new Date(s.subscribed_at).toLocaleString('sk-SK') %></span>
+                    </td>
+                    <td>
+                      <span class="bz-art-time-val"><%= s.unsubscribed_at ? new Date(s.unsubscribed_at).toLocaleString('sk-SK') : '—' %></span>
+                    </td>
+                    <td>
+                      <div class="bz-art-row-actions" style="text-align:right">
+                        <form method="POST" action="/admin/newsletter/<%= s.id %>/delete" class="d-inline"
+                              data-confirm="Naozaj zmazať <%= s.email %>?">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" title="Zmazať">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if (pagination.totalPages > 1) { %>
+            <%
+              const buildHref = (pg) => {
+                const params = new URLSearchParams();
+                params.set('tab', activeTab);
+                if (query.q) params.set('q', query.q);
+                if (pg > 1) params.set('page', pg);
+                return '/admin/newsletter?' + params.toString();
+              };
+              const cur = pagination.page;
+              const tot = pagination.totalPages;
+              const show = new Set([1, tot, cur-1, cur, cur+1]);
+              const pages = [...show].filter(pg => pg >= 1 && pg <= tot).sort((a,b) => a-b);
+            %>
+            <div class="bz-art-pagination">
+              <a href="<%= cur > 1 ? buildHref(cur-1) : '#' %>" class="bz-art-page-btn <%= cur <= 1 ? 'disabled' : '' %>">‹</a>
+              <% pages.forEach((pg, idx) => { %>
+                <% if (idx > 0 && pages[idx-1] < pg - 1) { %>
+                  <span class="bz-art-page-ellipsis">…</span>
+                <% } %>
+                <a href="<%= buildHref(pg) %>" class="bz-art-page-btn <%= pg === cur ? 'active' : '' %>"><%= pg %></a>
+              <% }) %>
+              <a href="<%= cur < tot ? buildHref(cur+1) : '#' %>" class="bz-art-page-btn <%= cur >= tot ? 'disabled' : '' %>">›</a>
+            </div>
+          <% } %>
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-newsletter.js" defer></script>
+</body>
+</html>

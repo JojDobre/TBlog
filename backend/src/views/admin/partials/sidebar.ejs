@@ -18,6 +18,7 @@
         { href: '/admin/comments',   icon: 'comment',   label: 'Komentáre' },
         { href: '/admin/users',      icon: 'users',     label: 'Používatelia' },
         { href: '/admin/messages',   icon: 'message',   label: 'Správy' },
+        { href: '/admin/newsletter', icon: 'envelope', label: 'Newsletter' },
       ],
     },
     {
@@ -72,12 +73,7 @@
   </svg>`;
 %>
 
-<aside
-  class="bz-sidebar offcanvas-lg offcanvas-start"
-  tabindex="-1"
-  id="bzSidebar"
-  aria-labelledby="bzSidebarLabel"
->
+<aside class="bz-sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="bzSidebar" aria-labelledby="bzSidebarLabel">
 
   <!-- Mobile header -->
   <div class="offcanvas-header d-lg-none" style="padding: 14px 16px; border-bottom: 1px solid oklch(0.22 0.008 240);">
@@ -85,15 +81,9 @@
       <%- logoMark %>
       <span class="bz-sidebar-brand-name" id="bzSidebarLabel">ByteZone</span>
     </div>
-    <button
-      type="button"
-      class="bz-sidebar-close"
-      data-bs-dismiss="offcanvas"
-      data-bs-target="#bzSidebar"
-      aria-label="Zatvoriť"
-    >
+    <button type="button" class="bz-sidebar-close" data-bs-dismiss="offcanvas" data-bs-target="#bzSidebar" aria-label="Zatvoriť">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <path d="M6 6l12 12M18 6L6 18"/>
+        <path d="M6 6l12 12M18 6L6 18" />
       </svg>
     </button>
   </div>
@@ -109,25 +99,21 @@
   <!-- Nav -->
   <nav class="bz-sidebar-nav" aria-label="Hlavná navigácia">
     <% navGroups.forEach(group => { %>
-      <div class="bz-sidebar-group">
-        <span class="bz-sidebar-group-label"><%= group.label %></span>
-        <ul>
-          <% group.items.forEach(item => {
+    <div class="bz-sidebar-group">
+      <span class="bz-sidebar-group-label"><%= group.label %></span>
+      <ul>
+        <% group.items.forEach(item => {
               const active = cp === item.href || cp.startsWith(item.href + '/');
           %>
-            <li>
-              <a
-                class="nav-link <%= active ? 'is-active' : '' %>"
-                href="<%= item.href %>"
-                <%- active ? 'aria-current="page"' : '' %>
-              >
-                <%- renderIcon(item.icon) %>
-                <span><%= item.label %></span>
-              </a>
-            </li>
-          <% }) %>
-        </ul>
-      </div>
+        <li>
+          <a class="nav-link <%= active ? 'is-active' : '' %>" href="<%= item.href %>" <%- active ? 'aria-current="page"' : '' %>>
+            <%- renderIcon(item.icon) %>
+            <span><%= item.label %></span>
+          </a>
+        </li>
+        <% }) %>
+      </ul>
+    </div>
     <% }) %>
   </nav>
 
@@ -140,10 +126,9 @@
   %>
   <div class="bz-sidebar-footer">
     <% if (user.avatar_path) { %>
-      <img src="/uploads/<%= user.avatar_path %>" alt="<%= displayName %>"
-           style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0">
+    <img src="/uploads/<%= user.avatar_path %>" alt="<%= displayName %>" style="width:28px; height:28px; border-radius:50%; object-fit:cover; flex-shrink:0">
     <% } else { %>
-      <div class="bz-sidebar-footer-avatar"><%= initials %></div>
+    <div class="bz-sidebar-footer-avatar"><%= initials %></div>
     <% } %>
     <div class="bz-sidebar-footer-info">
       <div class="bz-sidebar-footer-name"><%= displayName %></div>
@@ -151,7 +136,7 @@
     </div>
     <a href="/admin/logout" class="bz-sidebar-footer-link" title="Odhlásiť sa">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
       </svg>
     </a>
   </div>
