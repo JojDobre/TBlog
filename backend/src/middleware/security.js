@@ -29,10 +29,10 @@ module.exports = function buildSecurity() {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'", JSDELIVR],
         scriptSrcAttr: ["'none'"], // žiadne `onclick="..."`
-        styleSrc: ["'self'", "'unsafe-inline'", JSDELIVR],
+        styleSrc: ["'self'", "'unsafe-inline'", JSDELIVR, 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'data:', JSDELIVR, 'https://fonts.gstatic.com'],
         styleSrcAttr: ["'unsafe-inline'"], // style="..." atribúty (Bootstrap ich miestami používa)
         imgSrc: ["'self'", 'data:', 'https:'],
-        fontSrc: ["'self'", 'data:', JSDELIVR],
         connectSrc: ["'self'"],
         frameSrc: ["'self'", YOUTUBE, YOUTUBE_NOCOOKIE],
         mediaSrc: ["'self'"],
