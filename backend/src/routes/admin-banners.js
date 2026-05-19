@@ -18,6 +18,7 @@ const db = require('../db');
 const log = require('../logger');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { generateToken } = require('../middleware/csrf');
+const bannerStatsUtil = require('../utils/banner-stats');
 
 const router = express.Router();
 router.use(requireAuth());
@@ -278,6 +279,13 @@ router.get('/', async (req, res, next) => {
     }
     rows.forEach((r) => {
       r.positions = placementsMap.get(r.id) || [];
+    });
+
+    // Stats
+    const statsMap = await bannerStatsUtil.getListStats(bannerIds);
+    rows.forEach((r) => {
+      const s = statsMap.get(r.id) || { views: 0, clicks: 0, ctr: 0 };
+      r.stats = s;
     });
 
     // Tab counts

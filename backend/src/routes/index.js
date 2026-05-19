@@ -23,6 +23,7 @@ const adminUsersRouter = require('./admin-users');
 const adminBannersRouter = require('./admin-banners');
 const apiCommentsRouter = require('./api-comments');
 const apiMessagesRouter = require('./api-messages');
+const apiBannersRouter = require('./api-banners');
 const apiNotificationsRouter = require('./api-notifications');
 const apiRouter = require('./api');
 const blockRenderer = require('../utils/block-renderer');
@@ -55,6 +56,7 @@ router.use('/admin', adminRouter);
 router.use('/api/messages', apiMessagesRouter);
 router.use('/api/notifications', apiNotificationsRouter);
 router.use('/api/comments', apiCommentsRouter);
+router.use('/api/banners', apiBannersRouter);
 
 router.use('/health', healthRouter);
 router.use('/api', apiRouter);

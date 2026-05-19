@@ -1,0 +1,35 @@
+<div class="stat-overview" style="grid-template-columns:repeat(4, 1fr)">
+  <div>
+    <span class="ov-num"><%= typeof bannerStats !== 'undefined' ? bannerStats.totalViews : '—' %></span>
+    <span class="ov-l">Zobrazenia</span>
+  </div>
+  <div>
+    <span class="ov-num"><%= typeof bannerStats !== 'undefined' ? bannerStats.totalClicks : '—' %></span>
+    <span class="ov-l">Kliknutia</span>
+  </div>
+  <div>
+    <span class="ov-num"><%= typeof bannerStats !== 'undefined' ? bannerStats.avgCtr + '%' : '—' %></span>
+    <span class="ov-l">Priem. CTR</span>
+  </div>
+  <div>
+    <span class="ov-num"><%= typeof bannerStats !== 'undefined' ? bannerStats.activeBanners : '—' %></span>
+    <span class="ov-l">Aktívne bannery</span>
+  </div>
+</div>
+<% if (typeof bannerStats !== 'undefined' && bannerStats.topBanners && bannerStats.topBanners.length > 0) { %>
+<div style="border-top:1px solid var(--border); padding:12px 0 0; margin-top:8px">
+  <span style="font-size:11px; color:var(--text-subtle); font-weight:600; text-transform:uppercase; letter-spacing:0.05em">Top bannery (views)</span>
+  <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px">
+    <% bannerStats.topBanners.forEach(function(b) { %>
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px">
+      <span style="color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%"><%= b.name %></span>
+      <div style="display:flex; gap:12px; font-family:var(--font-mono); font-size:11px">
+        <span title="Views"><%= b.views %> views</span>
+        <span title="Clicks" style="color:var(--accent)"><%= b.clicks %> clicks</span>
+        <span title="CTR" style="color:var(--text-subtle)"><%= b.ctr %>%</span>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+</div>
+<% } %>

@@ -23,6 +23,7 @@ const auth = require('../utils/auth');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const { loginLimiter } = require('../middleware/rate-limits');
 const config = require('../../../config');
+const bannerStatsUtil = require('../utils/banner-stats');
 
 const router = express.Router();
 
@@ -317,6 +318,7 @@ router.get('/', (req, res) => {
 // =============================================================================
 
 router.get('/dashboard', async (req, res, next) => {
+  const bannerStats = await bannerStatsUtil.getDashboardStats();
   try {
     const [articles, comments, media, visits24h] = await Promise.all([
       db('articles')
@@ -341,6 +343,7 @@ router.get('/dashboard', async (req, res, next) => {
     res.render('admin/dashboard/index', {
       title: 'Dashboard',
       stats: { articles, comments, media, visits24h },
+      bannerStats,
     });
   } catch (err) {
     log.error('admin/dashboard query failed', { err: err.message });
