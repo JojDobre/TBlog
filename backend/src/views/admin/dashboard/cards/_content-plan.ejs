@@ -1,0 +1,10 @@
+<div class="stat-week">
+  <% var days=['Po','Ut','St','Št','Pi','So','Ne'], heights=[60,80,40,90,75,30,20], counts=[3,4,2,5,3,1,1]; %>
+  <% days.forEach(function(d, i) { %>
+  <div class="week-day">
+    <span class="week-l"><%= d %></span>
+    <div class="week-bar"><i style="height:<%= heights[i] %>%"></i></div>
+    <span class="week-n"><%= counts[i] %></span>
+  </div>
+  <% }) %>
+</div>

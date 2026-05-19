@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+
+<head>
+  <%- include('../partials/head', { title: 'Štatistiky' }) %>
+  <link rel="stylesheet" href="/admin/static/css/admin-stats.css" />
+</head>
+
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: '/admin/stats' }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: 'Štatistiky' }) %>
+
+    <main class="bz-content bz-stats-scope">
+      <div class="bz-dash-wrap">
+        <%# Toolbar %>
+        <div class="astats-toolbar">
+          <div class="astats-toolbar-inner">
+            <div>
+              <span class="bz-eyebrow">Admin · Štatistiky</span>
+              <h1 class="astats-title">Štatistický dashboard</h1>
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle)">
+                karty · vlastné rozloženie
+              </span>
+            </div>
+            <div class="astats-tools">
+              <button class="bz-btn bz-btn-sm"><i class="bi bi-arrow-clockwise"></i> Obnoviť</button>
+            </div>
+          </div>
+
+          <%# Category filters %>
+          <%
+          var groups = [
+            { key: 'all', label: 'Všetko' },
+            { key: 'obsah', label: 'Obsah', count: 16 },
+            { key: 'recenzie', label: 'Recenzie', count: 8 },
+            { key: 'komunita', label: 'Komunita', count: 13 },
+            { key: 'navstevnost', label: 'Návštevnosť', count: 22 },
+            { key: 'seo', label: 'SEO', count: 6 },
+            { key: 'monetizacia', label: 'Monetizácia', count: 5 },
+            { key: 'socialne', label: 'Sociálne siete', count: 4 },
+            { key: 'bezpecnost', label: 'Bezpečnosť', count: 7 },
+            { key: 'redakcia', label: 'Redakcia', count: 4 },
+            { key: 'pokrocile', label: 'Pokročilé', count: 10 },
+          ];
+        %>
+          <div class="astats-filters">
+            <% groups.forEach(function(g) { %>
+            <button class="astats-filter<%= g.key === 'all' ? ' active' : '' %>" data-filter="<%= g.key %>">
+              <%= g.label %>
+              <% if (g.count) { %>
+              <span class="astats-filter-count"><%= g.count %></span>
+              <% } %>
+            </button>
+            <% }) %>
+          </div>
+        </div>
+
+
+
+        <%# Card grid %>
+        <div class="astats-grid-wrap">
+          <div class="astats-grid">
+
+            <%# ===== OBSAH ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'overview', cardTitle:'Prehľad', cardIcon:'bi-graph-up', cardGroup:'Obsah', cardSize:'L', cardBody:'./_overview' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'quickActions', cardTitle:'Rýchle akcie', cardIcon:'bi-plus-lg', cardGroup:'Obsah', cardSize:'M', cardBody:'./_quick-actions' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'scheduled', cardTitle:'Naplánované články', cardIcon:'bi-calendar', cardGroup:'Obsah', cardSize:'M', cardBody:'./_scheduled' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'drafts', cardTitle:'Draft články', cardIcon:'bi-pencil', cardGroup:'Obsah', cardSize:'M', cardBody:'./_drafts' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'recentlyPublished', cardTitle:'Nedávno publikované', cardIcon:'bi-send', cardGroup:'Obsah', cardSize:'M', cardBody:'./_recently-published' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topToday', cardTitle:'Najčítanejšie · 24h', cardIcon:'bi-graph-up', cardGroup:'Obsah', cardSize:'M', cardBody:'./_top-today' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'trending', cardTitle:'Trending témy', cardIcon:'bi-fire', cardGroup:'Obsah', cardSize:'M', cardBody:'./_trending' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'noImage', cardTitle:'Bez titulného obrázka', cardIcon:'bi-image', cardGroup:'Obsah', cardSize:'S', cardBody:'./_no-image' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'awaitingReview', cardTitle:'Čaká na revíziu', cardIcon:'bi-clock', cardGroup:'Obsah', cardSize:'M', cardBody:'./_awaiting-review' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'staleArticles', cardTitle:'Neaktualizované staré články', cardIcon:'bi-clock-history', cardGroup:'Obsah', cardSize:'M', cardBody:'./_stale-articles' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'recentlyEdited', cardTitle:'Posledné úpravy', cardIcon:'bi-pencil', cardGroup:'Obsah', cardSize:'M', cardBody:'./_recently-edited' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'mostCommented', cardTitle:'Najviac komentované', cardIcon:'bi-chat-dots', cardGroup:'Obsah', cardSize:'M', cardBody:'./_most-commented' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'lowSeo', cardTitle:'Nízke SEO skóre', cardIcon:'bi-search', cardGroup:'Obsah', cardSize:'S', cardBody:'./_low-seo' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'noTags', cardTitle:'Bez tagov', cardIcon:'bi-tag', cardGroup:'Obsah', cardSize:'S', cardBody:'./_no-tags' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'noCategory', cardTitle:'Bez kategórie', cardIcon:'bi-grid', cardGroup:'Obsah', cardSize:'S', cardBody:'./_no-category' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'longestRead', cardTitle:'Najdlhšie čítané', cardIcon:'bi-clock', cardGroup:'Obsah', cardSize:'M', cardBody:'./_longest-read' }) %>
+
+            <%# ===== RECENZIE ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'topReviews', cardTitle:'Top recenzie produktov', cardIcon:'bi-star', cardGroup:'Recenzie', cardSize:'M', cardBody:'./_top-reviews' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'unpublishedReviews', cardTitle:'Nezverejnené recenzie', cardIcon:'bi-pencil', cardGroup:'Recenzie', cardSize:'S', cardBody:'./_unpublished-reviews' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'worstRated', cardTitle:'Najhoršie hodnotené', cardIcon:'bi-graph-down', cardGroup:'Recenzie', cardSize:'M', cardBody:'./_worst-rated' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'bestRated', cardTitle:'Najlepšie hodnotené', cardIcon:'bi-star-fill', cardGroup:'Recenzie', cardSize:'S', cardBody:'./_best-rated' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'newProducts', cardTitle:'Nové produkty', cardIcon:'bi-plus-lg', cardGroup:'Recenzie', cardSize:'S', cardBody:'./_new-products' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'productsAwaitingReview', cardTitle:'Produkty čakajú', cardIcon:'bi-clock', cardGroup:'Recenzie', cardSize:'S', cardBody:'./_products-awaiting-review' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'priceChanges', cardTitle:'Cenové zmeny', cardIcon:'bi-graph-up-arrow', cardGroup:'Recenzie', cardSize:'M', cardBody:'./_price-changes' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'mostCompared', cardTitle:'Najčastejšie porovnávané', cardIcon:'bi-arrows-expand', cardGroup:'Recenzie', cardSize:'M', cardBody:'./_most-compared' }) %>
+
+            <%# ===== KOMUNITA ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'newComments', cardTitle:'Nové komentáre', cardIcon:'bi-chat-dots', cardGroup:'Komunita', cardSize:'M', cardBody:'./_new-comments' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'flaggedComments', cardTitle:'Nahlásené komentáre', cardIcon:'bi-flag', cardGroup:'Komunita', cardSize:'M', cardBody:'./_flagged-comments' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'pendingApproval', cardTitle:'Čaká schválenie', cardIcon:'bi-clock', cardGroup:'Komunita', cardSize:'S', cardBody:'./_pending-approval' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'recentlyDeleted', cardTitle:'Zmazané komentáre', cardIcon:'bi-trash', cardGroup:'Komunita', cardSize:'M', cardBody:'./_recently-deleted' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topCommenters', cardTitle:'Najaktívnejší', cardIcon:'bi-people', cardGroup:'Komunita', cardSize:'M', cardBody:'./_top-commenters' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'toxicity', cardTitle:'Toxicita komentárov', cardIcon:'bi-exclamation-triangle', cardGroup:'Komunita', cardSize:'M', cardBody:'./_toxicity' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'shadowbanned', cardTitle:'Shadowban', cardIcon:'bi-eye-slash', cardGroup:'Komunita', cardSize:'S', cardBody:'./_shadowbanned' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'newRegistrations', cardTitle:'Nové registrácie', cardIcon:'bi-person-plus', cardGroup:'Komunita', cardSize:'M', cardBody:'./_new-registrations' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'onlineUsers', cardTitle:'Online používatelia', cardIcon:'bi-people', cardGroup:'Komunita', cardSize:'S', cardBody:'./_online-users' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topAuthors', cardTitle:'Najaktívnejší autori', cardIcon:'bi-person-badge', cardGroup:'Komunita', cardSize:'M', cardBody:'./_top-authors' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'spamDetection', cardTitle:'Spam detekcia', cardIcon:'bi-shield-exclamation', cardGroup:'Komunita', cardSize:'M', cardBody:'./_spam-detection' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'pendingVerification', cardTitle:'Čaká overenie', cardIcon:'bi-check-circle', cardGroup:'Komunita', cardSize:'S', cardBody:'./_pending-verification' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'vipUsers', cardTitle:'VIP / podporovatelia', cardIcon:'bi-star', cardGroup:'Komunita', cardSize:'M', cardBody:'./_vip-users' }) %>
+
+            <%# ===== NÁVŠTEVNOSŤ ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'viewsToday', cardTitle:'Pozretia dnes', cardIcon:'bi-eye', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_views-today' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'views30d', cardTitle:'Pozretia · 30d', cardIcon:'bi-eye', cardGroup:'Návštevnosť', cardSize:'L', cardBody:'./_views-30d' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'uniqueVisitors', cardTitle:'Unikátni návštevníci', cardIcon:'bi-people', cardGroup:'Návštevnosť', cardSize:'S', cardBody:'./_unique-visitors' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'avgTime', cardTitle:'Priemerný čas', cardIcon:'bi-clock', cardGroup:'Návštevnosť', cardSize:'S', cardBody:'./_avg-time' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'bounceRate', cardTitle:'Bounce rate', cardIcon:'bi-arrow-return-left', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_bounce-rate' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topPages', cardTitle:'Najnavštevovanejšie', cardIcon:'bi-graph-up', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_top-pages' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'devices', cardTitle:'Podľa zariadenia', cardIcon:'bi-phone', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_devices' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'countries', cardTitle:'Podľa krajín', cardIcon:'bi-globe', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_countries' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'liveTraffic', cardTitle:'Live návštevnosť', cardIcon:'bi-broadcast', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_live-traffic' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'searchTerms', cardTitle:'Vyhľadávané výrazy', cardIcon:'bi-search', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_search-terms' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'searchNoResults', cardTitle:'Bez výsledku', cardIcon:'bi-x-circle', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_search-no-results' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'trafficTrend', cardTitle:'Trend návštevnosti', cardIcon:'bi-graph-up', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_traffic-trend' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'bestHour', cardTitle:'Najlepšia hodina', cardIcon:'bi-clock', cardGroup:'Návštevnosť', cardSize:'S', cardBody:'./_best-hour' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'bestDay', cardTitle:'Najlepší deň', cardIcon:'bi-calendar', cardGroup:'Návštevnosť', cardSize:'S', cardBody:'./_best-day' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'ctrHomepage', cardTitle:'CTR z homepage', cardIcon:'bi-cursor', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_ctr-homepage' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'scrollDepth', cardTitle:'Scroll depth', cardIcon:'bi-arrows-vertical', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_scroll-depth' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'loadSpeed', cardTitle:'Rýchlosť načítania', cardIcon:'bi-speedometer2', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_load-speed' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'cwv', cardTitle:'Core Web Vitals', cardIcon:'bi-speedometer', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_cwv' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'errorRate', cardTitle:'Error rate', cardIcon:'bi-x-octagon', cardGroup:'Návštevnosť', cardSize:'S', cardBody:'./_error-rate' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'pages404', cardTitle:'404 stránky', cardIcon:'bi-exclamation-triangle', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_pages-404' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'slowEndpoints', cardTitle:'Najpomalšie API', cardIcon:'bi-clock-history', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_slow-endpoints' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'cacheHit', cardTitle:'Cache hit ratio', cardIcon:'bi-lightning', cardGroup:'Návštevnosť', cardSize:'S', cardBody:'./_cache-hit' }) %>
+
+            <%# ===== SEO ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'seoOverview', cardTitle:'SEO overview', cardIcon:'bi-search', cardGroup:'SEO', cardSize:'M', cardBody:'./_seo-overview' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'missingMeta', cardTitle:'Bez meta description', cardIcon:'bi-x-circle', cardGroup:'SEO', cardSize:'S', cardBody:'./_missing-meta' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'duplicateTitles', cardTitle:'Duplicitné titulky', cardIcon:'bi-files', cardGroup:'SEO', cardSize:'S', cardBody:'./_duplicate-titles' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'brokenLinks', cardTitle:'Broken odkazy', cardIcon:'bi-link-45deg', cardGroup:'SEO', cardSize:'M', cardBody:'./_broken-links' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topKeywords', cardTitle:'Top kľúčové slová', cardIcon:'bi-key', cardGroup:'SEO', cardSize:'M', cardBody:'./_top-keywords' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'indexation', cardTitle:'Indexácia stránok', cardIcon:'bi-check2-all', cardGroup:'SEO', cardSize:'M', cardBody:'./_indexation' }) %>
+
+            <%# ===== MONETIZÁCIA ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'affiliateClicks', cardTitle:'Affiliate kliky', cardIcon:'bi-link-45deg', cardGroup:'Monetizácia', cardSize:'M', cardBody:'./_affiliate-clicks' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topAffiliate', cardTitle:'Top affiliate produkty', cardIcon:'bi-graph-up', cardGroup:'Monetizácia', cardSize:'M', cardBody:'./_top-affiliate' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'rpm', cardTitle:'RPM / odhad príjmov', cardIcon:'bi-currency-euro', cardGroup:'Monetizácia', cardSize:'M', cardBody:'./_rpm' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'adblock', cardTitle:'Adblock usage', cardIcon:'bi-shield-x', cardGroup:'Monetizácia', cardSize:'M', cardBody:'./_adblock' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'buyClicks', cardTitle:'"Kúpiť teraz" kliky', cardIcon:'bi-cart', cardGroup:'Monetizácia', cardSize:'S', cardBody:'./_buy-clicks' }) %>
+
+            <%# ===== SOCIÁLNE SIETE ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'mostShared', cardTitle:'Najzdieľanejšie', cardIcon:'bi-share', cardGroup:'Sociálne siete', cardSize:'M', cardBody:'./_most-shared' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'socialEngagement', cardTitle:'Social engagement', cardIcon:'bi-hand-thumbs-up', cardGroup:'Sociálne siete', cardSize:'M', cardBody:'./_social-engagement' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'newsletterOpen', cardTitle:'Newsletter · open rate', cardIcon:'bi-envelope-open', cardGroup:'Sociálne siete', cardSize:'M', cardBody:'./_newsletter-open' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'newsletterClick', cardTitle:'Newsletter · click rate', cardIcon:'bi-envelope', cardGroup:'Sociálne siete', cardSize:'S', cardBody:'./_newsletter-click' }) %>
+
+            <%# ===== BEZPEČNOSŤ ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'failedLogins', cardTitle:'Neúspešné prihlásenia', cardIcon:'bi-shield-lock', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_failed-logins' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'activeSessions', cardTitle:'Aktívne sessions', cardIcon:'bi-people', cardGroup:'Bezpečnosť', cardSize:'S', cardBody:'./_active-sessions' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'twoFactor', cardTitle:'2FA status', cardIcon:'bi-shield-check', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_two-factor' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'backupStatus', cardTitle:'Backup status', cardIcon:'bi-hdd', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_backup-status' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'serverHealth', cardTitle:'Stav servera', cardIcon:'bi-cpu', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_server-health' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'sslExpiry', cardTitle:'SSL expiruje', cardIcon:'bi-lock', cardGroup:'Bezpečnosť', cardSize:'S', cardBody:'./_ssl-expiry' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'uploadStorage', cardTitle:'Upload storage', cardIcon:'bi-cloud-upload', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_upload-storage' }) %>
+
+            <%# ===== REDAKCIA ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'editorialTasks', cardTitle:'Úlohy redakcie', cardIcon:'bi-check2-square', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_editorial-tasks' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'auditLog', cardTitle:'Audit log', cardIcon:'bi-journal-text', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_audit-log' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'contentPlan', cardTitle:'Obsahový plán · týždeň', cardIcon:'bi-calendar3', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_content-plan' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'series', cardTitle:'Série článkov', cardIcon:'bi-collection', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_series' }) %>
+
+            <%# ===== POKROČILÉ ===== %>
+            <%- include('cards/_card-wrapper', { cardId:'aiTopics', cardTitle:'AI odporúčané témy', cardIcon:'bi-robot', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_ai-topics' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'trendingTopics', cardTitle:'Trendujúce tech témy', cardIcon:'bi-graph-up', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_trending-topics' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'sentiment', cardTitle:'Sentiment komentárov', cardIcon:'bi-emoji-smile', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_sentiment' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'predictedTraffic', cardTitle:'Predikcia návštevnosti', cardIcon:'bi-graph-up', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_predicted-traffic' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'growthPotential', cardTitle:'Potenciál rastu', cardIcon:'bi-rocket', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_growth-potential' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'topTags', cardTitle:'Najpoužívanejšie tagy', cardIcon:'bi-tags', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_top-tags' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'deadContent', cardTitle:'Mŕtvy obsah', cardIcon:'bi-x-circle', cardGroup:'Pokročilé', cardSize:'S', cardBody:'./_dead-content' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'evergreen', cardTitle:'Evergreen články', cardIcon:'bi-tree', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_evergreen' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'healthScore', cardTitle:'Health score systému', cardIcon:'bi-heart-pulse', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_health-score' }) %>
+            <%- include('cards/_card-wrapper', { cardId:'engagementScore', cardTitle:'Engagement score', cardIcon:'bi-lightning', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_engagement-score' }) %>
+
+
+          </div>
+
+          <%# Empty state %>
+          <div class="astats-empty" style="display:none" id="astats-empty">
+            <i class="bi bi-search"></i>
+            <h3>Žiadne karty v tejto sekcii</h3>
+            <p>Vyber inú kategóriu alebo zobraz všetky.</p>
+            <button class="bz-btn bz-btn-sm" onclick="document.querySelector('[data-filter=all]').click()">Zobraziť všetko</button>
+          </div>
+        </div>
+      </div>
+
+
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-dashboard-stats.js" defer></script>
+
+</body>
+
+</html>

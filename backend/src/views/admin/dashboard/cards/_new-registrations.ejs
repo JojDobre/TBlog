@@ -1,0 +1,9 @@
+<div class="stat-big">
+  <span class="big-n">42</span>
+  <span class="big-l">nových registrácií · 24h</span>
+  <% var _v=[15,22,28,35,30,38,42],_w=100,_h=30,_mx=Math.max.apply(null,_v),_mn=Math.min.apply(null,_v),_s=_mx-_mn||1,_p=_v.map(function(v,i){return((i/(_v.length-1))*_w)+','+(_h-((v-_mn)/_s)*(_h-4)-2)}).join(' '); %>
+  <svg class="stat-spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+    <polyline points="<%=_p%>" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="0,30 <%=_p%> 100,30" fill="var(--accent)" opacity="0.12"/>
+  </svg>
+</div>

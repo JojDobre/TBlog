@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+<head>
+  <%- include('../partials/head', { title: title }) %>
+</head>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="bz-art-wrap">
+
+        <% if (flash.success) { %>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> <%= flash.success %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
+        <% } %>
+        <% if (flash.err) { %>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
+        <% } %>
+
+        <!-- Header -->
+        <div class="bz-art-header">
+          <div>
+            <h1 class="bz-art-header-title">Bannery</h1>
+            <p class="bz-art-header-sub">Správa bannerov a promo sekcií</p>
+          </div>
+          <a href="/admin/banners/create" class="bz-art-btn">
+            <i class="bi bi-plus-lg"></i> Nový banner
+          </a>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bz-art-status-tabs">
+          <% tabs.forEach(t => { %>
+            <a class="bz-art-status-tab <%= activeTab === t.key ? 'active' : '' %>"
+               href="/admin/banners?tab=<%= t.key %>">
+              <%= t.label %>
+              <span class="bz-art-status-tab-badge"><%= counts[t.key] || 0 %></span>
+            </a>
+          <% }) %>
+        </div>
+
+        <!-- Search -->
+        <form method="GET" action="/admin/banners" class="bz-art-search">
+          <input type="hidden" name="tab" value="<%= activeTab %>">
+          <div class="bz-art-search-wrap">
+            <i class="bi bi-search bz-art-search-icon"></i>
+            <input type="text" name="q" class="bz-art-search-input"
+                   placeholder="Hľadať podľa názvu..." value="<%= query.q || '' %>">
+          </div>
+          <button class="bz-art-btn bz-art-btn-sm" type="submit"><i class="bi bi-search"></i></button>
+          <% if (query.q) { %>
+            <a href="/admin/banners?tab=<%= activeTab %>" class="bz-art-btn bz-art-btn-sm">Zrušiť</a>
+          <% } %>
+        </form>
+
+        <!-- Table -->
+        <% if (banners.length === 0) { %>
+          <div class="bz-art-empty">
+            <i class="bi bi-badge-ad bz-art-empty-icon"></i>
+            <p class="bz-art-empty-text">Žiadne bannery.</p>
+          </div>
+        <% } else { %>
+          <div class="bz-art-table-wrap">
+            <table class="bz-art-table">
+              <thead>
+                <tr>
+                  <th style="width:40px">#</th>
+                  <th style="width:50px"></th>
+                  <th>Názov</th>
+                  <th style="width:90px">Typ</th>
+                  <th>Pozície</th>
+                  <th style="width:80px">Stav</th>
+                  <th style="width:100px">Plánovanie</th>
+                  <th style="width:160px; text-align:right">Akcie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%
+                  const typeLabels = { image: 'Obrázok', template: 'Šablóna', custom: 'Kód' };
+                  const typeBadge = { image: 'bz-art-badge-article', template: 'bz-art-badge-scheduled', custom: 'bz-art-badge-review' };
+                %>
+                <% banners.forEach(b => { %>
+                  <tr>
+                    <td>
+                      <span style="color:var(--art-text-subtle); font-family:var(--art-mono); font-size:11px"><%= b.id %></span>
+                    </td>
+                    <td>
+                      <% if (b.thumbnail_path) { %>
+                        <img src="/uploads/<%= b.thumbnail_path %>" alt=""
+                             style="width:36px; height:28px; border-radius:4px; object-fit:cover">
+                      <% } else if (b.type === 'template') { %>
+                        <div style="width:36px; height:28px; border-radius:4px; background:oklch(0.3 0.05 200); display:flex; align-items:center; justify-content:center">
+                          <i class="bi bi-layout-text-window-reverse" style="font-size:12px; color:var(--art-text-subtle)"></i>
+                        </div>
+                      <% } else { %>
+                        <div style="width:36px; height:28px; border-radius:4px; background:oklch(0.3 0.02 240); display:flex; align-items:center; justify-content:center">
+                          <i class="bi bi-code-slash" style="font-size:12px; color:var(--art-text-subtle)"></i>
+                        </div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="/admin/banners/<%= b.id %>/edit" class="bz-art-title-link" style="font-size:13px">
+                        <%= b.name %>
+                      </a>
+                      <% if (b.type === 'template' && b.template_key) { %>
+                        <span style="font-size:11px; color:var(--art-text-subtle); margin-left:4px">
+                          (<%= (TEMPLATES[b.template_key] || {}).label || b.template_key %>)
+                        </span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="bz-art-badge <%= typeBadge[b.type] || '' %>"><%= typeLabels[b.type] || b.type %></span>
+                    </td>
+                    <td>
+                      <% if (b.positions.length > 0) { %>
+                        <% b.positions.forEach((p, i) => { %>
+                          <span style="font-size:11px; color:var(--art-text-muted)"><%= p %><%= i < b.positions.length - 1 ? ',' : '' %></span>
+                        <% }) %>
+                      <% } else { %>
+                        <span style="font-size:11px; color:var(--art-text-subtle)">—</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <% if (b.status === 'active') { %>
+                        <span class="bz-art-badge bz-art-badge-published">aktívny</span>
+                      <% } else { %>
+                        <span class="bz-art-badge bz-art-badge-draft">pozast.</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div style="font-size:11px; color:var(--art-text-muted)">
+                        <% if (b.starts_at || b.ends_at) { %>
+                          <%= b.starts_at ? new Date(b.starts_at).toLocaleDateString('sk-SK') : '—' %>
+                          →
+                          <%= b.ends_at ? new Date(b.ends_at).toLocaleDateString('sk-SK') : '∞' %>
+                        <% } else { %>
+                          <span style="color:var(--art-text-subtle)">vždy</span>
+                        <% } %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="bz-art-row-actions" style="text-align:right">
+                        <a href="/admin/banners/<%= b.id %>/edit" class="bz-art-btn bz-art-btn-sm" title="Upraviť">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="/admin/banners/<%= b.id %>/toggle" class="d-inline">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button class="bz-art-btn bz-art-btn-sm" title="<%= b.status === 'active' ? 'Pozastaviť' : 'Aktivovať' %>">
+                            <i class="bi bi-<%= b.status === 'active' ? 'pause' : 'play' %>"></i>
+                          </button>
+                        </form>
+                        <form method="POST" action="/admin/banners/<%= b.id %>/delete" class="d-inline"
+                              data-confirm="Naozaj zmazať banner „<%= b.name %>"?">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" title="Zmazať">
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if (pagination.totalPages > 1) { %>
+            <%
+              const buildHref = (pg) => {
+                const params = new URLSearchParams();
+                params.set('tab', activeTab);
+                if (query.q) params.set('q', query.q);
+                if (pg > 1) params.set('page', pg);
+                return '/admin/banners?' + params.toString();
+              };
+              const cur = pagination.page;
+              const tot = pagination.totalPages;
+              const show = new Set([1, tot, cur-1, cur, cur+1]);
+              const pages = [...show].filter(pg => pg >= 1 && pg <= tot).sort((a,b) => a-b);
+            %>
+            <div class="bz-art-pagination">
+              <a href="<%= cur > 1 ? buildHref(cur-1) : '#' %>" class="bz-art-page-btn <%= cur <= 1 ? 'disabled' : '' %>">‹</a>
+              <% pages.forEach((pg, idx) => { %>
+                <% if (idx > 0 && pages[idx-1] < pg - 1) { %>
+                  <span class="bz-art-page-ellipsis">…</span>
+                <% } %>
+                <a href="<%= buildHref(pg) %>" class="bz-art-page-btn <%= pg === cur ? 'active' : '' %>"><%= pg %></a>
+              <% }) %>
+              <a href="<%= cur < tot ? buildHref(cur+1) : '#' %>" class="bz-art-page-btn <%= cur >= tot ? 'disabled' : '' %>">›</a>
+            </div>
+          <% } %>
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

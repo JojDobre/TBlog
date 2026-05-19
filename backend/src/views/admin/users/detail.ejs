@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+<head>
+  <%- include('../partials/head', { title: title }) %>
+</head>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="bz-art-wrap">
+
+        <% if (flash.success) { %>
+          <div class="bz-art-alert bz-art-alert-success">
+            <i class="bi bi-check-circle-fill"></i> <%= flash.success %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
+        <% } %>
+        <% if (flash.err) { %>
+          <div class="bz-art-alert bz-art-alert-error">
+            <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+            <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+          </div>
+        <% } %>
+
+        <div class="bz-art-breadcrumb" style="margin-bottom:20px">
+          <a href="/admin/dashboard">Dashboard</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <a href="/admin/users">Používatelia</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <span class="bz-art-breadcrumb-current"><%= u.nickname %></span>
+        </div>
+
+        <div class="row g-4">
+
+          <!-- Ľavý stĺpec — profil + komentáre -->
+          <div class="col-lg-8">
+
+            <!-- Profil karta -->
+            <div class="bz-art-content-card">
+              <div class="bz-art-content-head" style="display:flex; align-items:center; gap:14px">
+                <% if (u.avatar_path) { %>
+                  <img src="/uploads/<%= u.avatar_path %>" alt="<%= u.nickname %>"
+                       style="width:48px; height:48px; border-radius:50%; object-fit:cover; flex-shrink:0">
+                <% } else { %>
+                  <div style="width:48px; height:48px; border-radius:50%; background:oklch(0.3 0.01 240); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; color:var(--art-text-subtle); font-weight:600">
+                    <%= (u.nickname || '?').charAt(0).toUpperCase() %>
+                  </div>
+                <% } %>
+                <div style="flex:1">
+                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                    <strong style="font-size:15px; color:var(--art-text)"><%= u.nickname %></strong>
+                    <%
+                      const roleBadge = {
+                        admin:  'bz-art-badge-trash',
+                        editor: 'bz-art-badge-scheduled',
+                        reader: 'bz-art-badge-article',
+                      };
+                    %>
+                    <span class="bz-art-badge <%= roleBadge[u.role] || '' %>"><%= u.role %></span>
+                    <% if (u.is_banned) { %>
+                      <span class="bz-art-badge bz-art-badge-trash">BANNED</span>
+                    <% } %>
+                  </div>
+                  <div style="font-size:12px; color:var(--art-text-muted); margin-top:2px">
+                    <%= u.email || 'Bez emailu' %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bz-art-content-body" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px">
+                <div>
+                  <span class="bz-art-field-label">ID</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= u.id %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Registrácia</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= new Date(u.created_at).toLocaleString('sk-SK') %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Posledný login</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= u.last_login_at ? new Date(u.last_login_at).toLocaleString('sk-SK') : '—' %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Lokácia</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= u.location || '—' %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Dátum narodenia</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= u.birth_date ? new Date(u.birth_date).toLocaleDateString('sk-SK') : '—' %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Komentáre</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= stats.comments %></span>
+                </div>
+                <div>
+                  <span class="bz-art-field-label">Články</span>
+                  <span style="font-size:13px; color:var(--art-text-muted)"><%= stats.articles %></span>
+                </div>
+                <% if (u.custom_field_label) { %>
+                  <div>
+                    <span class="bz-art-field-label"><%= u.custom_field_label %></span>
+                    <span style="font-size:13px; color:var(--art-text-muted)"><%= u.custom_field_value || '—' %></span>
+                  </div>
+                <% } %>
+              </div>
+
+              <% if (u.bio) { %>
+                <div style="padding:12px 20px; border-top:1px solid var(--art-border)">
+                  <span class="bz-art-field-label">Bio</span>
+                  <p style="margin:4px 0 0; font-size:13px; color:var(--art-text-muted); white-space:pre-wrap"><%= u.bio %></p>
+                </div>
+              <% } %>
+
+              <% if (socialLinks.length > 0) { %>
+                <div style="padding:12px 20px; border-top:1px solid var(--art-border)">
+                  <span class="bz-art-field-label">Sociálne siete</span>
+                  <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:4px">
+                    <% socialLinks.forEach(s => { %>
+                      <a href="<%= s.url %>" target="_blank" rel="noopener"
+                         class="bz-art-btn bz-art-btn-sm" style="font-size:11px">
+                        <i class="bi bi-<%= s.platform === 'website' ? 'globe' : s.platform %>"></i> <%= s.platform %>
+                      </a>
+                    <% }) %>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Posledné komentáre -->
+            <div class="bz-art-content-card" style="margin-top:14px">
+              <div class="bz-art-content-head">
+                <strong style="font-size:13px; color:var(--art-text)">
+                  <i class="bi bi-chat-dots"></i> Posledné komentáre
+                </strong>
+                <span class="bz-art-status-tab-badge"><%= comments.length %></span>
+              </div>
+              <% if (comments.length === 0) { %>
+                <div style="text-align:center; padding:28px 14px; color:var(--art-text-subtle)">
+                  <span style="font-size:12px">Žiadne komentáre</span>
+                </div>
+              <% } else { %>
+                <div style="display:flex; flex-direction:column">
+                  <% comments.forEach(c => { %>
+                    <div style="padding:10px 20px; border-bottom:1px solid oklch(from var(--art-border) l c h/.5); <%= c.is_deleted_by_admin ? 'opacity:0.5' : '' %>">
+                      <div style="display:flex; justify-content:space-between; align-items:start; gap:8px">
+                        <div style="flex:1; min-width:0">
+                          <a href="/admin/comments/<%= c.id %>" style="font-size:12px; color:var(--art-text); text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">
+                            <% if (c.is_deleted_by_admin) { %><i class="bi bi-eye-slash" style="margin-right:4px"></i><% } %>
+                            <%= c.content ? (c.content.slice(0, 120) + (c.content.length > 120 ? '…' : '')) : '[prázdny]' %>
+                          </a>
+                          <% if (c.article_title) { %>
+                            <span style="font-size:11px; color:var(--art-text-subtle)"><%= c.article_title %></span>
+                          <% } %>
+                        </div>
+                        <span style="font-family:var(--art-mono); font-size:10px; color:var(--art-text-subtle); flex-shrink:0">
+                          <%= new Date(c.created_at).toLocaleDateString('sk-SK') %>
+                        </span>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+                <% if (stats.comments > 20) { %>
+                  <div style="padding:10px 20px; text-align:center">
+                    <a href="/admin/comments?q=<%= encodeURIComponent(u.nickname) %>" style="font-size:12px; color:var(--art-accent); text-decoration:none">
+                      Zobraziť všetkých <%= stats.comments %> komentárov →
+                    </a>
+                  </div>
+                <% } %>
+              <% } %>
+            </div>
+
+          </div>
+
+          <!-- Pravý stĺpec — akcie -->
+          <div class="col-lg-4">
+
+            <!-- Zmena role -->
+            <div class="bz-art-side-card">
+              <div class="bz-art-side-head">
+                <i class="bi bi-shield-check"></i> Zmena role
+              </div>
+              <div style="padding:14px">
+                <form method="POST" action="/admin/users/<%= u.id %>/role">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <select name="role" style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--art-border); background:var(--art-surface); color:var(--art-text); font-size:13px; margin-bottom:10px">
+                    <option value="reader" <%= u.role === 'reader' ? 'selected' : '' %>>Reader</option>
+                    <option value="editor" <%= u.role === 'editor' ? 'selected' : '' %>>Editor</option>
+                    <option value="admin" <%= u.role === 'admin' ? 'selected' : '' %>>Admin</option>
+                  </select>
+                  <button class="bz-art-btn bz-art-btn-sm" style="width:100%">
+                    <i class="bi bi-arrow-repeat"></i> Zmeniť rolu
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Ban / Unban -->
+            <div class="bz-art-side-card" style="margin-top:14px">
+              <div class="bz-art-side-head">
+                <i class="bi bi-slash-circle"></i> Blokovanie
+              </div>
+              <div style="padding:14px">
+                <% if (u.is_banned) { %>
+                  <p style="font-size:12px; color:var(--art-text-muted); margin:0 0 10px">
+                    Tento používateľ je momentálne <strong style="color:oklch(0.7 0.2 25)">zablokovaný</strong>.
+                  </p>
+                  <form method="POST" action="/admin/users/<%= u.id %>/unban">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="bz-art-btn bz-art-btn-sm" style="width:100%">
+                      <i class="bi bi-unlock"></i> Odblokovať
+                    </button>
+                  </form>
+                <% } else { %>
+                  <form method="POST" action="/admin/users/<%= u.id %>/ban"
+                        data-confirm="Naozaj chceš zablokovať používateľa <%= u.nickname %>?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <textarea name="reason" rows="2" placeholder="Dôvod blokovania (voliteľné)..."
+                              style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--art-border); background:var(--art-surface); color:var(--art-text); font-size:12px; resize:vertical; margin-bottom:10px"></textarea>
+                    <button class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" style="width:100%">
+                      <i class="bi bi-slash-circle"></i> Zablokovať
+                    </button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Reset hesla -->
+            <div class="bz-art-side-card" style="margin-top:14px">
+              <div class="bz-art-side-head">
+                <i class="bi bi-key"></i> Reset hesla
+              </div>
+              <div style="padding:14px">
+                <!-- Generovať náhodné -->
+                <form method="POST" action="/admin/users/<%= u.id %>/reset-password" style="margin-bottom:12px">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <input type="hidden" name="mode" value="generate">
+                  <button class="bz-art-btn bz-art-btn-sm" style="width:100%"
+                          data-confirm="Vygenerovať nové náhodné heslo pre <%= u.nickname %>?">
+                    <i class="bi bi-dice-5"></i> Vygenerovať náhodné heslo
+                  </button>
+                </form>
+
+                <!-- Manuálne zadanie -->
+                <div style="border-top:1px solid var(--art-border); padding-top:12px">
+                  <span style="font-size:11px; color:var(--art-text-subtle); display:block; margin-bottom:6px">Alebo zadaj manuálne (min. <%= minPasswordLength %> znakov):</span>
+                  <form method="POST" action="/admin/users/<%= u.id %>/reset-password">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="mode" value="manual">
+                    <input type="password" name="password" placeholder="Nové heslo..."
+                           minlength="<%= minPasswordLength %>"
+                           style="width:100%; padding:6px 10px; border-radius:6px; border:1px solid var(--art-border); background:var(--art-surface); color:var(--art-text); font-size:12px; margin-bottom:10px">
+                    <button class="bz-art-btn bz-art-btn-sm" style="width:100%">
+                      <i class="bi bi-check-lg"></i> Nastaviť heslo
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ban história -->
+            <div class="bz-art-side-card" style="margin-top:14px">
+              <div class="bz-art-side-head">
+                <i class="bi bi-clock-history"></i> História banov
+                <span class="bz-art-status-tab-badge" style="margin-left:auto"><%= bans.length %></span>
+              </div>
+              <% if (bans.length === 0) { %>
+                <div style="text-align:center; padding:28px 14px; color:var(--art-text-subtle)">
+                  <i class="bi bi-check-circle" style="font-size:2rem; display:block; margin-bottom:8px"></i>
+                  <span style="font-size:12px">Žiadne bany</span>
+                </div>
+              <% } else { %>
+                <div style="display:flex; flex-direction:column">
+                  <% bans.forEach(b => { %>
+                    <div style="padding:12px 14px; border-bottom:1px solid oklch(from var(--art-border) l c h/.5)">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+                        <strong style="font-size:12px; color:var(--art-text)"><%= b.admin_nickname || '[zmazaný]' %></strong>
+                        <% if (b.unbanned_at) { %>
+                          <span class="bz-art-badge bz-art-badge-published">Ukončený</span>
+                        <% } else { %>
+                          <span class="bz-art-badge bz-art-badge-trash">Aktívny</span>
+                        <% } %>
+                      </div>
+                      <% if (b.reason) { %>
+                        <p style="font-size:12px; color:var(--art-text-muted); margin:0 0 4px"><%= b.reason %></p>
+                      <% } else { %>
+                        <p style="font-size:12px; color:var(--art-text-subtle); font-style:italic; margin:0 0 4px">Bez udania dôvodu</p>
+                      <% } %>
+                      <div style="font-family:var(--art-mono); font-size:10px; color:var(--art-text-subtle)">
+                        <%= new Date(b.created_at).toLocaleString('sk-SK') %>
+                        <% if (b.unbanned_at) { %>
+                          → <%= new Date(b.unbanned_at).toLocaleString('sk-SK') %>
+                        <% } %>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Zmazanie účtu -->
+            <div class="bz-art-side-card" style="margin-top:14px; border-color:oklch(0.5 0.15 25 / 0.3)">
+              <div class="bz-art-side-head" style="color:oklch(0.7 0.2 25)">
+                <i class="bi bi-trash3"></i> Nebezpečná zóna
+              </div>
+              <div style="padding:14px">
+                <p style="font-size:12px; color:var(--art-text-muted); margin:0 0 10px">
+                  Permanentne zmaže používateľa a všetky jeho dáta. Táto akcia je nevratná.
+                </p>
+                <form method="POST" action="/admin/users/<%= u.id %>/delete"
+                      data-confirm="POZOR: Naozaj chceš PERMANENTNE zmazať používateľa <%= u.nickname %>? Táto akcia je NEVRATNÁ!">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" style="width:100%">
+                    <i class="bi bi-trash3"></i> Zmazať používateľa
+                  </button>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+</body>
+</html>

@@ -1,8 +1,10 @@
 <!doctype html>
 <html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+
 <head>
   <%- include('../partials/head', { title: ranking.title + ' — Tabuľka', description: 'Podrobný rebríček s hodnoteniami.' }) %>
 </head>
+
 <body>
   <%- include('../partials/header', { currentPath: '/rebricky' }) %>
 
@@ -11,11 +13,17 @@
 
       <nav class="article-breadcrumb">
         <a href="/">Domov</a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg></span>
         <a href="/rebricky">Rebríčky</a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg></span>
         <a href="/rebricky/<%= ranking.slug %>"><%= ranking.title %></a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg></span>
         <span class="bc-current">Tabuľka</span>
       </nav>
 
@@ -26,7 +34,12 @@
         </div>
         <div style="display:flex; gap:8px;">
           <a href="/rebricky/<%= ranking.slug %>" class="btn btn-sm">← Späť na rebríček</a>
-          <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5"/></svg> Zdieľať</button>
+          <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5" />
+            </svg> Zdieľať</button>
         </div>
       </header>
 
@@ -41,7 +54,7 @@
           <button class="btn btn-sm btn-primary" data-filter="all">Všetky</button>
           <% var brands = [...new Set(items.map(i => i.brand).filter(Boolean))]; %>
           <% brands.forEach(b => { %>
-            <button class="btn btn-sm" data-filter="<%= b %>"><%= b %></button>
+          <button class="btn btn-sm" data-filter="<%= b %>"><%= b %></button>
           <% }) %>
         </div>
 
@@ -72,29 +85,45 @@
             %>
             <select class="rtable-range-input" data-date-month-min style="width:80px;">
               <option value="">Mes.</option>
-              <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
-              <option value="04">Apr</option><option value="05">Máj</option><option value="06">Jún</option>
-              <option value="07">Júl</option><option value="08">Aug</option><option value="09">Sep</option>
-              <option value="10">Okt</option><option value="11">Nov</option><option value="12">Dec</option>
+              <option value="01">Jan</option>
+              <option value="02">Feb</option>
+              <option value="03">Mar</option>
+              <option value="04">Apr</option>
+              <option value="05">Máj</option>
+              <option value="06">Jún</option>
+              <option value="07">Júl</option>
+              <option value="08">Aug</option>
+              <option value="09">Sep</option>
+              <option value="10">Okt</option>
+              <option value="11">Nov</option>
+              <option value="12">Dec</option>
             </select>
             <select class="rtable-range-input" data-date-year-min style="width:80px;">
               <option value="">Rok</option>
               <% sortedYears.forEach(function(y) { %>
-                <option value="<%= y %>"><%= y %></option>
+              <option value="<%= y %>"><%= y %></option>
               <% }) %>
             </select>
             <span class="rtable-range-sep">–</span>
             <select class="rtable-range-input" data-date-month-max style="width:80px;">
               <option value="">Mes.</option>
-              <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option>
-              <option value="04">Apr</option><option value="05">Máj</option><option value="06">Jún</option>
-              <option value="07">Júl</option><option value="08">Aug</option><option value="09">Sep</option>
-              <option value="10">Okt</option><option value="11">Nov</option><option value="12">Dec</option>
+              <option value="01">Jan</option>
+              <option value="02">Feb</option>
+              <option value="03">Mar</option>
+              <option value="04">Apr</option>
+              <option value="05">Máj</option>
+              <option value="06">Jún</option>
+              <option value="07">Júl</option>
+              <option value="08">Aug</option>
+              <option value="09">Sep</option>
+              <option value="10">Okt</option>
+              <option value="11">Nov</option>
+              <option value="12">Dec</option>
             </select>
             <select class="rtable-range-input" data-date-year-max style="width:80px;">
               <option value="">Rok</option>
               <% sortedYears.forEach(function(y) { %>
-                <option value="<%= y %>"><%= y %></option>
+              <option value="<%= y %>"><%= y %></option>
               <% }) %>
             </select>
             <button class="btn btn-sm" data-date-apply>Použiť</button>
@@ -117,11 +146,10 @@
           <span class="rtable-filter-label">Min. skóre podľa kritéria:</span>
           <div class="rtable-range-group" style="flex-wrap:wrap; gap:6px;">
             <% scoreLabels.forEach(function(label, idx) { %>
-              <div style="display:flex; align-items:center; gap:4px;">
-                <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle); white-space:nowrap;"><%= label %>:</span>
-                <input type="number" class="rtable-range-input rtable-crit-min" data-crit-index="<%= idx %>"
-                       placeholder="min" min="0" max="10" step="0.1" style="width:70px; font-size:12px;">
-              </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-subtle); white-space:nowrap;"><%= label %>:</span>
+              <input type="number" class="rtable-range-input rtable-crit-min" data-crit-index="<%= idx %>" placeholder="min" min="0" max="10" step="0.1" style="width:70px; font-size:12px;">
+            </div>
             <% }) %>
             <button class="btn btn-sm" data-crit-apply>Použiť</button>
             <button class="btn btn-sm btn-ghost" data-crit-reset>×</button>
@@ -140,7 +168,7 @@
               <th class="rtable-th rtable-th--rank" data-sort-col="rank"># <span class="sort-icon">↕</span></th>
               <th class="rtable-th rtable-th--name" data-sort-col="name">Produkt <span class="sort-icon">↕</span></th>
               <% scoreLabels.forEach(function(label) { %>
-                <th class="rtable-th rtable-th--score" data-sort-col="<%= label %>"><%= label %> <span class="sort-icon">↕</span></th>
+              <th class="rtable-th rtable-th--score" data-sort-col="<%= label %>"><%= label %> <span class="sort-icon">↕</span></th>
               <% }) %>
               <th class="rtable-th rtable-th--total" data-sort-col="score">Skóre <span class="sort-icon">↕</span></th>
               <th class="rtable-th rtable-th--price" data-sort-col="price">Cena <span class="sort-icon">↕</span></th>
@@ -149,39 +177,36 @@
           </thead>
           <tbody>
             <% items.forEach(function(p) { %>
-              <tr class="rtable-row"
-                  data-brand="<%= p.brand %>"
-                  data-date="<%= p.date %>"
-                  data-price-raw="<%= p.price ? parseFloat(String(p.price).replace(/[^\d.,]/g,'').replace(',','.')) || '' : '' %>">
-                <td class="rtable-rank"><span class="rtable-rank-num"><%= String(p.rank).padStart(2, '0') %></span></td>
-                <td class="rtable-name-cell">
-                  <div class="rtable-product">
-                    <div class="rtable-thumb ph ph-<%= (p.rank % 9) + 1 %>">
-                      <% if (p.image) { %><img src="<%= p.image %>" alt=""><% } %>
-                    </div>
-                    <div>
-                      <span class="rtable-brand"><%= p.brand %></span>
-                      <% if (p.slug) { %>
-                        <a href="/clanok/<%= p.slug %>" class="rtable-name" style="color:inherit; text-decoration:none; font-weight:600;"><%= p.name %></a>
-                      <% } else { %>
-                        <span class="rtable-name" style="font-weight:600;"><%= p.name %></span>
-                      <% } %>
-                    </div>
+            <tr class="rtable-row" data-brand="<%= p.brand %>" data-date="<%= p.date %>" data-price-raw="<%= p.price ? parseFloat(String(p.price).replace(/[^\d.,]/g,'').replace(',','.')) || '' : '' %>">
+              <td class="rtable-rank"><span class="rtable-rank-num"><%= String(p.rank).padStart(2, '0') %></span></td>
+              <td class="rtable-name-cell">
+                <div class="rtable-product">
+                  <div class="rtable-thumb ph ph-<%= (p.rank % 9) + 1 %>">
+                    <% if (p.image) { %><img src="<%= p.image %>" alt=""><% } %>
                   </div>
-                </td>
-                <% p.scores.forEach(function(s, si) { %>
-                  <td class="rtable-score-cell" data-crit-index="<%= si %>">
-                    <span class="rtable-score-val rtable-score--<%= s.val >= 9 ? 'great' : s.val >= 7.5 ? 'good' : s.val >= 6 ? 'mid' : 'low' %>">
-                      <%= s.text || s.val.toFixed(1) %>
-                    </span>
-                  </td>
-                <% }) %>
-                <td class="rtable-total-cell">
-                  <span class="rtable-total"><%= p.score.toFixed(1) %></span>
-                </td>
-                <td class="rtable-price-cell"><%= p.price %></td>
-                <td class="rtable-date-cell"><%= p.date || '—' %></td>
-              </tr>
+                  <div>
+                    <span class="rtable-brand"><%= p.brand %></span>
+                    <% if (p.slug) { %>
+                    <a href="/clanok/<%= p.slug %>" class="rtable-name" style="color:inherit; text-decoration:none; font-weight:600;"><%= p.name %></a>
+                    <% } else { %>
+                    <span class="rtable-name" style="font-weight:600;"><%= p.name %></span>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+              <% p.scores.forEach(function(s, si) { %>
+              <td class="rtable-score-cell" data-crit-index="<%= si %>">
+                <span class="rtable-score-val rtable-score--<%= s.val >= 9 ? 'great' : s.val >= 7.5 ? 'good' : s.val >= 6 ? 'mid' : 'low' %>">
+                  <%= s.text || s.val.toFixed(1) %>
+                </span>
+              </td>
+              <% }) %>
+              <td class="rtable-total-cell">
+                <span class="rtable-total"><%= p.score.toFixed(1) %></span>
+              </td>
+              <td class="rtable-price-cell"><%= p.price %></td>
+              <td class="rtable-date-cell"><%= p.date || '—' %></td>
+            </tr>
             <% }) %>
           </tbody>
         </table>
@@ -196,6 +221,10 @@
         <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--low">&lt;6</span> Slabé</span>
       </div>
 
+      <% if (typeof banners !== 'undefined' && banners.ranking_top) { %>
+      <%- include('../partials/banner-slot', { banner: banners.ranking_top }) %>
+      <% } %>
+
     </div>
   </main>
 
@@ -203,4 +232,5 @@
   <script src="/js/site.js" defer></script>
   <script src="/js/ranking-table.js" defer></script>
 </body>
+
 </html>

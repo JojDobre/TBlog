@@ -1,0 +1,168 @@
+<% if (banner) { %>
+<%
+  const td = banner._td || {};
+  const type = banner.type;
+  const tpl = banner.template_key;
+%>
+
+<% if (type === 'image') { %>
+<%/* ===== IMAGE BANNER ===== */ %>
+<% if (banner.link_url) { %>
+<a href="<%= banner.link_url %>" class="promo-banner" style="display:block; padding:0; cursor:pointer;" target="_blank" rel="noopener" data-banner-id="<%= banner.id %>">
+  <img src="/uploads/<%= banner.original_path || banner.thumbnail_path %>" alt="<%= banner.alt_text || banner.name %>" style="width:100%; display:block; border-radius:var(--r-2xl);" loading="lazy">
+</a>
+<% } else { %>
+<div class="promo-banner" style="padding:0;" data-banner-id="<%= banner.id %>">
+  <img src="/uploads/<%= banner.original_path || banner.thumbnail_path %>" alt="<%= banner.alt_text || banner.name %>" style="width:100%; display:block; border-radius:var(--r-2xl);" loading="lazy">
+</div>
+<% } %>
+
+<% } else if (type === 'template' && tpl === 'promo-brand') { %>
+<%/* ===== PROMO BRAND ===== */ %>
+<section class="promo-banner promo-brand" data-banner-id="<%= banner.id %>" <% if (td.bg_color) { %>style="background:<%= td.bg_color %>;" <% } %>>
+  <div class="promo-banner-bg promo-bg-mesh"></div>
+  <div style="position:relative; z-index:1;">
+    <% if (td.eyebrow) { %>
+    <span class="eyebrow" style="color:oklch(1 0 0/0.7);"><%= td.eyebrow %></span>
+    <% } %>
+    <h2 class="h-2" style="margin:12px 0; color:oklch(1 0 0);"><%= td.title %></h2>
+    <% if (td.description) { %>
+    <p class="lead" style="max-width:520px; color:oklch(1 0 0/0.85);"><%= td.description %></p>
+    <% } %>
+    <% if (td.sponsor_text) { %>
+    <span style="font-family:var(--font-mono); font-size:11px; color:oklch(1 0 0/0.5); margin-top:16px; display:block;"><%= td.sponsor_text %></span>
+    <% } %>
+  </div>
+  <div class="promo-banner-cta">
+    <% if (td.product_media_id) { %>
+    <div class="promo-banner-product" style="background-image:url('/uploads/originals/<%= td.product_media_id %>'); background-size:contain; background-position:center; background-repeat:no-repeat;"></div>
+    <% } else { %>
+    <div class="promo-banner-product ph ph-mesh"></div>
+    <% } %>
+    <% if (td.cta_label && td.cta_url) { %>
+    <a href="<%= td.cta_url %>" class="btn btn-lg" style="background:oklch(1 0 0); color:oklch(0.18 0.01 240);" target="_blank" rel="noopener">
+      <%= td.cta_label %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 17L17 7M8 7h9v9" />
+      </svg>
+    </a>
+    <% } %>
+  </div>
+</section>
+
+<% } else if (type === 'template' && tpl === 'promo-app') { %>
+<%/* ===== PROMO APP ===== */ %>
+<section class="promo-banner promo-app" data-banner-id="<%= banner.id %>">
+  <div class="promo-app-grid"></div>
+  <div class="promo-app-content">
+    <div>
+      <% if (td.eyebrow) { %>
+      <span class="eyebrow" style="color:oklch(0.85 0.1 155);"><%= td.eyebrow %></span>
+      <% } %>
+      <h2 class="h-2" style="margin:12px 0; max-width:540px; color:oklch(1 0 0);"><%= td.title %></h2>
+      <% if (td.description) { %>
+      <p class="lead" style="max-width:480px; margin:0; color:oklch(1 0 0/0.8);"><%= td.description %></p>
+      <% } %>
+      <div style="display:flex; gap:12px; margin-top:28px; flex-wrap:wrap;">
+        <% if (td.cta1_label && td.cta1_url) { %>
+        <a href="<%= td.cta1_url %>" class="btn btn-lg btn-accent" target="_blank" rel="noopener"><%= td.cta1_label %></a>
+        <% } %>
+        <% if (td.cta2_label && td.cta2_url) { %>
+        <a href="<%= td.cta2_url %>" class="btn btn-lg" style="background:oklch(1 0 0/0.15); color:oklch(1 0 0); border-color:oklch(1 0 0/0.2);" target="_blank" rel="noopener"><%= td.cta2_label %></a>
+        <% } %>
+      </div>
+    </div>
+    <%
+        const stats = [];
+        if (td.stat1_num) stats.push({ num: td.stat1_num, label: td.stat1_label || '' });
+        if (td.stat2_num) stats.push({ num: td.stat2_num, label: td.stat2_label || '' });
+        if (td.stat3_num) stats.push({ num: td.stat3_num, label: td.stat3_label || '' });
+      %>
+    <% if (stats.length > 0) { %>
+    <div class="promo-app-stats">
+      <% stats.forEach(s => { %>
+      <div class="promo-stat">
+        <span class="promo-stat-num"><%= s.num %></span>
+        <span class="promo-stat-label"><%= s.label %></span>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</section>
+
+<% } else if (type === 'template' && tpl === 'promo-cross') { %>
+<%/* ===== PROMO CROSS ===== */ %>
+<section class="promo-banner promo-cross" data-banner-id="<%= banner.id %>" <% if (td.bg_color) { %>style="background:<%= td.bg_color %>;" <% } %>>
+  <div class="promo-cross-pattern"></div>
+  <div style="position:relative; z-index:1; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+    <% if (td.badge_text) { %>
+    <span class="promo-badge">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 17L17 7M8 7h9v9" />
+      </svg>
+      <%= td.badge_text %>
+    </span>
+    <% } %>
+    <% if (td.meta_text) { %>
+    <span class="promo-meta-text"><%= td.meta_text %></span>
+    <% } %>
+  </div>
+  <h2 class="h-2" style="margin:16px 0; max-width:680px; position:relative; z-index:1;"><%= td.title %></h2>
+  <% if (td.description) { %>
+  <p class="lead" style="max-width:540px; position:relative; z-index:1;"><%= td.description %></p>
+  <% } %>
+  <div style="display:flex; gap:10px; margin-top:24px; position:relative; z-index:1; flex-wrap:wrap;">
+    <% if (td.cta1_label && td.cta1_url) { %>
+    <a href="<%= td.cta1_url %>" class="btn btn-accent" target="_blank" rel="noopener"><%= td.cta1_label %></a>
+    <% } %>
+    <% if (td.cta2_label && td.cta2_url) { %>
+    <a href="<%= td.cta2_url %>" class="btn" target="_blank" rel="noopener"><%= td.cta2_label %></a>
+    <% } %>
+    <% if (td.cta3_label && td.cta3_url) { %>
+    <a href="<%= td.cta3_url %>" class="btn" target="_blank" rel="noopener"><%= td.cta3_label %></a>
+    <% } %>
+  </div>
+</section>
+
+<% } else if (type === 'template' && tpl === 'newsletter') { %>
+<%/* ===== NEWSLETTER ===== */ %>
+<section class="newsletter-section" data-banner-id="<%= banner.id %>">
+  <div class="newsletter-mesh"></div>
+  <div class="newsletter-content">
+    <% if (td.eyebrow) { %>
+    <span class="eyebrow"><%= td.eyebrow %></span>
+    <% } %>
+    <h2 class="h-2" style="margin:12px 0;"><%= td.title %></h2>
+    <% if (td.description) { %>
+    <p class="lead" style="max-width:520px;"><%= td.description %></p>
+    <% } %>
+  </div>
+  <div class="newsletter-form">
+    <div class="search" style="min-width:0; height:52px; border-radius:var(--r-lg);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0" />
+      </svg>
+      <input type="email" placeholder="<%= td.placeholder || 'tvoj@email.sk' %>" style="font-size:15px;">
+    </div>
+    <button class="btn btn-accent btn-lg" style="justify-content:center; width:100%;">
+      <%= td.cta_label || 'Prihlásiť sa' %>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M13 5l7 7-7 7" />
+      </svg>
+    </button>
+    <% if (td.note) { %>
+    <span class="newsletter-note"><%= td.note %></span>
+    <% } %>
+  </div>
+</section>
+
+<% } else if (type === 'custom') { %>
+<%/* ===== CUSTOM HTML ===== */ %>
+<div class="promo-banner" style="padding:0; overflow:hidden;" data-banner-id="<%= banner.id %>">
+  <%- banner.custom_code %>
+</div>
+
+<% } %>
+<% } %>

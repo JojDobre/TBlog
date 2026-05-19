@@ -1,0 +1,9 @@
+<div class="stat-big">
+  <span class="big-n" style="color:oklch(0.7 0.13 75)">32</span>
+  <span class="big-l">článkov nebolo aktualizovaných > 12 mesiacov</span>
+  <% var _v=[12,18,22,25,27,30,32],_w=100,_h=30,_mx=Math.max.apply(null,_v),_mn=Math.min.apply(null,_v),_s=_mx-_mn||1,_p=_v.map(function(v,i){return((i/(_v.length-1))*_w)+','+ (_h-((v-_mn)/_s)*(_h-4)-2)}).join(' '); %>
+  <svg class="stat-spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+    <polyline points="<%=_p%>" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+    <polyline points="0,30 <%=_p%> 100,30" fill="var(--accent)" opacity="0.12" />
+  </svg>
+</div>

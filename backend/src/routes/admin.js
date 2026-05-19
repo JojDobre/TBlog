@@ -108,9 +108,7 @@ router.post('/login', loginLimiter, async (req, res, next) => {
       db('users')
         .where('id', result.user.id)
         .update({ last_login_at: db.fn.now() })
-        .catch((err) =>
-          log.warn('last_login_at update failed', { err: err.message })
-        );
+        .catch((err) => log.warn('last_login_at update failed', { err: err.message }));
 
       log.info('user logged in', {
         userId: result.user.id,
@@ -244,11 +242,7 @@ router.post('/forgot', loginLimiter, async (req, res, next) => {
     const user = await db('users').where('nickname', nickname.trim()).first();
     // Nevyzraďujeme či účet existuje — vraciame všeobecnú chybu.
     // Ale zároveň povoľujeme reset len pre admin/editor (readers idú vlastným flow).
-    if (
-      !user ||
-      user.is_banned ||
-      (user.role !== 'admin' && user.role !== 'editor')
-    ) {
+    if (!user || user.is_banned || (user.role !== 'admin' && user.role !== 'editor')) {
       return res.status(401).render('admin/auth/forgot', {
         title: 'Zabudnuté heslo',
         step: 'identify',
@@ -325,9 +319,18 @@ router.get('/', (req, res) => {
 router.get('/dashboard', async (req, res, next) => {
   try {
     const [articles, comments, media, visits24h] = await Promise.all([
-      db('articles').count({ c: '*' }).first().then((r) => Number(r.c)),
-      db('comments').count({ c: '*' }).first().then((r) => Number(r.c)),
-      db('media').count({ c: '*' }).first().then((r) => Number(r.c)),
+      db('articles')
+        .count({ c: '*' })
+        .first()
+        .then((r) => Number(r.c)),
+      db('comments')
+        .count({ c: '*' })
+        .first()
+        .then((r) => Number(r.c)),
+      db('media')
+        .count({ c: '*' })
+        .first()
+        .then((r) => Number(r.c)),
       db('page_visits')
         .where('viewed_at', '>=', db.raw('NOW() - INTERVAL 1 DAY'))
         .count({ c: '*' })
@@ -343,6 +346,12 @@ router.get('/dashboard', async (req, res, next) => {
     log.error('admin/dashboard query failed', { err: err.message });
     next(err);
   }
+});
+
+router.get('/stats', (req, res) => {
+  res.render('admin/dashboard/stats', {
+    title: 'Štatistiky',
+  });
 });
 
 // =============================================================================

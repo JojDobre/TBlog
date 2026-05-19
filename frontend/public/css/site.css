@@ -852,6 +852,7 @@ img {
   font-weight: 700;
   letter-spacing: -0.03em;
   color: var(--accent);
+  padding: 0px 4px;
 }
 .hero-floater-stat {
   font-family: var(--font-mono);
@@ -6082,4 +6083,21 @@ img {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+}
+
+/* Banner v sidebar článku — bez marginu */
+.article-sidebar .sidebar-card .promo-banner,
+.article-sidebar .sidebar-card .newsletter-section {
+  margin: 0;
+}
+
+/* Banner v sidebar článku — bez marginu */
+.article-prose .promo-banner,
+.article-prose .newsletter-section {
+  margin: 0;
+  margin-bottom: var(--s-8);
+}
+
+.container .category-banner .promo-banner {
+  margin-top: var(--s-8);
 }

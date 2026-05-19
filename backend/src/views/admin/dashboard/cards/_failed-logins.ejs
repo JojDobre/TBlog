@@ -1,0 +1,9 @@
+<div class="stat-big">
+  <span class="big-n" style="color:oklch(0.62 0.21 25)">284</span>
+  <span class="big-l">neúspešných prihlásení · 24h</span>
+  <% var _v=[12,18,24,32,42,58,72,84,98,124,142,182,224,248,272,284],_w=100,_h=30,_mx=Math.max.apply(null,_v),_mn=Math.min.apply(null,_v),_s=_mx-_mn||1,_p=_v.map(function(v,i){return((i/(_v.length-1))*_w)+','+(_h-((v-_mn)/_s)*(_h-4)-2)}).join(' '); %>
+  <svg class="stat-spark" viewBox="0 0 100 30" preserveAspectRatio="none">
+    <polyline points="<%=_p%>" fill="none" stroke="oklch(0.62 0.21 25)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="0,30 <%=_p%> 100,30" fill="oklch(0.62 0.21 25)" opacity="0.12"/>
+  </svg>
+</div>

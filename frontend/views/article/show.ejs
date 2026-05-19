@@ -99,7 +99,10 @@
       <div class="article-layout">
 
         <!-- Main content -->
-        <article class="article-prose">
+        <article class="article-prose" style="min-width:0;">
+          <% if (typeof banners !== 'undefined' && banners.article_top) { %>
+          <%- include('../partials/banner-slot', { banner: banners.article_top }) %>
+          <% } %>
           <%- contentHtml %>
         </article>
 
@@ -146,6 +149,13 @@
               </div>
             </div>
           </div>
+
+          <!-- Banner -->
+          <% if (typeof banners !== 'undefined' && banners.article_sidebar) { %>
+          <div class="sidebar-card" style="padding:0; border:none; background:none;">
+            <%- include('../partials/banner-slot', { banner: banners.article_sidebar }) %>
+          </div>
+          <% } %>
 
           <!-- Tags -->
           <% if (tags.length > 0) { %>
@@ -198,6 +208,10 @@
         </aside>
       </div>
 
+
+      <% if (typeof banners !== 'undefined' && banners.article_bottom) { %>
+      <%- include('../partials/banner-slot', { banner: banners.article_bottom }) %>
+      <% } %>
     </div>
   </main>
 

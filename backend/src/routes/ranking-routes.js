@@ -13,6 +13,7 @@
 const express = require('express');
 const db = require('../db');
 const log = require('../logger');
+const bannerLoader = require('../utils/banner-loader');
 
 const router = express.Router();
 
@@ -205,11 +206,14 @@ router.get('/rebricky', async (req, res, next) => {
       });
     }
 
+    const banners = await bannerLoader.getBannersForPositions(['ranking_top']);
+
     res.render('ranking/index', {
       title: 'Rebríčky',
       currentPath: '/rebricky',
       rankingGroups,
       stats,
+      banners,
     });
   } catch (err) {
     log.error('ranking list failed', { err: err.message });
@@ -249,11 +253,14 @@ router.get('/rebricky/:slug', async (req, res, next) => {
       updated: 'Aktualizované ' + formatDateSk(ranking.updated_at),
     };
 
+    const banners = await bannerLoader.getBannersForPositions(['ranking_top']);
+
     res.render('ranking/show', {
       title: ranking.name,
       currentPath: '/rebricky',
       ranking: templateRanking,
       items,
+      banners,
     });
   } catch (err) {
     log.error('ranking detail failed', { err: err.message });
@@ -286,12 +293,15 @@ router.get('/rebricky/:slug/tabulka', async (req, res, next) => {
       .filter((c) => c.field_type !== 'price' && c.field_type !== 'date')
       .map((c) => c.name);
 
+    const banners = await bannerLoader.getBannersForPositions(['ranking_top']);
+
     res.render('ranking/table', {
       title: ranking.name + ' — Tabuľka',
       currentPath: '/rebricky',
       ranking: templateRanking,
       items,
       scoreLabels,
+      banners,
     });
   } catch (err) {
     log.error('ranking table failed', { err: err.message });

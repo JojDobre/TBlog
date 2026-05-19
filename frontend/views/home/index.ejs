@@ -109,6 +109,7 @@
       </section>
       <% } %>
 
+      <%- include('../partials/banner-slot', { banner: banners.home_after_hero }) %>
 
       <!-- ============================================================
            2. NOVINKY — bento mosaic
@@ -225,6 +226,8 @@
       <% } %>
 
 
+      <%- include('../partials/banner-slot', { banner: banners.home_after_news }) %>
+
       <!-- ============================================================
            3. TRENDY — TOP 6 najčítanejších
            ============================================================ -->
@@ -269,6 +272,7 @@
       </div>
       <% } %>
 
+      <%- include('../partials/banner-slot', { banner: banners.home_after_trending }) %>
 
       <!-- ============================================================
            5. "RECENZIE V SKRATKE" — vlep ZA sekciu "Recenzie grid"
@@ -308,7 +312,7 @@
       <% } %>
 
 
-
+      <%- include('../partials/banner-slot', { banner: banners.home_after_reviews }) %>
 
       <!-- ============================================================
            4. EDITOR'S PICK — magazine split
@@ -358,10 +362,13 @@
       </a>
       <% } %>
 
+
+      <%- include('../partials/banner-slot', { banner: banners.home_after_editors_pick }) %>
+
       <!-- ============================================================
            10. PROMO BANNER 3 — App download (placeholder)
            ============================================================ -->
-      <section class="promo-banner promo-app">
+      <!--     <section class="promo-banner promo-app">
         <div class="promo-app-grid"></div>
         <div class="promo-app-content">
           <div>
@@ -389,7 +396,7 @@
           </div>
         </div>
       </section>
-
+-->
 
       <!-- ============================================================
            "BEZ OBRÁZKOV"
@@ -424,11 +431,13 @@
       </div>
       <% } %>
 
+      <%- include('../partials/banner-slot', { banner: banners.home_after_textfeed }) %>
 
       <!-- ============================================================
            7. PROMO BANNER — sponzorovaný produkt (placeholder)
            ============================================================ -->
-      <section class="promo-banner promo-brand">
+      <!--
+     <section class="promo-banner promo-brand">
         <div class="promo-banner-bg promo-bg-mesh"></div>
         <div style="position:relative; z-index:1;">
           <span class="eyebrow" style="color:oklch(1 0 0/0.7);">Partner · Apple</span>
@@ -446,6 +455,7 @@
           </span>
         </div>
       </section>
+      -->
 
 
       <!-- ============================================================
@@ -481,11 +491,12 @@
       </div>
       <% } %>
 
-
+      <%- include('../partials/banner-slot', { banner: banners.home_after_compact }) %>
 
       <!-- ============================================================
            4. PROMO BANNER — placeholder
            ============================================================ -->
+      <!--
       <section class="promo-banner promo-cross">
         <div class="promo-cross-pattern"></div>
         <div style="position:relative; z-index:1; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
@@ -505,6 +516,7 @@
           <a href="#" class="btn">YouTube</a>
         </div>
       </section>
+      -->
 
 
       <!-- ============================================================

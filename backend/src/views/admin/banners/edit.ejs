@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+
+<head>
+  <%- include('../partials/head', { title: title }) %>
+</head>
+
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: pageTitle }) %>
+
+    <main class="bz-content">
+      <div class="bz-art-wrap">
+
+        <% if (flash.success) { %>
+        <div class="bz-art-alert bz-art-alert-success">
+          <i class="bi bi-check-circle-fill"></i> <%= flash.success %>
+          <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+        </div>
+        <% } %>
+        <% if (flash.err) { %>
+        <div class="bz-art-alert bz-art-alert-error">
+          <i class="bi bi-exclamation-triangle-fill"></i> <%= flash.err %>
+          <button class="bz-art-alert-close" data-bs-dismiss="alert" aria-label="Zatvoriť">×</button>
+        </div>
+        <% } %>
+
+        <div class="bz-art-breadcrumb" style="margin-bottom:20px">
+          <a href="/admin/dashboard">Dashboard</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <a href="/admin/banners">Bannery</a>
+          <span class="bz-art-breadcrumb-sep">›</span>
+          <span class="bz-art-breadcrumb-current"><%= isNew ? 'Nový banner' : banner.name %></span>
+        </div>
+
+        <%
+          let td = {};
+          try { td = typeof banner.template_data === 'string' ? JSON.parse(banner.template_data) : (banner.template_data || {}); }
+          catch(e) { td = {}; }
+        %>
+
+        <form method="POST" action="/admin/banners/<%= isNew ? 'create' : banner.id + '/edit' %>" autocomplete="off">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <div class="row g-4">
+            <!-- Ľavý stĺpec — obsah -->
+            <div class="col-lg-8">
+
+              <!-- Základné info -->
+              <div class="bz-art-content-card">
+                <div class="bz-art-content-body" style="display:flex; flex-direction:column; gap:14px">
+
+                  <!-- Názov -->
+                  <div>
+                    <label class="bz-art-field-label" for="bn-name">Interný názov *</label>
+                    <input type="text" id="bn-name" name="name" class="form-control form-control-sm <%= errors.name ? 'is-invalid' : '' %>" value="<%= banner.name || '' %>" maxlength="160" required>
+                    <% if (errors.name) { %><div class="invalid-feedback d-block"><%= errors.name %></div><% } %>
+                  </div>
+
+                  <!-- Typ -->
+                  <div>
+                    <label class="bz-art-field-label">Typ banneru</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap">
+                      <% ['image', 'template', 'custom'].forEach(t => {
+                        const labels = { image: 'Obrázok', template: 'Šablóna', custom: 'Vlastný kód' };
+                        const icons = { image: 'bi-image', template: 'bi-layout-text-window-reverse', custom: 'bi-code-slash' };
+                      %>
+                      <label class="bz-type-option" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:6px; border:1px solid var(--art-border); cursor:pointer; font-size:13px; transition:all .15s; <%= banner.type === t ? 'background:oklch(0.3 0.04 200); border-color:var(--art-accent)' : '' %>">
+                        <input type="radio" name="type" value="<%= t %>" <%= banner.type === t ? 'checked' : '' %> style="display:none" data-type-radio>
+                        <i class="bi <%= icons[t] %>"></i>
+                        <%= labels[t] %>
+                      </label>
+                      <% }) %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Image type -->
+              <div class="bz-art-content-card" style="margin-top:14px" data-type-panel="image" <%= banner.type !== 'image' ? 'hidden' : '' %>>
+                <div class="bz-art-content-head">
+                  <strong style="font-size:13px; color:var(--art-text)"><i class="bi bi-image"></i> Obrázok banneru</strong>
+                </div>
+                <div class="bz-art-content-body" style="display:flex; flex-direction:column; gap:14px">
+                  <div>
+                    <label class="bz-art-field-label" for="bn-image">ID obrázku z knižnice *</label>
+                    <div class="input-group">
+                      <input type="number" id="bn-image" name="image_media_id" min="1" class="form-control form-control-sm <%= errors.image_media_id ? 'is-invalid' : '' %>" value="<%= banner.image_media_id || '' %>" data-field="media_id">
+                      <a href="/admin/media" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-folder2-open"></i>
+                      </a>
+                    </div>
+                    <% if (errors.image_media_id) { %><div class="invalid-feedback d-block"><%= errors.image_media_id %></div><% } %>
+                  </div>
+                  <div>
+                    <label class="bz-art-field-label" for="bn-link">Odkaz (URL)</label>
+                    <input type="url" id="bn-link" name="link_url" class="form-control form-control-sm" value="<%= banner.link_url || '' %>" maxlength="500">
+                  </div>
+                  <div>
+                    <label class="bz-art-field-label" for="bn-alt">Alt text</label>
+                    <input type="text" id="bn-alt" name="alt_text" class="form-control form-control-sm" value="<%= banner.alt_text || '' %>" maxlength="255">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Template type -->
+              <div class="bz-art-content-card" style="margin-top:14px" data-type-panel="template" <%= banner.type !== 'template' ? 'hidden' : '' %>>
+                <div class="bz-art-content-head">
+                  <strong style="font-size:13px; color:var(--art-text)"><i class="bi bi-layout-text-window-reverse"></i> Šablóna</strong>
+                </div>
+                <div class="bz-art-content-body" style="display:flex; flex-direction:column; gap:14px">
+                  <!-- Výber šablóny -->
+                  <div>
+                    <label class="bz-art-field-label" for="bn-template">Vybrať šablónu *</label>
+                    <select id="bn-template" name="template_key" class="form-select form-select-sm <%= errors.template_key ? 'is-invalid' : '' %>" data-template-select>
+                      <option value="">— Vyber šablónu —</option>
+                      <% Object.entries(TEMPLATES).forEach(([key, tpl]) => { %>
+                      <option value="<%= key %>" <%= banner.template_key === key ? 'selected' : '' %>>
+                        <%= tpl.label %> — <%= tpl.description %>
+                      </option>
+                      <% }) %>
+                    </select>
+                    <% if (errors.template_key) { %><div class="invalid-feedback d-block"><%= errors.template_key %></div><% } %>
+                  </div>
+
+                  <!-- Dynamické polia pre každú šablónu -->
+                  <% Object.entries(TEMPLATES).forEach(([key, tpl]) => { %>
+                  <div data-template-fields="<%= key %>" <%= banner.template_key !== key ? 'hidden' : '' %> style="display:flex; flex-direction:column; gap:12px; padding-top:6px; border-top:1px solid var(--art-border)">
+
+                    <div style="font-size:12px; color:var(--art-text-muted); font-weight:600; margin-bottom:2px">
+                      Polia pre: <%= tpl.label %>
+                    </div>
+
+                    <% tpl.fields.forEach(field => { %>
+                    <div>
+                      <label class="bz-art-field-label"><%= field.label %><%= field.required ? ' *' : '' %></label>
+                      <% if (field.type === 'textarea') { %>
+                      <textarea name="td_<%= field.key %>" rows="2" class="form-control form-control-sm <%= errors['td_' + field.key] ? 'is-invalid' : '' %>" placeholder="<%= field.placeholder || '' %>"><%= td[field.key] || '' %></textarea>
+                      <% } else if (field.type === 'media') { %>
+                      <div class="input-group">
+                        <input type="number" name="td_<%= field.key %>" min="1" class="form-control form-control-sm" value="<%= td[field.key] || '' %>" data-field="media_id">
+                        <a href="/admin/media" target="_blank" class="btn btn-outline-secondary btn-sm">
+                          <i class="bi bi-folder2-open"></i>
+                        </a>
+                      </div>
+                      <% } else { %>
+                      <input type="<%= field.type === 'url' ? 'url' : 'text' %>" name="td_<%= field.key %>" class="form-control form-control-sm <%= errors['td_' + field.key] ? 'is-invalid' : '' %>" value="<%= td[field.key] || '' %>" placeholder="<%= field.placeholder || '' %>" maxlength="500">
+                      <% } %>
+                      <% if (errors['td_' + field.key]) { %><div class="invalid-feedback d-block"><%= errors['td_' + field.key] %></div><% } %>
+                    </div>
+                    <% }) %>
+                  </div>
+                  <% }) %>
+                </div>
+              </div>
+
+              <!-- Custom type -->
+              <div class="bz-art-content-card" style="margin-top:14px" data-type-panel="custom" <%= banner.type !== 'custom' ? 'hidden' : '' %>>
+                <div class="bz-art-content-head">
+                  <strong style="font-size:13px; color:var(--art-text)"><i class="bi bi-code-slash"></i> Vlastný HTML/CSS/JS</strong>
+                </div>
+                <div class="bz-art-content-body">
+                  <div>
+                    <label class="bz-art-field-label" for="bn-code">HTML kód *</label>
+                    <textarea id="bn-code" name="custom_code" rows="12" class="form-control form-control-sm <%= errors.custom_code ? 'is-invalid' : '' %>" style="font-family:var(--art-mono); font-size:12px; tab-size:2"><%= banner.custom_code || '' %></textarea>
+                    <% if (errors.custom_code) { %><div class="invalid-feedback d-block"><%= errors.custom_code %></div><% } %>
+                    <div style="font-size:11px; color:var(--art-text-subtle); margin-top:4px">
+                      Kód sa vykreslí vnútri banner kontajneru s rovnakým zaoblením a šírkou ako šablóny.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Pravý stĺpec — meta -->
+            <div class="col-lg-4">
+
+              <!-- Uložiť -->
+              <div class="bz-art-side-card">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-floppy"></i> Uložiť
+                </div>
+                <div style="padding:14px; display:flex; flex-direction:column; gap:10px">
+                  <div>
+                    <label class="bz-art-field-label">Stav</label>
+                    <select name="status" class="form-select form-select-sm">
+                      <option value="active" <%= banner.status === 'active' ? 'selected' : '' %>>Aktívny</option>
+                      <option value="paused" <%= banner.status === 'paused' ? 'selected' : '' %>>Pozastavený</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="bz-art-btn" style="width:100%; justify-content:center">
+                    <i class="bi bi-check-lg"></i> <%= isNew ? 'Vytvoriť banner' : 'Uložiť zmeny' %>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pozície -->
+              <div class="bz-art-side-card" style="margin-top:14px">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-geo-alt"></i> Umiestnenie
+                </div>
+                <div style="padding:14px; display:flex; flex-direction:column; gap:6px">
+                  <span style="font-size:11px; color:var(--art-text-subtle); margin-bottom:4px">Vyber pozície kde sa banner zobrazí:</span>
+                  <% positions.forEach(pos => { %>
+                  <label style="display:flex; align-items:start; gap:8px; cursor:pointer; padding:4px 0; font-size:13px; color:var(--art-text-muted)">
+                    <input type="checkbox" name="position_ids" value="<%= pos.id %>" <%= selectedPositions.includes(pos.id) ? 'checked' : '' %> style="margin-top:2px">
+                    <div>
+                      <div style="color:var(--art-text); font-size:12px; font-weight:500"><%= pos.label %></div>
+                      <% if (pos.recommended_size) { %>
+                      <div style="font-size:10px; color:var(--art-text-subtle)"><%= pos.recommended_size %></div>
+                      <% } %>
+                    </div>
+                  </label>
+                  <% }) %>
+                </div>
+              </div>
+
+              <!-- Plánovanie -->
+              <div class="bz-art-side-card" style="margin-top:14px">
+                <div class="bz-art-side-head">
+                  <i class="bi bi-calendar-range"></i> Plánovanie
+                </div>
+                <div style="padding:14px; display:flex; flex-direction:column; gap:10px">
+                  <div>
+                    <label class="bz-art-field-label" for="bn-starts">Zobraziť od</label>
+                    <input type="datetime-local" id="bn-starts" name="starts_at" class="form-control form-control-sm" value="<%= banner.starts_at ? new Date(banner.starts_at).toISOString().slice(0,16) : '' %>">
+                    <div style="font-size:10px; color:var(--art-text-subtle); margin-top:2px">Prázdne = ihneď</div>
+                  </div>
+                  <div>
+                    <label class="bz-art-field-label" for="bn-ends">Zobraziť do</label>
+                    <input type="datetime-local" id="bn-ends" name="ends_at" class="form-control form-control-sm" value="<%= banner.ends_at ? new Date(banner.ends_at).toISOString().slice(0,16) : '' %>">
+                    <div style="font-size:10px; color:var(--art-text-subtle); margin-top:2px">Prázdne = navždy</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </form>
+
+        <!-- Zmazanie (len pri editácii) — MIMO hlavného formulára (HTML nepovoľuje vnorené formy) -->
+        <% if (!isNew) { %>
+        <div class="row g-4" style="margin-top:0">
+          <div class="col-lg-4 offset-lg-8">
+            <div class="bz-art-side-card" style="border-color:oklch(0.5 0.15 25 / 0.3)">
+              <div class="bz-art-side-head" style="color:oklch(0.7 0.2 25)">
+                <i class="bi bi-trash3"></i> Nebezpečná zóna
+              </div>
+              <div style="padding:14px">
+                <form method="POST" action="/admin/banners/<%= banner.id %>/delete" data-confirm="Naozaj zmazať banner „<%= banner.name %>" ?">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="bz-art-btn bz-art-btn-sm bz-art-btn-danger" style="width:100%">
+                    <i class="bi bi-trash3"></i> Zmazať banner
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-media-picker.js" defer></script>
+  <script src="/admin/static/js/admin-banner-edit.js" defer></script>
+</body>
+
+</html>

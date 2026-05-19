@@ -19,12 +19,15 @@ const adminRankingsRouter = require('./admin-rankings');
 const adminCommentsRouter = require('./admin-comments');
 const adminPagesRouter = require('./admin-pages');
 const adminMessagesRouter = require('./admin-messages');
+const adminUsersRouter = require('./admin-users');
+const adminBannersRouter = require('./admin-banners');
 const apiCommentsRouter = require('./api-comments');
 const apiMessagesRouter = require('./api-messages');
 const apiNotificationsRouter = require('./api-notifications');
 const apiRouter = require('./api');
 const blockRenderer = require('../utils/block-renderer');
 const pageRenderer = require('../utils/page-renderer');
+const bannerLoader = require('../utils/banner-loader');
 const crypto = require('crypto');
 const messagesRouter = require('./messages');
 const authRouter = require('./auth');
@@ -46,6 +49,8 @@ router.use('/admin/articles', adminArticlesRouter);
 router.use('/admin/comments', adminCommentsRouter);
 router.use('/admin/pages', adminPagesRouter);
 router.use('/admin/messages', adminMessagesRouter);
+router.use('/admin/users', adminUsersRouter);
+router.use('/admin/banners', adminBannersRouter);
 router.use('/admin', adminRouter);
 router.use('/api/messages', apiMessagesRouter);
 router.use('/api/notifications', apiNotificationsRouter);
@@ -244,6 +249,7 @@ router.get('/kategorie', async (req, res, next) => {
     const sort = req.query.sort || 'newest';
     const type = req.query.type || null;
     const qb = db('articles').where('articles.status', 'published');
+    const banners = await bannerLoader.getBannersForPositions(['category_top']);
 
     const { articles, total, totalPages, currentPage } = await buildListing(qb, {
       page: req.query.page,
@@ -266,6 +272,7 @@ router.get('/kategorie', async (req, res, next) => {
       currentSort: sort,
       currentType: type,
       baseUrl: '/kategorie',
+      banners,
     });
   } catch (err) {
     next(err);
@@ -299,6 +306,9 @@ router.get('/kategorie/:slug', async (req, res, next) => {
       .orderByRaw('COUNT(*) DESC')
       .limit(10);
 
+    const banners = await bannerLoader.getBannersForPositions(['category_top']);
+    console.log('CATEGORY BANNERS:', banners);
+
     res.render('listing/index', {
       title: cat.name,
       currentPath: '/kategorie/' + cat.slug,
@@ -316,6 +326,7 @@ router.get('/kategorie/:slug', async (req, res, next) => {
       currentSort: sort,
       currentType: type,
       relatedTags,
+      banners,
     });
   } catch (err) {
     next(err);
@@ -482,6 +493,11 @@ router.get('/tag/:slug', async (req, res, next) => {
 router.get('/clanok/:slug', async (req, res, next) => {
   try {
     const slug = req.params.slug;
+    const banners = await bannerLoader.getBannersForPositions([
+      'article_top',
+      'article_sidebar',
+      'article_bottom',
+    ]);
 
     const article = await db('articles')
       .leftJoin('users', 'articles.author_id', 'users.id')
@@ -712,6 +728,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       ogType: 'article',
       ogTitle: article.seo_title || article.title,
       ogDescription: article.seo_description || article.excerpt || '',
+      banners,
     });
   } catch (err) {
     log.error('article detail failed', { err: err.message });
@@ -864,10 +881,12 @@ router.get('/', async (req, res, next) => {
       .limit(6);
 
     // Načítaj skóre pre všetky recenzie (reviews sekcia + featured slider)
-    const reviewIds = [...new Set([
-      ...reviews.map((r) => r.id),
-      ...featured.filter((a) => a.type === 'review').map((a) => a.id),
-    ])];
+    const reviewIds = [
+      ...new Set([
+        ...reviews.map((r) => r.id),
+        ...featured.filter((a) => a.type === 'review').map((a) => a.id),
+      ]),
+    ];
     let reviewScoreMap = new Map();
     if (reviewIds.length > 0) {
       const scoreRows = await db('ranking_items as ri')
@@ -885,8 +904,8 @@ router.get('/', async (req, res, next) => {
           row.override_score !== null && row.override_score !== undefined
             ? Number(row.override_score)
             : row.avg_score !== null
-            ? Math.round(Number(row.avg_score) * 10) / 10
-            : null;
+              ? Math.round(Number(row.avg_score) * 10) / 10
+              : null;
         if (score !== null && !reviewScoreMap.has(row.article_id)) {
           reviewScoreMap.set(Number(row.article_id), score);
         }
@@ -960,6 +979,17 @@ router.get('/', async (req, res, next) => {
       return String(count);
     }
 
+    // Bannery pre homepage pozície
+    const banners = await bannerLoader.getBannersForPositions([
+      'home_after_hero',
+      'home_after_news',
+      'home_after_trending',
+      'home_after_reviews',
+      'home_after_editors_pick',
+      'home_after_textfeed',
+      'home_after_compact',
+    ]);
+
     res.render('home/index', {
       title: null,
       currentPath: req.path,
@@ -969,6 +999,7 @@ router.get('/', async (req, res, next) => {
       editorsPick: editorsPick ? enrich(editorsPick) : null,
       reviews: reviews.map(enrich),
       canonicalUrl: config.baseUrl || '/',
+      banners: banners,
     });
   } catch (err) {
     log.error('homepage query failed', { err: err.message });
@@ -1190,6 +1221,7 @@ router.get('/:slug', async (req, res, next) => {
 // Helper funkcia
 async function renderStaticPage(req, res, next, slug, extras = {}) {
   const pg = await db('pages').where('slug', slug).where('status', 'published').first();
+  const banners = await bannerLoader.getBannersForPositions(['page_top']);
 
   if (!pg) return next(); // 404 fallback
 
@@ -1252,6 +1284,7 @@ async function renderStaticPage(req, res, next, slug, extras = {}) {
     csrfToken,
     canonicalUrl: (config.baseUrl || '') + '/' + pg.slug,
     ogType: 'website',
+    banners,
   });
 }
 
