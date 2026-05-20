@@ -299,7 +299,7 @@
     if (!existing || !existing.parentNode) return;
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'btn btn-sm btn-outline-primary';
+    btn.className = 'bz-art-btn bz-art-btn-sm';
     btn.setAttribute('data-add-block', type);
     btn.innerHTML = '<i class="bi ' + iconClass + ' me-1"></i>' + label;
     existing.parentNode.appendChild(btn);

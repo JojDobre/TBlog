@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="sk" data-bs-theme="dark">
+
 <head>
   <%- include('../partials/head', { title: pageTitle }) %>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,400;0,500;0,600;0,700;0,800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
 
@@ -43,34 +45,29 @@
 
         <!-- Flash messages -->
         <% if (typeof flash !== 'undefined' && flash.created) { %>
-          <div class="bz-art-alert bz-art-alert-success">
-            <i class="bi bi-check-circle-fill"></i> Článok bol vytvorený.
-            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
-          </div>
+        <div class="bz-art-alert bz-art-alert-success">
+          <i class="bi bi-check-circle-fill"></i> Článok bol vytvorený.
+          <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
+        </div>
         <% } %>
         <% if (typeof flash !== 'undefined' && flash.updated) { %>
-          <div class="bz-art-alert bz-art-alert-success">
-            <i class="bi bi-check-circle-fill"></i> Zmeny uložené (vytvorená revízia).
-            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
-          </div>
+        <div class="bz-art-alert bz-art-alert-success">
+          <i class="bi bi-check-circle-fill"></i> Zmeny uložené (vytvorená revízia).
+          <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
+        </div>
         <% } %>
         <% if (Object.keys(errors).length > 0) { %>
-          <div class="bz-art-alert bz-art-alert-error">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            Skontroluj chyby vo formulári nižšie.
-            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
-          </div>
+        <div class="bz-art-alert bz-art-alert-error">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          Skontroluj chyby vo formulári nižšie.
+          <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()">×</button>
+        </div>
         <% } %>
 
         <!-- Main form -->
-        <form id="article-form"
-              method="POST"
-              action="<%= isNew ? '/admin/articles' : ('/admin/articles/' + article.id) %>"
-              novalidate
-              data-article-form>
+        <form id="article-form" method="POST" action="<%= isNew ? '/admin/articles' : ('/admin/articles/' + article.id) %>" novalidate data-article-form data-article-id="<%= isNew ? '' : article.id %>">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <input type="hidden" name="content_json" data-content-json
-                 value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c").replace(/'/g, "&#39;") %>'>
+          <input type="hidden" name="content_json" data-content-json value='<%= JSON.stringify(content || []).replace(/</g, "\\u003c").replace(/'/g, "&#39;") %>'>
 
           <div class="bz-art-grid">
 
@@ -79,45 +76,22 @@
 
               <!-- Hero: title / slug / excerpt -->
               <section class="bz-art-hero">
-                <input
-                  type="text"
-                  name="title"
-                  id="title"
-                  class="bz-art-title-inp <%= errors.title ? 'is-invalid' : '' %>"
-                  placeholder="Názov článku…"
-                  maxlength="255"
-                  required
-                  autofocus
-                  value="<%= article.title || '' %>">
+                <input type="text" name="title" id="title" class="bz-art-title-inp <%= errors.title ? 'is-invalid' : '' %>" placeholder="Názov článku…" maxlength="255" required autofocus value="<%= article.title || '' %>">
                 <% if (errors.title) { %>
-                  <div style="color:oklch(.75 .18 25);font-size:12px;margin-top:4px;font-family:var(--art-mono)"><%= errors.title %></div>
+                <div style="color:oklch(.75 .18 25);font-size:12px;margin-top:4px;font-family:var(--art-mono)"><%= errors.title %></div>
                 <% } %>
 
                 <div class="bz-art-slug-row">
                   <span class="bz-art-slug-prefix">bytezone.sk/</span>
-                  <input
-                    type="text"
-                    name="slug"
-                    id="slug"
-                    class="bz-art-slug-inp <%= errors.slug ? 'is-invalid' : '' %>"
-                    maxlength="255"
-                    pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                    value="<%= article.slug || '' %>"
-                    placeholder="<%= isNew ? 'slug-sa-auto-generuje' : 'slug' %>">
+                  <input type="text" name="slug" id="slug" class="bz-art-slug-inp <%= errors.slug ? 'is-invalid' : '' %>" maxlength="255" pattern="[a-z0-9]+(-[a-z0-9]+)*" value="<%= article.slug || '' %>" placeholder="<%= isNew ? 'slug-sa-auto-generuje' : 'slug' %>">
                 </div>
                 <% if (errors.slug) { %>
-                  <div style="color:oklch(.75 .18 25);font-size:12px;font-family:var(--art-mono)"><%= errors.slug %></div>
+                <div style="color:oklch(.75 .18 25);font-size:12px;font-family:var(--art-mono)"><%= errors.slug %></div>
                 <% } %>
 
-                <textarea
-                  name="excerpt"
-                  id="excerpt"
-                  class="bz-art-excerpt-inp <%= errors.excerpt ? 'is-invalid' : '' %>"
-                  rows="2"
-                  maxlength="5000"
-                  placeholder="Krátky popis / perex — 1–2 vety, použité v náhľade a SEO…"><%= article.excerpt || '' %></textarea>
+                <textarea name="excerpt" id="excerpt" class="bz-art-excerpt-inp <%= errors.excerpt ? 'is-invalid' : '' %>" rows="2" maxlength="5000" placeholder="Krátky popis / perex — 1–2 vety, použité v náhľade a SEO…"><%= article.excerpt || '' %></textarea>
                 <% if (errors.excerpt) { %>
-                  <div style="color:oklch(.75 .18 25);font-size:12px;font-family:var(--art-mono)"><%= errors.excerpt %></div>
+                <div style="color:oklch(.75 .18 25);font-size:12px;font-family:var(--art-mono)"><%= errors.excerpt %></div>
                 <% } %>
 
                 <div class="bz-art-hero-meta">
@@ -125,14 +99,14 @@
                     <i class="bi bi-person"></i> Autor: <%= typeof user !== 'undefined' && user ? user.nickname : '—' %>
                   </span>
                   <% if (!isNew && article.created_at) { %>
-                    <span class="bz-art-hero-meta-item">
-                      <i class="bi bi-calendar3"></i> Vytvorené: <%= new Date(article.created_at).toLocaleDateString('sk-SK') %>
-                    </span>
+                  <span class="bz-art-hero-meta-item">
+                    <i class="bi bi-calendar3"></i> Vytvorené: <%= new Date(article.created_at).toLocaleDateString('sk-SK') %>
+                  </span>
                   <% } %>
                   <% if (!isNew && article.published_at) { %>
-                    <span class="bz-art-hero-meta-item">
-                      <i class="bi bi-send"></i> Publikované: <%= new Date(article.published_at).toLocaleString('sk-SK') %>
-                    </span>
+                  <span class="bz-art-hero-meta-item">
+                    <i class="bi bi-send"></i> Publikované: <%= new Date(article.published_at).toLocaleString('sk-SK') %>
+                  </span>
                   <% } %>
                 </div>
               </section>
@@ -146,10 +120,10 @@
                   <i class="bi bi-search"></i> SEO
                 </button>
                 <% if (!isNew && revisionsList.length > 0) { %>
-                  <button type="button" class="bz-art-tab-btn" data-bz-tab="revisions">
-                    <i class="bi bi-clock-history"></i> Revízie
-                    <span class="bz-art-tab-count"><%= revisionsList.length %></span>
-                  </button>
+                <button type="button" class="bz-art-tab-btn" data-bz-tab="revisions">
+                  <i class="bi bi-clock-history"></i> Revízie
+                  <span class="bz-art-tab-count"><%= revisionsList.length %></span>
+                </button>
                 <% } %>
               </div>
 
@@ -162,9 +136,9 @@
                   </div>
                   <div class="bz-art-content-body">
                     <% if (errors.content) { %>
-                      <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:12px">
-                        <i class="bi bi-exclamation-triangle"></i> <%= errors.content %>
-                      </div>
+                    <div class="bz-art-alert bz-art-alert-error" style="margin-bottom:12px">
+                      <i class="bi bi-exclamation-triangle"></i> <%= errors.content %>
+                    </div>
                     <% } %>
                     <div data-blocks-container></div>
                     <div data-empty-state style="text-align:center;color:var(--art-text-subtle);padding:28px 16px;border-top:1px solid var(--art-border);font-size:13px">
@@ -197,53 +171,42 @@
                   <div class="bz-art-content-body" style="display:flex;flex-direction:column;gap:18px;">
                     <div>
                       <label for="seo_title" class="bz-art-field-label">SEO Title</label>
-                      <input type="text"
-                             class="form-control <%= errors.seo_title ? 'is-invalid' : '' %>"
-                             id="seo_title" name="seo_title" maxlength="255"
-                             value="<%= article.seo_title || '' %>"
-                             placeholder="Ak prázdne, použije sa Názov článku">
+                      <input type="text" class="form-control <%= errors.seo_title ? 'is-invalid' : '' %>" id="seo_title" name="seo_title" maxlength="255" value="<%= article.seo_title || '' %>" placeholder="Ak prázdne, použije sa Názov článku">
                       <% if (errors.seo_title) { %>
-                        <div class="invalid-feedback"><%= errors.seo_title %></div>
+                      <div class="invalid-feedback"><%= errors.seo_title %></div>
                       <% } else { %>
-                        <div class="bz-art-hint mt-1">Odporúčaná dĺžka: 50–60 znakov.</div>
+                      <div class="bz-art-hint mt-1">Odporúčaná dĺžka: 50–60 znakov.</div>
                       <% } %>
                     </div>
 
                     <div>
                       <label for="seo_description" class="bz-art-field-label">Meta description</label>
-                      <textarea class="form-control <%= errors.seo_description ? 'is-invalid' : '' %>"
-                                id="seo_description" name="seo_description" rows="3"
-                                maxlength="320"
-                                placeholder="Ak prázdne, použije sa Excerpt"><%= article.seo_description || '' %></textarea>
+                      <textarea class="form-control <%= errors.seo_description ? 'is-invalid' : '' %>" id="seo_description" name="seo_description" rows="3" maxlength="320" placeholder="Ak prázdne, použije sa Excerpt"><%= article.seo_description || '' %></textarea>
                       <% if (errors.seo_description) { %>
-                        <div class="invalid-feedback"><%= errors.seo_description %></div>
+                      <div class="invalid-feedback"><%= errors.seo_description %></div>
                       <% } else { %>
-                        <div class="bz-art-hint mt-1">Odporúčaná dĺžka: 150–160 znakov.</div>
+                      <div class="bz-art-hint mt-1">Odporúčaná dĺžka: 150–160 znakov.</div>
                       <% } %>
                     </div>
 
                     <div>
                       <label class="bz-art-field-label">OG Image (1200×630)</label>
                       <% if (typeof ogMedia !== 'undefined' && ogMedia && ogMedia.thumbnail_path) { %>
-                        <img src="/uploads/<%= ogMedia.thumbnail_path %>"
-                             class="img-fluid rounded mb-2" style="max-height:120px; border-radius:var(--art-r-md);">
+                      <img src="/uploads/<%= ogMedia.thumbnail_path %>" class="img-fluid rounded mb-2" style="max-height:120px; border-radius:var(--art-r-md);">
                       <% } else { %>
-                        <div class="bz-art-hint mb-2"><i class="bi bi-info-circle"></i> Použije sa cover, ak nie je nastavené</div>
+                      <div class="bz-art-hint mb-2"><i class="bi bi-info-circle"></i> Použije sa cover, ak nie je nastavené</div>
                       <% } %>
                       <div class="input-group input-group-sm">
                         <span class="input-group-text">Media ID</span>
-                        <input type="number" class="form-control <%= errors.og_image_media_id ? 'is-invalid' : '' %>"
-                               name="og_image_media_id" min="1"
-                               value="<%= article.og_image_media_id || '' %>"
-                               placeholder="napr. 12">
+                        <input type="number" class="form-control <%= errors.og_image_media_id ? 'is-invalid' : '' %>" name="og_image_media_id" min="1" value="<%= article.og_image_media_id || '' %>" placeholder="napr. 12">
                         <a href="/admin/media" target="_blank" class="bz-art-btn bz-art-btn-sm" style="border-radius:0 var(--art-r-sm) var(--art-r-sm) 0; border:1px solid var(--art-border);">
                           <i class="bi bi-images"></i>
                         </a>
                       </div>
                       <% if (errors.og_image_media_id) { %>
-                        <div class="invalid-feedback d-block"><%= errors.og_image_media_id %></div>
+                      <div class="invalid-feedback d-block"><%= errors.og_image_media_id %></div>
                       <% } else { %>
-                        <div class="bz-art-hint mt-1">Odporúčaná veľkosť 1200×630 px.</div>
+                      <div class="bz-art-hint mt-1">Odporúčaná veľkosť 1200×630 px.</div>
                       <% } %>
                     </div>
 
@@ -262,39 +225,37 @@
 
               <!-- ── Tab: Revízie ———————————————————————————— -->
               <% if (!isNew && revisionsList.length > 0) { %>
-                <div data-bz-pane="revisions">
-                  <div class="bz-art-content-card">
-                    <div class="bz-art-content-head">
-                      <span class="bz-art-content-title"><i class="bi bi-clock-history me-2"></i>Revízie</span>
-                      <span style="font-family:var(--art-mono);font-size:11px;color:var(--art-text-subtle)">
-                        Posledných <%= revisionsList.length %> verzií
-                      </span>
-                    </div>
-                    <div>
-                      <% revisionsList.forEach((r, idx) => { %>
-                        <div class="bz-art-rev-item">
-                          <div style="flex:1;min-width:0">
-                            <div class="bz-art-rev-title">
-                              <%= r.title || '(bez názvu)' %>
-                              <% if (idx === 0) { %><span class="bz-art-rev-badge">najnovšia</span><% } %>
-                            </div>
-                            <div class="bz-art-rev-meta">
-                              <i class="bi bi-clock me-1"></i><%= new Date(r.created_at).toLocaleString('sk-SK') %>
-                              <% if (r.editor_nickname) { %> · <i class="bi bi-person me-1"></i><%= r.editor_nickname %><% } %>
-                            </div>
-                          </div>
-                          <div class="bz-art-rev-actions">
-                            <button type="button" class="bz-art-btn bz-art-btn-sm" title="Obnoviť"
-                                    data-restore-url="/admin/articles/<%= article.id %>/revisions/<%= r.id %>/restore"
-                                    data-restore-csrf="<%= csrfToken %>">
-                              <i class="bi bi-arrow-counterclockwise"></i> Obnoviť
-                            </button>
-                          </div>
+              <div data-bz-pane="revisions">
+                <div class="bz-art-content-card">
+                  <div class="bz-art-content-head">
+                    <span class="bz-art-content-title"><i class="bi bi-clock-history me-2"></i>Revízie</span>
+                    <span style="font-family:var(--art-mono);font-size:11px;color:var(--art-text-subtle)">
+                      Posledných <%= revisionsList.length %> verzií
+                    </span>
+                  </div>
+                  <div>
+                    <% revisionsList.forEach((r, idx) => { %>
+                    <div class="bz-art-rev-item">
+                      <div style="flex:1;min-width:0">
+                        <div class="bz-art-rev-title">
+                          <%= r.title || '(bez názvu)' %>
+                          <% if (idx === 0) { %><span class="bz-art-rev-badge">najnovšia</span><% } %>
                         </div>
-                      <% }) %>
+                        <div class="bz-art-rev-meta">
+                          <i class="bi bi-clock me-1"></i><%= new Date(r.created_at).toLocaleString('sk-SK') %>
+                          <% if (r.editor_nickname) { %> · <i class="bi bi-person me-1"></i><%= r.editor_nickname %><% } %>
+                        </div>
+                      </div>
+                      <div class="bz-art-rev-actions">
+                        <button type="button" class="bz-art-btn bz-art-btn-sm" title="Obnoviť" data-restore-url="/admin/articles/<%= article.id %>/revisions/<%= r.id %>/restore" data-restore-csrf="<%= csrfToken %>">
+                          <i class="bi bi-arrow-counterclockwise"></i> Obnoviť
+                        </button>
+                      </div>
                     </div>
+                    <% }) %>
                   </div>
                 </div>
+              </div>
               <% } %>
 
             </div><!-- /bz-art-main -->
@@ -310,27 +271,22 @@
                 <div class="bz-art-side-body">
                   <div>
                     <label for="status" class="bz-art-field-label">Stav</label>
-                    <select class="form-select form-select-sm <%= errors.status ? 'is-invalid' : '' %>"
-                            id="status" name="status" data-status-select>
-                      <option value="draft"     <%= article.status === 'draft'     ? 'selected' : '' %>>Rozpracovaný</option>
+                    <select class="form-select form-select-sm <%= errors.status ? 'is-invalid' : '' %>" id="status" name="status" data-status-select>
+                      <option value="draft" <%= article.status === 'draft'     ? 'selected' : '' %>>Rozpracovaný</option>
                       <option value="scheduled" <%= article.status === 'scheduled' ? 'selected' : '' %>>Naplánovaný</option>
                       <option value="published" <%= article.status === 'published' ? 'selected' : '' %>>Publikovaný</option>
-                      <option value="archived"  <%= article.status === 'archived'  ? 'selected' : '' %>>Archivovaný</option>
+                      <option value="archived" <%= article.status === 'archived'  ? 'selected' : '' %>>Archivovaný</option>
                     </select>
                     <% if (errors.status) { %><div class="invalid-feedback"><%= errors.status %></div><% } %>
                   </div>
 
-                  <div data-scheduled-at-wrap
-                       <%= article.status === 'scheduled' ? '' : 'style="display:none;"' %>>
+                  <div data-scheduled-at-wrap <%= article.status === 'scheduled' ? '' : 'style="display:none;"' %>>
                     <label for="scheduled_at" class="bz-art-field-label">Plánovaný čas</label>
-                    <input type="datetime-local"
-                           class="form-control form-control-sm <%= errors.scheduled_at ? 'is-invalid' : '' %>"
-                           id="scheduled_at" name="scheduled_at"
-                           value="<%= utils.toDatetimeLocalString(article.scheduled_at) %>">
+                    <input type="datetime-local" class="form-control form-control-sm <%= errors.scheduled_at ? 'is-invalid' : '' %>" id="scheduled_at" name="scheduled_at" value="<%= utils.toDatetimeLocalString(article.scheduled_at) %>">
                     <% if (errors.scheduled_at) { %>
-                      <div class="invalid-feedback"><%= errors.scheduled_at %></div>
+                    <div class="invalid-feedback"><%= errors.scheduled_at %></div>
                     <% } else { %>
-                      <div class="bz-art-hint mt-1"><i class="bi bi-info-circle"></i> Cron tick: každých 5 min.</div>
+                    <div class="bz-art-hint mt-1"><i class="bi bi-info-circle"></i> Cron tick: každých 5 min.</div>
                     <% } %>
                   </div>
 
@@ -338,22 +294,19 @@
                     <label for="type" class="bz-art-field-label">Typ obsahu</label>
                     <select class="form-select form-select-sm" id="type" name="type">
                       <option value="article" <%= article.type === 'article' ? 'selected' : '' %>>Klasický článok</option>
-                      <option value="review"  <%= article.type === 'review'  ? 'selected' : '' %>>Recenzia</option>
+                      <option value="review" <%= article.type === 'review'  ? 'selected' : '' %>>Recenzia</option>
                     </select>
                   </div>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="is_featured"
-                           name="is_featured" value="1"
-                           <%= article.is_featured ? 'checked' : '' %>>
+                    <input class="form-check-input" type="checkbox" id="is_featured" name="is_featured" value="1" <%= article.is_featured ? 'checked' : '' %>>
                     <label class="form-check-label" for="is_featured">
                       <i class="bi bi-star-fill" style="color:oklch(.8 .16 75)"></i> Featured
                     </label>
                   </div>
 
                   <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="allow_comments"
-                           name="allow_comments" value="1" checked>
+                    <input class="form-check-input" type="checkbox" id="allow_comments" name="allow_comments" value="1" <%= article.allow_comments ? 'checked' : '' %>>
                     <label class="form-check-label" for="allow_comments">
                       <i class="bi bi-chat-dots"></i> Povoliť komentáre
                     </label>
@@ -369,23 +322,20 @@
                 <div class="bz-art-side-body">
                   <div class="bz-art-cover-ph" data-cover-preview>
                     <% if (coverMedia && coverMedia.thumbnail_path) { %>
-                      <img src="/uploads/<%= coverMedia.thumbnail_path %>" alt="Cover">
+                    <img src="/uploads/<%= coverMedia.thumbnail_path %>" alt="Cover">
                     <% } else { %>
-                      <span style="font-family:var(--art-mono);font-size:11px">bez obrázka</span>
+                    <span style="font-family:var(--art-mono);font-size:11px">bez obrázka</span>
                     <% } %>
                   </div>
                   <div class="input-group input-group-sm">
                     <span class="input-group-text">ID</span>
-                    <input type="number" class="form-control <%= errors.cover_media_id ? 'is-invalid' : '' %>"
-                           name="cover_media_id" min="1"
-                           value="<%= article.cover_media_id || '' %>"
-                           placeholder="napr. 12">
+                    <input type="number" class="form-control <%= errors.cover_media_id ? 'is-invalid' : '' %>" name="cover_media_id" min="1" value="<%= article.cover_media_id || '' %>" placeholder="napr. 12">
                     <a href="/admin/media" target="_blank" class="bz-art-btn bz-art-btn-sm" style="border-radius:0 var(--art-r-sm) var(--art-r-sm) 0; border:1px solid var(--art-border);">
                       <i class="bi bi-images"></i>
                     </a>
                   </div>
                   <% if (errors.cover_media_id) { %>
-                    <div class="invalid-feedback d-block"><%= errors.cover_media_id %></div>
+                  <div class="invalid-feedback d-block"><%= errors.cover_media_id %></div>
                   <% } %>
                 </div>
               </div>
@@ -397,16 +347,14 @@
                 </div>
                 <div class="bz-art-side-body">
                   <% if (taxonomy.rubrics.length === 0) { %>
-                    <p class="bz-art-hint">Žiadne rubriky. <a href="/admin/rubrics/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
+                  <p class="bz-art-hint">Žiadne rubriky. <a href="/admin/rubrics/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
                   <% } else { %>
-                    <% taxonomy.rubrics.forEach(r => { %>
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="rubric_ids"
-                               value="<%= r.id %>" id="rub_<%= r.id %>"
-                               <%= relations.rubric_ids.includes(r.id) ? 'checked' : '' %>>
-                        <label class="form-check-label" for="rub_<%= r.id %>"><%= r.name %></label>
-                      </div>
-                    <% }) %>
+                  <% taxonomy.rubrics.forEach(r => { %>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="rubric_ids" value="<%= r.id %>" id="rub_<%= r.id %>" <%= relations.rubric_ids.includes(r.id) ? 'checked' : '' %>>
+                    <label class="form-check-label" for="rub_<%= r.id %>"><%= r.name %></label>
+                  </div>
+                  <% }) %>
                   <% } %>
                 </div>
               </div>
@@ -418,30 +366,27 @@
                 </div>
                 <div class="bz-art-side-body">
                   <% if (taxonomy.categories.length === 0) { %>
-                    <p class="bz-art-hint">Žiadne kategórie. <a href="/admin/categories/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
+                  <p class="bz-art-hint">Žiadne kategórie. <a href="/admin/categories/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
                   <% } else { %>
-                    <div class="bz-checklist mb-2">
-                      <% taxonomy.categories.forEach(c => { %>
-                        <div class="form-check" style="padding-left: calc(1em + <%= c.depth %> * 1rem);">
-                          <input class="form-check-input" type="checkbox" name="category_ids"
-                                 value="<%= c.id %>" id="cat_<%= c.id %>"
-                                 <%= relations.category_ids.includes(c.id) ? 'checked' : '' %>>
-                          <label class="form-check-label" for="cat_<%= c.id %>"><%= c.name %></label>
-                        </div>
-                      <% }) %>
+                  <div class="bz-checklist mb-2">
+                    <% taxonomy.categories.forEach(c => { %>
+                    <div class="form-check" style="padding-left: calc(1em + <%= c.depth %> * 1rem);">
+                      <input class="form-check-input" type="checkbox" name="category_ids" value="<%= c.id %>" id="cat_<%= c.id %>" <%= relations.category_ids.includes(c.id) ? 'checked' : '' %>>
+                      <label class="form-check-label" for="cat_<%= c.id %>"><%= c.name %></label>
                     </div>
-                    <div>
-                      <label class="bz-art-field-label">Primárna kategória</label>
-                      <select class="form-select form-select-sm" name="primary_category_id">
-                        <option value="">— (auto: prvá vybraná)</option>
-                        <% taxonomy.categories.forEach(c => { if (relations.category_ids.includes(c.id)) { %>
-                          <option value="<%= c.id %>"
-                            <%= relations.primary_category_id === c.id ? 'selected' : '' %>>
-                            <%= c.label %>
-                          </option>
-                        <% }}) %>
-                      </select>
-                    </div>
+                    <% }) %>
+                  </div>
+                  <div>
+                    <label class="bz-art-field-label">Primárna kategória</label>
+                    <select class="form-select form-select-sm" name="primary_category_id">
+                      <option value="">— (auto: prvá vybraná)</option>
+                      <% taxonomy.categories.forEach(c => { if (relations.category_ids.includes(c.id)) { %>
+                      <option value="<%= c.id %>" <%= relations.primary_category_id === c.id ? 'selected' : '' %>>
+                        <%= c.label %>
+                      </option>
+                      <% }}) %>
+                    </select>
+                  </div>
                   <% } %>
                 </div>
               </div>
@@ -453,20 +398,18 @@
                 </div>
                 <div class="bz-art-side-body">
                   <% if (taxonomy.tags.length === 0) { %>
-                    <p class="bz-art-hint">Žiadne tagy. <a href="/admin/tags/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
+                  <p class="bz-art-hint">Žiadne tagy. <a href="/admin/tags/new" target="_blank" style="color:var(--art-accent)">Vytvor</a>.</p>
                   <% } else { %>
-                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                      <% taxonomy.tags.forEach(t => { %>
-                        <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
-                          <input class="form-check-input" type="checkbox" name="tag_ids"
-                                 value="<%= t.id %>" id="tag_<%= t.id %>"
-                                 <%= relations.tag_ids.includes(t.id) ? 'checked' : '' %>>
-                          <span class="bz-tag-pill" style="--bz-tag-color: <%= t.color || '#9ca3af' %>; for=tag_<%= t.id %>">
-                            <%= t.name %>
-                          </span>
-                        </label>
-                      <% }) %>
-                    </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <% taxonomy.tags.forEach(t => { %>
+                    <label style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;">
+                      <input class="form-check-input" type="checkbox" name="tag_ids" value="<%= t.id %>" id="tag_<%= t.id %>" <%= relations.tag_ids.includes(t.id) ? 'checked' : '' %>>
+                      <span class="bz-tag-pill" style="--bz-tag-color: <%= t.color || '#9ca3af' %>; for=tag_<%= t.id %>">
+                        <%= t.name %>
+                      </span>
+                    </label>
+                    <% }) %>
+                  </div>
                   <% } %>
                 </div>
               </div>
@@ -483,9 +426,9 @@
                     <label class="bz-art-field-label">Stratégia</label>
                     <select class="form-select form-select-sm" name="default_related_strategy">
                       <% var curStrat = article.default_related_strategy || 'both'; %>
-                      <option value="both"   <%= curStrat === 'both'   ? 'selected' : '' %>>Manuálne + auto</option>
+                      <option value="both" <%= curStrat === 'both'   ? 'selected' : '' %>>Manuálne + auto</option>
                       <option value="manual" <%= curStrat === 'manual' ? 'selected' : '' %>>Iba manuálne</option>
-                      <option value="auto"   <%= curStrat === 'auto'   ? 'selected' : '' %>>Iba automatické</option>
+                      <option value="auto" <%= curStrat === 'auto'   ? 'selected' : '' %>>Iba automatické</option>
                     </select>
                   </div>
 
@@ -500,8 +443,7 @@
                   <div>
                     <label class="bz-art-field-label">Hľadať a pridať</label>
                     <div class="position-relative">
-                      <input type="search" class="form-control form-control-sm" data-related-search
-                             placeholder="Začni písať názov článku…">
+                      <input type="search" class="form-control form-control-sm" data-related-search placeholder="Začni písať názov článku…">
                       <div class="bz-related-results d-none" data-related-results></div>
                     </div>
                     <div class="bz-art-hint mt-1">Min 2 znaky.</div>
@@ -538,7 +480,8 @@
       </div>
       <div class="d-flex gap-2 align-items-center">
         <select class="form-select form-select-sm" data-field="level" style="width:90px;">
-          <option value="2">H2</option><option value="3">H3</option>
+          <option value="2">H2</option>
+          <option value="3">H3</option>
         </select>
         <input type="text" class="form-control" data-field="text" placeholder="Nadpis…" maxlength="255">
       </div>
@@ -578,9 +521,9 @@
 
   <!-- Related articles init data -->
   <% if (typeof relatedArticles !== 'undefined' && relatedArticles.length > 0) { %>
-    <script type="application/json" data-related-init>
-      <%- JSON.stringify(relatedArticles).replace(/</g, "\\u003c") %>
-    </script>
+  <script type="application/json" data-related-init>
+    <%- JSON.stringify(relatedArticles).replace(/</g, "\\u003c") %>
+  </script>
   <% } %>
 
   <%- include('../partials/scripts') %>
@@ -588,9 +531,12 @@
   <script src="/admin/static/js/admin-media-picker.js" defer></script>
   <script src="/admin/static/js/admin-article-review-blocks.js" defer></script>
   <script src="/admin/static/js/admin-article-extra-blocks.js" defer></script>
+  <script src="/admin/static/js/admin-article-banner-block.js" defer></script>
   <script src="/admin/static/js/admin-article-editor.js" defer></script>
   <script src="/admin/static/js/admin-article-status.js" defer></script>
   <script src="/admin/static/js/admin-article-ranking.js" defer></script>
   <script src="/admin/static/js/admin-article-tabs.js" defer></script>
+  <script src="/admin/static/js/admin-article-autosave.js" defer></script>
 </body>
+
 </html>

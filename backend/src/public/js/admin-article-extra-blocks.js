@@ -28,75 +28,83 @@
     document.body.appendChild(tpl);
   }
 
-  ensureTemplate('youtube', '' +
-    '<div class="bz-block" data-block-type="youtube">' +
+  ensureTemplate(
+    'youtube',
+    '' +
+      '<div class="bz-block" data-block-type="youtube">' +
       '<div class="bz-block-header">' +
-        '<span class="bz-block-label"><i class="bi bi-youtube me-1"></i>YouTube</span>' +
-        '<div class="bz-block-actions"></div>' +
+      '<span class="bz-block-label"><i class="bi bi-youtube me-1"></i>YouTube</span>' +
+      '<div class="bz-block-actions"></div>' +
       '</div>' +
       '<div class="row g-2">' +
-        '<div class="col-md-5">' +
-          '<div data-youtube-preview class="bz-image-preview" style="min-height:140px;">' +
-            '<span class="text-muted small">(zadaj URL alebo video ID)</span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="col-md-7">' +
-          '<input type="text" class="form-control form-control-sm mb-2" data-field="video_id" ' +
-            'placeholder="YouTube URL alebo 11-znakový video ID" maxlength="500">' +
-          '<input type="text" class="form-control form-control-sm" data-field="caption" ' +
-            'placeholder="Popis pod videom (voliteľný)" maxlength="500">' +
-          '<div class="form-text small">Vlož celú URL — automaticky sa normalizuje.</div>' +
-        '</div>' +
+      '<div class="col-md-5">' +
+      '<div data-youtube-preview class="bz-image-preview" style="min-height:140px;">' +
+      '<span class="text-muted small">(zadaj URL alebo video ID)</span>' +
       '</div>' +
-    '</div>'
+      '</div>' +
+      '<div class="col-md-7">' +
+      '<input type="text" class="form-control form-control-sm mb-2" data-field="video_id" ' +
+      'placeholder="YouTube URL alebo 11-znakový video ID" maxlength="500">' +
+      '<input type="text" class="form-control form-control-sm" data-field="caption" ' +
+      'placeholder="Popis pod videom (voliteľný)" maxlength="500">' +
+      '<div class="form-text small">Vlož celú URL — automaticky sa normalizuje.</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>'
   );
 
-  ensureTemplate('quote', '' +
-    '<div class="bz-block" data-block-type="quote">' +
+  ensureTemplate(
+    'quote',
+    '' +
+      '<div class="bz-block" data-block-type="quote">' +
       '<div class="bz-block-header">' +
-        '<span class="bz-block-label"><i class="bi bi-chat-quote me-1"></i>Citát</span>' +
-        '<div class="bz-block-actions"></div>' +
+      '<span class="bz-block-label"><i class="bi bi-chat-quote me-1"></i>Citát</span>' +
+      '<div class="bz-block-actions"></div>' +
       '</div>' +
       '<textarea class="form-control mb-2" rows="3" data-field="text" ' +
-        'placeholder="Text citátu..." maxlength="5000"></textarea>' +
+      'placeholder="Text citátu..." maxlength="5000"></textarea>' +
       '<input type="text" class="form-control form-control-sm" data-field="author" ' +
-        'placeholder="Autor (voliteľný)" maxlength="160">' +
-    '</div>'
+      'placeholder="Autor (voliteľný)" maxlength="160">' +
+      '</div>'
   );
 
-  ensureTemplate('gallery', '' +
-    '<div class="bz-block" data-block-type="gallery">' +
+  ensureTemplate(
+    'gallery',
+    '' +
+      '<div class="bz-block" data-block-type="gallery">' +
       '<div class="bz-block-header">' +
-        '<span class="bz-block-label"><i class="bi bi-images me-1"></i>Galéria</span>' +
-        '<div class="bz-block-actions"></div>' +
+      '<span class="bz-block-label"><i class="bi bi-images me-1"></i>Galéria</span>' +
+      '<div class="bz-block-actions"></div>' +
       '</div>' +
       '<div data-gallery-items class="bz-gallery-items"></div>' +
       '<div class="d-flex gap-2 mt-2">' +
-        '<button type="button" class="btn btn-sm btn-outline-primary" data-gallery-add>' +
-          '<i class="bi bi-plus-lg me-1"></i>Pridať obrázok' +
-        '</button>' +
+      '<button type="button" class="btn btn-sm btn-outline-primary" data-gallery-add>' +
+      '<i class="bi bi-plus-lg me-1"></i>Pridať obrázok' +
+      '</button>' +
       '</div>' +
       '<div class="form-text small mt-1">Max 30 obrázkov v galérii.</div>' +
-    '</div>'
+      '</div>'
   );
 
-  ensureTemplate('list', '' +
-    '<div class="bz-block" data-block-type="list">' +
+  ensureTemplate(
+    'list',
+    '' +
+      '<div class="bz-block" data-block-type="list">' +
       '<div class="bz-block-header">' +
-        '<span class="bz-block-label"><i class="bi bi-list-ul me-1"></i>Zoznam</span>' +
-        '<div class="bz-block-actions"></div>' +
+      '<span class="bz-block-label"><i class="bi bi-list-ul me-1"></i>Zoznam</span>' +
+      '<div class="bz-block-actions"></div>' +
       '</div>' +
       '<div class="d-flex gap-2 align-items-center mb-2">' +
-        '<select class="form-select form-select-sm" data-field="ordered" style="width: 180px;">' +
-          '<option value="0">• Nečíslovaný</option>' +
-          '<option value="1">1. Číslovaný</option>' +
-        '</select>' +
+      '<select class="form-select form-select-sm" data-field="ordered" style="width: 180px;">' +
+      '<option value="0">• Nečíslovaný</option>' +
+      '<option value="1">1. Číslovaný</option>' +
+      '</select>' +
       '</div>' +
       '<div data-list-items class="bz-list-items"></div>' +
       '<button type="button" class="btn btn-sm btn-outline-primary mt-2" data-list-add>' +
-        '<i class="bi bi-plus-lg me-1"></i>Pridať položku' +
+      '<i class="bi bi-plus-lg me-1"></i>Pridať položku' +
       '</button>' +
-    '</div>'
+      '</div>'
   );
 
   // -------------------------------------------------------------------------
@@ -108,7 +116,7 @@
     if (!existing || !existing.parentNode) return;
     var btn = document.createElement('button');
     btn.type = 'button';
-    btn.className = 'btn btn-sm btn-outline-primary';
+    btn.className = 'bz-art-btn bz-art-btn-sm';
     btn.setAttribute('data-add-block', type);
     btn.innerHTML = '<i class="bi ' + iconClass + ' me-1"></i>' + label;
     existing.parentNode.appendChild(btn);
@@ -185,28 +193,44 @@
         var row = document.createElement('div');
         row.className = 'bz-related-item';
         row.innerHTML =
-          '<input type="hidden" name="related_ids" value="' + Number(item.id) + '">' +
+          '<input type="hidden" name="related_ids" value="' +
+          Number(item.id) +
+          '">' +
           '<div class="flex-grow-1 small">' +
-            '<div class="bz-related-title">' + escapeHtml(item.title) + '</div>' +
-            '<div class="text-muted" style="font-size:0.7rem;">#' + Number(item.id) +
-              ' · ' + escapeHtml(item.status || '') + '</div>' +
+          '<div class="bz-related-title">' +
+          escapeHtml(item.title) +
+          '</div>' +
+          '<div class="text-muted" style="font-size:0.7rem;">#' +
+          Number(item.id) +
+          ' · ' +
+          escapeHtml(item.status || '') +
+          '</div>' +
           '</div>' +
           '<div class="bz-related-actions">' +
-            (idx > 0
-              ? '<button type="button" class="btn btn-sm btn-outline-secondary" data-related-up><i class="bi bi-arrow-up"></i></button>'
-              : '') +
-            (idx < items.length - 1
-              ? '<button type="button" class="btn btn-sm btn-outline-secondary" data-related-down><i class="bi bi-arrow-down"></i></button>'
-              : '') +
-            '<button type="button" class="btn btn-sm btn-outline-danger" data-related-remove><i class="bi bi-x-lg"></i></button>' +
+          (idx > 0
+            ? '<button type="button" class="btn btn-sm btn-outline-secondary" data-related-up><i class="bi bi-arrow-up"></i></button>'
+            : '') +
+          (idx < items.length - 1
+            ? '<button type="button" class="btn btn-sm btn-outline-secondary" data-related-down><i class="bi bi-arrow-down"></i></button>'
+            : '') +
+          '<button type="button" class="btn btn-sm btn-outline-danger" data-related-remove><i class="bi bi-x-lg"></i></button>' +
           '</div>';
 
         var upBtn = row.querySelector('[data-related-up]');
         var downBtn = row.querySelector('[data-related-down]');
         var rmBtn = row.querySelector('[data-related-remove]');
-        if (upBtn) upBtn.addEventListener('click', function () { move(idx, -1); });
-        if (downBtn) downBtn.addEventListener('click', function () { move(idx, 1); });
-        if (rmBtn) rmBtn.addEventListener('click', function () { remove(idx); });
+        if (upBtn)
+          upBtn.addEventListener('click', function () {
+            move(idx, -1);
+          });
+        if (downBtn)
+          downBtn.addEventListener('click', function () {
+            move(idx, 1);
+          });
+        if (rmBtn)
+          rmBtn.addEventListener('click', function () {
+            remove(idx);
+          });
 
         listEl.appendChild(row);
       });
@@ -221,11 +245,19 @@
       render();
     }
 
-    function remove(idx) { items.splice(idx, 1); render(); }
+    function remove(idx) {
+      items.splice(idx, 1);
+      render();
+    }
 
     function add(item) {
       if (!item || !item.id) return;
-      if (items.some(function (i) { return i.id === item.id; })) return;
+      if (
+        items.some(function (i) {
+          return i.id === item.id;
+        })
+      )
+        return;
       if (items.length >= 20) {
         alert('Maximum 20 súvisiacich článkov.');
         return;
@@ -243,25 +275,36 @@
         resultsEl.innerHTML = '';
         return;
       }
-      searchTimer = setTimeout(function () { doSearch(q); }, 250);
+      searchTimer = setTimeout(function () {
+        doSearch(q);
+      }, 250);
     });
 
     searchEl.addEventListener('blur', function () {
-      setTimeout(function () { resultsEl.classList.add('d-none'); }, 200);
+      setTimeout(function () {
+        resultsEl.classList.add('d-none');
+      }, 200);
     });
     searchEl.addEventListener('focus', function () {
       if (resultsEl.children.length > 0) resultsEl.classList.remove('d-none');
     });
 
     function doSearch(q) {
-      var url = '/admin/articles/search?q=' + encodeURIComponent(q) +
+      var url =
+        '/admin/articles/search?q=' +
+        encodeURIComponent(q) +
         (ownArticleId ? '&exclude=' + ownArticleId : '');
       fetch(url, { credentials: 'same-origin' })
-        .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+        .then(function (r) {
+          return r.ok ? r.json() : { items: [] };
+        })
         .then(function (data) {
           renderResults(data.items || []);
         })
-        .catch(function () { resultsEl.innerHTML = ''; resultsEl.classList.add('d-none'); });
+        .catch(function () {
+          resultsEl.innerHTML = '';
+          resultsEl.classList.add('d-none');
+        });
     }
 
     function renderResults(results) {
@@ -272,17 +315,25 @@
         return;
       }
       results.forEach(function (item) {
-        var alreadyAdded = items.some(function (i) { return i.id === item.id; });
+        var alreadyAdded = items.some(function (i) {
+          return i.id === item.id;
+        });
         var row = document.createElement('button');
         row.type = 'button';
         row.className = 'bz-related-result' + (alreadyAdded ? ' is-added' : '');
         row.disabled = alreadyAdded;
         row.innerHTML =
-          '<div class="bz-related-result-title">' + escapeHtml(item.title) +
-            (alreadyAdded ? ' <span class="text-muted small">(už pridaný)</span>' : '') +
+          '<div class="bz-related-result-title">' +
+          escapeHtml(item.title) +
+          (alreadyAdded ? ' <span class="text-muted small">(už pridaný)</span>' : '') +
           '</div>' +
-          '<div class="text-muted" style="font-size:0.7rem;">#' + Number(item.id) +
-            ' · ' + escapeHtml(item.status) + ' · ' + escapeHtml(item.type) + '</div>';
+          '<div class="text-muted" style="font-size:0.7rem;">#' +
+          Number(item.id) +
+          ' · ' +
+          escapeHtml(item.status) +
+          ' · ' +
+          escapeHtml(item.type) +
+          '</div>';
         if (!alreadyAdded) {
           row.addEventListener('click', function () {
             add(item);
@@ -316,33 +367,33 @@
     card.setAttribute('data-related-panel-injected', '');
     card.innerHTML =
       '<div class="card-header bg-white">' +
-        '<h3 class="h6 mb-0"><i class="bi bi-link-45deg me-1"></i>Súvisiace články</h3>' +
+      '<h3 class="h6 mb-0"><i class="bi bi-link-45deg me-1"></i>Súvisiace články</h3>' +
       '</div>' +
       '<div class="card-body">' +
-        '<div class="mb-3">' +
-          '<label class="form-label small mb-1">Stratégia</label>' +
-          '<select class="form-select form-select-sm" name="default_related_strategy">' +
-            '<option value="both" selected>Manuálne + auto (oboje)</option>' +
-            '<option value="manual">Iba manuálne</option>' +
-            '<option value="auto">Iba automatické</option>' +
-          '</select>' +
-        '</div>' +
-        '<div class="mb-2">' +
-          '<label class="form-label small mb-1">Manuálne vybrané</label>' +
-          '<div class="bz-related-list" data-related-list></div>' +
-          '<div class="text-muted small fst-italic mt-2 d-none" data-related-empty>' +
-            'Žiadne manuálne vybrané. Vyhľadaj nižšie.' +
-          '</div>' +
-        '</div>' +
-        '<div class="mt-3">' +
-          '<label class="form-label small mb-1">Hľadať a pridať</label>' +
-          '<div class="position-relative">' +
-            '<input type="search" class="form-control form-control-sm" data-related-search ' +
-              'placeholder="Začni písať názov článku...">' +
-            '<div class="bz-related-results d-none" data-related-results></div>' +
-          '</div>' +
-          '<div class="form-text small">Min 2 znaky. Klik na článok pridá do zoznamu.</div>' +
-        '</div>' +
+      '<div class="mb-3">' +
+      '<label class="form-label small mb-1">Stratégia</label>' +
+      '<select class="form-select form-select-sm" name="default_related_strategy">' +
+      '<option value="both" selected>Manuálne + auto (oboje)</option>' +
+      '<option value="manual">Iba manuálne</option>' +
+      '<option value="auto">Iba automatické</option>' +
+      '</select>' +
+      '</div>' +
+      '<div class="mb-2">' +
+      '<label class="form-label small mb-1">Manuálne vybrané</label>' +
+      '<div class="bz-related-list" data-related-list></div>' +
+      '<div class="text-muted small fst-italic mt-2 d-none" data-related-empty>' +
+      'Žiadne manuálne vybrané. Vyhľadaj nižšie.' +
+      '</div>' +
+      '</div>' +
+      '<div class="mt-3">' +
+      '<label class="form-label small mb-1">Hľadať a pridať</label>' +
+      '<div class="position-relative">' +
+      '<input type="search" class="form-control form-control-sm" data-related-search ' +
+      'placeholder="Začni písať názov článku...">' +
+      '<div class="bz-related-results d-none" data-related-results></div>' +
+      '</div>' +
+      '<div class="form-text small">Min 2 znaky. Klik na článok pridá do zoznamu.</div>' +
+      '</div>' +
       '</div>';
 
     rightCol.appendChild(card);

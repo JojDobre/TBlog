@@ -106,6 +106,9 @@
     var cls = 'notif-item' + (n.is_read ? '' : ' notif-unread');
     var href = n.url || '#';
     return (
+      '<div class="notif-item-wrap" data-notif-wrap="' +
+      n.id +
+      '">' +
       '<a href="' +
       href +
       '" class="' +
@@ -124,7 +127,11 @@
       timeAgo(n.created_at) +
       '</span>' +
       '</div>' +
-      '</a>'
+      '</a>' +
+      '<button class="notif-dismiss" data-notif-dismiss="' +
+      n.id +
+      '" title="Odstrániť">&times;</button>' +
+      '</div>'
     );
   }
 
@@ -205,6 +212,24 @@
         api('POST', '/api/notifications/' + id + '/read', {});
       }
     });
+
+    // Klik na X — dismiss notifikáciu
+    if (listEl) {
+      listEl.addEventListener('click', function (e) {
+        var dismissBtn = e.target.closest('[data-notif-dismiss]');
+        if (!dismissBtn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        var id = dismissBtn.getAttribute('data-notif-dismiss');
+        var wrap = listEl.querySelector('[data-notif-wrap="' + id + '"]');
+        if (wrap) wrap.remove();
+        api('POST', '/api/notifications/' + id + '/dismiss', {});
+        // Ak prázdny zoznam
+        if (!listEl.querySelector('[data-notif-wrap]')) {
+          listEl.innerHTML = '<div class="notif-empty">Žiadne notifikácie</div>';
+        }
+      });
+    }
   }
 
   // ---------------------------------------------------------------------------

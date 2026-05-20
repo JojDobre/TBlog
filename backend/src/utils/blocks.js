@@ -30,6 +30,7 @@ const BLOCK_TYPES = [
   'rating_breakdown',
   'color_variants',
   'review_banner',
+  'banner',
 ];
 const HEADING_LEVELS = [2, 3];
 
@@ -340,6 +341,13 @@ function sanitizeBlocks(raw) {
               .filter((btn) => btn.label)
           : [];
         blocks.push(out);
+        break;
+      }
+      case 'banner': {
+        const bid = b.banner_id ? Number(b.banner_id) : null;
+        if (bid && Number.isInteger(bid) && bid > 0) {
+          blocks.push({ type: 'banner', banner_id: bid });
+        }
         break;
       }
       default:

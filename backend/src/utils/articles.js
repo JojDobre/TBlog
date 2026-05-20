@@ -14,7 +14,9 @@ const ALLOWED_STATUS_TRANSITIONS = ['draft', 'scheduled', 'published', 'archived
 const RELATED_STRATEGIES = ['manual', 'auto', 'both'];
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-function slugifyArticle(name) { return taxonomy.slugifyName(name, { maxLen: 255 }); }
+function slugifyArticle(name) {
+  return taxonomy.slugifyName(name, { maxLen: 255 });
+}
 async function ensureUniqueArticleSlug(knex, baseSlug, excludeId = null) {
   return taxonomy.ensureUniqueSlug('articles', baseSlug, excludeId);
 }
@@ -36,7 +38,9 @@ function validateArticleMeta(input, { isNew = true } = {}) {
   else if (title.length > 255) errors.title = 'Názov môže mať max 255 znakov.';
   value.title = title;
 
-  const slugRaw = String(input.slug || '').trim().toLowerCase();
+  const slugRaw = String(input.slug || '')
+    .trim()
+    .toLowerCase();
   if (slugRaw) {
     if (!SLUG_RE.test(slugRaw)) errors.slug = 'Slug môže obsahovať len a-z, 0-9 a pomlčky.';
     else if (slugRaw.length > 255) errors.slug = 'Slug môže mať max 255 znakov.';
@@ -54,19 +58,25 @@ function validateArticleMeta(input, { isNew = true } = {}) {
   if (status === 'scheduled') {
     const d = parseLocalDatetime(input.scheduled_at);
     if (!d) errors.scheduled_at = 'Pri stave „Naplánovaný" musí byť dátum a čas vyplnený.';
-    else if (d.getTime() <= Date.now()) errors.scheduled_at = 'Naplánovaný čas musí byť v budúcnosti.';
+    else if (d.getTime() <= Date.now())
+      errors.scheduled_at = 'Naplánovaný čas musí byť v budúcnosti.';
     else value.scheduled_at = d;
   } else {
     value.scheduled_at = null;
   }
 
   value.is_featured = input.is_featured ? 1 : 0;
+  value.allow_comments = input.allow_comments ? 1 : 0;
 
   const excerpt = String(input.excerpt || '').trim();
   if (excerpt.length > 5000) errors.excerpt = 'Krátky popis môže mať max 5000 znakov.';
   value.excerpt = excerpt || null;
 
-  if (input.cover_media_id === '' || input.cover_media_id === null || input.cover_media_id === undefined) {
+  if (
+    input.cover_media_id === '' ||
+    input.cover_media_id === null ||
+    input.cover_media_id === undefined
+  ) {
     value.cover_media_id = null;
   } else {
     const cm = Number(input.cover_media_id);
@@ -83,7 +93,11 @@ function validateArticleMeta(input, { isNew = true } = {}) {
   if (seoDesc.length > 320) errors.seo_description = 'SEO description max 320 znakov.';
   value.seo_description = seoDesc || null;
 
-  if (input.og_image_media_id === '' || input.og_image_media_id === null || input.og_image_media_id === undefined) {
+  if (
+    input.og_image_media_id === '' ||
+    input.og_image_media_id === null ||
+    input.og_image_media_id === undefined
+  ) {
     value.og_image_media_id = null;
   } else {
     const og = Number(input.og_image_media_id);
@@ -107,7 +121,9 @@ function parseContentJson(input) {
   try {
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function parseIdList(raw) {
@@ -146,13 +162,30 @@ function toDatetimeLocalString(date) {
   const d = date instanceof Date ? date : new Date(date);
   if (!Number.isFinite(d.getTime())) return '';
   const pad = (n) => String(n).padStart(2, '0');
-  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
-    + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  return (
+    d.getFullYear() +
+    '-' +
+    pad(d.getMonth() + 1) +
+    '-' +
+    pad(d.getDate()) +
+    'T' +
+    pad(d.getHours()) +
+    ':' +
+    pad(d.getMinutes())
+  );
 }
 
 module.exports = {
-  TYPES, STATUSES, ALLOWED_STATUS_TRANSITIONS, RELATED_STRATEGIES,
-  slugifyArticle, ensureUniqueArticleSlug,
-  validateArticleMeta, parseContentJson, parseIdList, parseRelatedIds,
-  parseLocalDatetime, toDatetimeLocalString,
+  TYPES,
+  STATUSES,
+  ALLOWED_STATUS_TRANSITIONS,
+  RELATED_STRATEGIES,
+  slugifyArticle,
+  ensureUniqueArticleSlug,
+  validateArticleMeta,
+  parseContentJson,
+  parseIdList,
+  parseRelatedIds,
+  parseLocalDatetime,
+  toDatetimeLocalString,
 };

@@ -1,14 +1,17 @@
 <!doctype html>
 <html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+
 <head>
   <%- include('../partials/head', {
     title: article.seo_title || article.title,
     description: article.seo_description || article.excerpt || ''
   }) %>
-  <% if (ogImage) { %><meta property="og:image" content="<%= ogImage %>"><% } %>
+  <% if (ogImage) { %>
+  <meta property="og:image" content="<%= ogImage %>"><% } %>
   <meta property="og:title" content="<%= article.seo_title || article.title %>">
   <meta property="og:type" content="article">
 </head>
+
 <body>
   <%- include('../partials/header', { currentPath: '/recenzie' }) %>
 
@@ -18,10 +21,14 @@
       <!-- Breadcrumb -->
       <nav class="article-breadcrumb">
         <a href="/">Domov</a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg></span>
         <% if (category) { %>
-          <a href="/kategorie/<%= category.slug %>"><%= category.name %></a>
-          <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
+        <a href="/kategorie/<%= category.slug %>"><%= category.name %></a>
+        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6" />
+          </svg></span>
         <% } %>
         <span class="bc-current"><%= article.title %></span>
       </nav>
@@ -32,15 +39,15 @@
           <span class="eyebrow">Recenzia<% if (category) { %> · <%= category.name %><% } %></span>
           <h1 class="h-1" style="margin:16px 0;"><%= article.title %></h1>
           <% if (article.excerpt) { %>
-            <p class="lead" style="max-width:520px;"><%= article.excerpt %></p>
+          <p class="lead" style="max-width:520px;"><%= article.excerpt %></p>
           <% } %>
           <div class="review-header-author">
             <% if (article.author_avatar) { %>
-              <img src="/uploads/<%= article.author_avatar %>" class="avatar" alt="<%= article.author_name %>" style="width:36px;height:36px;object-fit:cover;border-radius:50%;">
+            <img src="/uploads/<%= article.author_avatar %>" class="avatar" alt="<%= article.author_name %>" style="width:36px;height:36px;object-fit:cover;border-radius:50%;">
             <% } else { %>
-              <span class="avatar" style="width:36px;height:36px;font-size:13px;">
-                <%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %>
-              </span>
+            <span class="avatar" style="width:36px;height:36px;font-size:13px;">
+              <%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %>
+            </span>
             <% } %>
             <div>
               <div style="font-size:14px; font-weight:600;"><%= article.author_name || 'Redakcia' %></div>
@@ -52,20 +59,27 @@
           </div>
           <div style="display:flex; gap:8px; margin-top:24px;">
             <button class="btn btn-primary">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
+              </svg>
               Uložiť recenziu
             </button>
             <button class="btn">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <path d="M8.6 13.5l6.8 4M15.4 6.5L8.6 10.5" />
+              </svg>
               Zdieľať
             </button>
           </div>
         </div>
         <div class="review-header-img">
           <% if (coverImage) { %>
-            <img src="/uploads/<%= coverImage %>" alt="<%= article.title %>">
+          <img src="/uploads/<%= coverImage %>" alt="<%= article.title %>">
           <% } else { %>
-            <div class="ph ph-<%= (article.id % 9) + 1 %>" style="aspect-ratio:auto; position:absolute; inset:0;"></div>
+          <div class="ph ph-<%= (article.id % 9) + 1 %>" style="aspect-ratio:auto; position:absolute; inset:0;"></div>
           <% } %>
         </div>
       </header>
@@ -77,50 +91,53 @@
 
       <!-- Tags -->
       <% if (tags.length > 0) { %>
-        <div class="review-tags">
-          <% tags.forEach(t => { %>
-            <a href="/tag/<%= t.slug %>" class="tag">#<%= t.name %></a>
-          <% }) %>
-        </div>
+      <div class="review-tags">
+        <% tags.forEach(t => { %>
+        <a href="/tag/<%= t.slug %>" class="tag">#<%= t.name %></a>
+        <% }) %>
+      </div>
       <% } %>
 
       <!-- Related -->
       <% if (relatedArticles.length > 0) { %>
-        <div class="sec-head">
-          <div class="sec-head-l">
-            <span class="eyebrow">Súvisiace</span>
-            <h2>Mohlo by ťa zaujímať</h2>
+      <div class="sec-head">
+        <div class="sec-head-l">
+          <span class="eyebrow">Súvisiace</span>
+          <h2>Mohlo by ťa zaujímať</h2>
+        </div>
+      </div>
+      <div class="grid-4">
+        <% relatedArticles.forEach(r => { %>
+        <a href="/clanok/<%= r.slug %>" class="card card-link minimal-review">
+          <div class="ph" style="aspect-ratio:1; position:relative;">
+            <% if (r.cover_thumb) { %>
+            <img src="/uploads/<%= r.cover_thumb %>" alt="<%= r.title %>" loading="lazy">
+            <% } else { %>
+            <div class="ph ph-<%= (r.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+            <% } %>
+            <div class="minimal-review-overlay">
+              <!-- <span class="minimal-review-label">Skóre</span> -->
+              <!--<span class="minimal-review-num"><%= r.view_count ? (r.view_count >= 1000 ? (r.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : r.view_count) : '—' %></span>-->
+              <h4 class="minimal-review-title"><%= r.title %></h4>
+              <span class="minimal-review-date">
+                <%= r.published_at ? new Date(r.published_at).toLocaleDateString('sk-SK') : '' %>
+              </span>
+            </div>
           </div>
-        </div>
-        <div class="grid-4">
-          <% relatedArticles.forEach(r => { %>
-            <a href="/clanok/<%= r.slug %>" class="card card-link minimal-review">
-              <div class="ph" style="aspect-ratio:1; position:relative;">
-                <% if (r.cover_thumb) { %>
-                  <img src="/uploads/<%= r.cover_thumb %>" alt="<%= r.title %>" loading="lazy">
-                <% } else { %>
-                  <div class="ph ph-<%= (r.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
-                <% } %>
-                <div class="minimal-review-overlay">
-                  <!-- <span class="minimal-review-label">Skóre</span> -->
-                  <!--<span class="minimal-review-num"><%= r.view_count ? (r.view_count >= 1000 ? (r.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : r.view_count) : '—' %></span>-->
-                  <h4 class="minimal-review-title"><%= r.title %></h4>
-                  <span class="minimal-review-date">
-                    <%= r.published_at ? new Date(r.published_at).toLocaleDateString('sk-SK') : '' %>
-                  </span>
-                </div>
-              </div>
-            </a>
-          <% }) %>
-        </div>
+        </a>
+        <% }) %>
+      </div>
       <% } %>
 
     </div>
   </main>
 
+  <% if (article.allow_comments) { %>
   <%- include('../partials/comments') %>
+  <% } %>
   <%- include('../partials/footer') %>
   <script src="/js/site.js" defer></script>
   <script src="/js/comments.js" defer></script>
 </body>
+
 </html>

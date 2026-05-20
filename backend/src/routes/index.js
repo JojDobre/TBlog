@@ -576,8 +576,21 @@ router.get('/clanok/:slug', async (req, res, next) => {
       mediaMap = new Map(rows.map((r) => [r.id, r]));
     }
 
+    // Load banners for banner blocks
+    const bannerBlockIds = content
+      .filter((b) => b.type === 'banner' && b.banner_id)
+      .map((b) => Number(b.banner_id));
+    let bannerMap = new Map();
+    if (bannerBlockIds.length > 0) {
+      const bannerRows = await db('banners')
+        .leftJoin('media', 'banners.image_media_id', 'media.id')
+        .whereIn('banners.id', [...new Set(bannerBlockIds)])
+        .select('banners.*', 'media.thumbnail_path', 'media.original_path');
+      bannerMap = new Map(bannerRows.map((r) => [r.id, r]));
+    }
+
     // Render blocks to HTML
-    const contentHtml = blockRenderer.renderBlocks(content, { mediaMap });
+    const contentHtml = blockRenderer.renderBlocks(content, { mediaMap, bannerMap });
     const toc = blockRenderer.extractToc(content);
 
     // Primary category

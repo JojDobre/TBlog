@@ -35,11 +35,17 @@
       </div>
       <div class="footer-col">
         <h6>Magazín</h6>
+        <% if (typeof footerPages !== 'undefined' && footerPages.length > 0) { %>
+        <% footerPages.forEach(function(pg) { %>
+        <a href="/<%= pg.slug %>"><%= pg.title %></a>
+        <% }) %>
+        <% } else { %>
         <a href="/o-nas">O nás</a>
         <a href="/redakcia">Redakcia</a>
         <a href="/inzercia">Inzercia</a>
         <a href="/kontakt">Kontakt</a>
         <a href="/eticky-kodex">Etický kódex</a>
+        <% } %>
       </div>
     </div>
     <div class="footer-bottom">

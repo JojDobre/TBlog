@@ -31,6 +31,7 @@ const express = require('express');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const db = require('./db');
 
 const config = require('../../config');
 const log = require('./logger');
@@ -54,10 +55,7 @@ function createApp() {
 
   // 2. View engine
   app.set('view engine', 'ejs');
-  app.set('views', [
-    config.paths.frontendViews,
-    config.paths.adminViews,
-  ]);
+  app.set('views', [config.paths.frontendViews, config.paths.adminViews]);
 
   // 3. Compression
   app.use(compression());
@@ -124,11 +122,53 @@ function createApp() {
   // 12. CSRF validácia (POST/PUT/DELETE/PATCH)
   app.use(csrfProtection);
 
-  // 13. Ostatné locals — appName, currentPath, isDev
-  app.use((req, res, next) => {
+  // 13. Ostatné locals — appName, currentPath, isDev, headerPages
+  let _headerPagesCache = null;
+  let _footerPagesCache = null;
+  let _headerPagesCacheAt = 0;
+  const HEADER_CACHE_TTL = 60000; // 60s
+
+  app.use(async (req, res, next) => {
     res.locals.appName = config.app.name;
     res.locals.currentPath = req.path;
     res.locals.isDev = config.app.isDev;
+
+    // Skip pre admin/api/static
+    if (
+      req.path.startsWith('/admin') ||
+      req.path.startsWith('/api') ||
+      req.path.startsWith('/uploads')
+    ) {
+      res.locals.headerPages = [];
+      return next();
+    }
+
+    try {
+      const now = Date.now();
+      if (!_headerPagesCache || now - _headerPagesCacheAt > HEADER_CACHE_TTL) {
+        _headerPagesCache = await db('pages')
+          .where('status', 'published')
+          .where('show_in_header', true)
+          .select('title', 'slug')
+          .orderBy('title');
+        _footerPagesCache = await db('pages')
+          .where('status', 'published')
+          .where('show_in_footer', true)
+          .select('title', 'slug')
+          .orderBy('title');
+        _headerPagesCacheAt = now;
+        console.log('NAV CACHE:', {
+          header: _headerPagesCache.length,
+          footer: _footerPagesCache.length,
+          footerPages: _footerPagesCache,
+        });
+      }
+      res.locals.headerPages = _headerPagesCache;
+      res.locals.footerPages = _footerPagesCache || [];
+    } catch (e) {
+      res.locals.headerPages = [];
+      res.locals.footerPages = [];
+    }
     next();
   });
 

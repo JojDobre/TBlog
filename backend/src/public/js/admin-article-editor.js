@@ -64,6 +64,8 @@
         return { type: 'gallery', items: [] };
       case 'list':
         return { type: 'list', ordered: false, items: [''] };
+      case 'banner':
+        return { type: 'banner', banner_id: null };
       case 'section':
         return {
           type: 'section',
@@ -411,6 +413,9 @@
     else if (type === 'list') setupList(node);
     else if (window.__bzReviewBlocks && window.__bzReviewBlocks.setup) {
       window.__bzReviewBlocks.setup(node, type);
+    }
+    if (type === 'banner' && window.__bzBannerBlock) {
+      window.__bzBannerBlock.setup(node, blocks[currentIndex(node)].banner_id);
     }
   }
 

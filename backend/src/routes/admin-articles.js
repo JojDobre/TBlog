@@ -462,6 +462,7 @@ router.post('/', async (req, res, next) => {
         published_at: publishedAt,
         scheduled_at: value.scheduled_at,
         is_featured: value.is_featured,
+        allow_comments: value.allow_comments,
         content: JSON.stringify(cleanBlocks),
         search_text: searchText,
         seo_title: value.seo_title,
@@ -668,6 +669,7 @@ router.post('/:id', async (req, res, next) => {
           published_at: publishedAt,
           scheduled_at: value.scheduled_at,
           is_featured: value.is_featured,
+          allow_comments: value.allow_comments,
           content: JSON.stringify(cleanBlocks),
           search_text: searchText,
           seo_title: value.seo_title,
@@ -800,4 +802,57 @@ router.post('/:id/delete', async (req, res, next) => {
   }
 });
 
+// AUTOSAVE (AJAX, bez revízie)
+router.post('/:id/autosave', async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Neplatné ID' });
+
+    const existing = await db('articles').where('id', id).first();
+    if (!existing) return res.status(404).json({ error: 'Článok nenájdený' });
+
+    const { value, errors } = articles.validateArticleMeta(req.body, { isNew: false });
+    const rawContent = articles.parseContentJson(req.body);
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ error: 'Validačné chyby', errors });
+    }
+
+    const { blocks: cleanBlocks } = blocks.sanitizeBlocks(rawContent || []);
+    const searchText = blocks.extractSearchText(cleanBlocks);
+
+    let finalSlug = value.slug || existing.slug;
+    if (finalSlug !== existing.slug) {
+      finalSlug = await ensureUniqueSlug(finalSlug, id);
+    }
+
+    const publishedAt =
+      value.status === 'published' && !existing.published_at ? new Date() : existing.published_at;
+
+    await db('articles')
+      .where('id', id)
+      .update({
+        type: value.type,
+        title: value.title,
+        slug: finalSlug,
+        excerpt: value.excerpt,
+        cover_media_id: value.cover_media_id,
+        status: value.status,
+        published_at: publishedAt,
+        scheduled_at: value.scheduled_at,
+        is_featured: value.is_featured,
+        allow_comments: value.allow_comments,
+        content: JSON.stringify(cleanBlocks),
+        search_text: searchText,
+        seo_title: value.seo_title,
+        seo_description: value.seo_description,
+        og_image_media_id: value.og_image_media_id,
+        default_related_strategy: value.default_related_strategy,
+      });
+
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Autosave zlyhal' });
+  }
+});
 module.exports = router;

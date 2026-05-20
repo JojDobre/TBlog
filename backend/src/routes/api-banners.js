@@ -197,4 +197,30 @@ router.get('/stats-summary', async (req, res) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// GET /list — zoznam bannerov pre editor block picker
+// ---------------------------------------------------------------------------
+
+router.get('/list', async (req, res) => {
+  try {
+    const rows = await db('banners')
+      .leftJoin('banner_placements', 'banners.id', 'banner_placements.banner_id')
+      .leftJoin('banner_positions', 'banner_placements.position_id', 'banner_positions.id')
+      .select(
+        'banners.id',
+        'banners.name',
+        'banners.type',
+        'banners.template_key',
+        'banners.status',
+        db.raw("GROUP_CONCAT(banner_positions.label SEPARATOR ', ') as positions")
+      )
+      .groupBy('banners.id')
+      .orderBy('banners.name');
+
+    res.json({ banners: rows });
+  } catch (err) {
+    res.status(500).json({ error: 'list failed' });
+  }
+});
+
 module.exports = router;

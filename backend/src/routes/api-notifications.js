@@ -106,4 +106,16 @@ router.post('/:id/read', async (req, res, next) => {
   }
 });
 
+// POST /:id/dismiss — zmazanie notifikácie
+router.post('/:id/dismiss', async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ error: 'Invalid ID' });
+    await db('notifications').where('id', id).where('user_id', req.user.id).del();
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
