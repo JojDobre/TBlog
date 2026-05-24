@@ -1037,6 +1037,53 @@ router.get('/dev', (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// RSS FEED
+// ---------------------------------------------------------------------------
+router.get('/rss', async (req, res, next) => {
+  try {
+    const baseUrl = config.baseUrl || `${req.protocol}://${req.get('host')}`;
+    const articles = await db('articles')
+      .leftJoin('users', 'articles.author_id', 'users.id')
+      .where('articles.status', 'published')
+      .select(
+        'articles.title',
+        'articles.slug',
+        'articles.excerpt',
+        'articles.published_at',
+        'users.nickname as author_name'
+      )
+      .orderBy('articles.published_at', 'desc')
+      .limit(20);
+
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n';
+    xml += `  <title>${config.app.name}</title>\n`;
+    xml += `  <link>${baseUrl}</link>\n`;
+    xml += `  <description>Nezávislý tech magazín</description>\n`;
+    xml += `  <language>sk</language>\n`;
+    xml += `  <atom:link href="${baseUrl}/rss" rel="self" type="application/rss+xml"/>\n`;
+
+    for (const a of articles) {
+      const link = baseUrl + '/clanok/' + a.slug;
+      const pubDate = a.published_at ? new Date(a.published_at).toUTCString() : '';
+      xml += '  <item>\n';
+      xml += `    <title><![CDATA[${a.title}]]></title>\n`;
+      xml += `    <link>${link}</link>\n`;
+      xml += `    <guid>${link}</guid>\n`;
+      if (a.excerpt) xml += `    <description><![CDATA[${a.excerpt}]]></description>\n`;
+      if (a.author_name) xml += `    <author>${a.author_name}</author>\n`;
+      if (pubDate) xml += `    <pubDate>${pubDate}</pubDate>\n`;
+      xml += '  </item>\n';
+    }
+
+    xml += '</channel>\n</rss>';
+    res.type('application/rss+xml').send(xml);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // ROBOTS.TXT
 // ---------------------------------------------------------------------------
 router.get('/robots.txt', (req, res) => {

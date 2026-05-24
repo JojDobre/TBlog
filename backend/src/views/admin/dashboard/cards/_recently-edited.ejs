@@ -1,5 +1,8 @@
 <ul class="stat-list">
-  <li><span class="li-t">Pixel 11 Pro recenzia</span><span class="li-m">Marek T. · pred 8 min</span></li>
-  <li><span class="li-t">Top 10 mobilov 2026</span><span class="li-m">Lucia H. · pred 24 min</span></li>
-  <li><span class="li-t">macOS 16 prvé dojmy</span><span class="li-m">Marek T. · pred 1 h</span></li>
+  <% s.recentlyEdited.forEach(a => { %>
+  <li>
+    <a href="/admin/articles/<%= a.id %>/edit" class="li-t"><%= a.title %></a>
+    <span class="li-m"><%= a.author || '—' %> · <%= new Date(a.updated_at).toLocaleString('sk-SK') %> · <span class="bz-status-pill bz-pill-<%= a.status === 'published' ? 'pub' : 'draft' %>"><%= a.status %></span></span>
+  </li>
+  <% }) %>
 </ul>

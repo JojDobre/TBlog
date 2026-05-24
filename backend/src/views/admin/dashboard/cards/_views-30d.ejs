@@ -1,7 +1,17 @@
-<div class="stat-big">
-  <span class="big-n">1.84M</span>
-  <span class="big-l">pozretí · 30d</span>
-  <div class="stat-bars">
-    <i style="height:42%"></i><i style="height:58%"></i><i style="height:71%"></i><i style="height:68%"></i><i style="height:82%"></i><i style="height:76%"></i><i style="height:88%"></i><i style="height:94%"></i><i style="height:86%"></i><i style="height:92%"></i><i style="height:78%"></i><i style="height:84%"></i><i style="height:89%"></i><i style="height:95%"></i><i style="height:87%"></i><i style="height:90%"></i><i style="height:84%"></i><i style="height:88%"></i><i style="height:91%"></i><i style="height:89%"></i><i style="height:87%"></i><i style="height:92%"></i><i style="height:95%"></i><i style="height:89%"></i><i style="height:84%"></i><i style="height:87%"></i><i style="height:93%"></i><i style="height:96%"></i><i style="height:92%"></i><i style="height:88%"></i>
-  </div>
+<% if (s.viewsDaily.length === 0) { %>
+<div class="stat-empty">Žiadne dáta za posledných 30 dní.</div>
+<% } else { %>
+<%
+  var maxV = Math.max.apply(null, s.viewsDaily.map(function(d){return d.views})) || 1;
+  var barW = Math.max(2, Math.floor(100 / s.viewsDaily.length));
+%>
+<div style="display:flex;align-items:flex-end;gap:2px;height:100px;padding:0 4px">
+  <% s.viewsDaily.forEach(function(d) { %>
+  <div title="<%= d.day %>: <%= d.views %>" style="flex:1;background:var(--accent);opacity:0.7;border-radius:2px 2px 0 0;min-height:2px;height:<%= Math.max(2, Math.round(d.views/maxV*100)) %>%"></div>
+  <% }) %>
 </div>
+<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-subtle);margin-top:4px;font-family:var(--font-mono)">
+  <span><%= s.viewsDaily.length > 0 ? s.viewsDaily[0].day : '' %></span>
+  <span><%= s.viewsDaily.length > 0 ? s.viewsDaily[s.viewsDaily.length-1].day : '' %></span>
+</div>
+<% } %>

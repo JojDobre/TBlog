@@ -1,1 +1,12 @@
-<div class="stat-mini"><span class="mini-n">7</span><span class="mini-l">nezverejnených recenzií</span></div>
+<% if (s.unpublishedReviews.length === 0) { %>
+<div class="stat-empty">Všetky recenzie sú publikované.</div>
+<% } else { %>
+<ul class="stat-list">
+  <% s.unpublishedReviews.forEach(a => { %>
+  <li>
+    <a href="/admin/articles/<%= a.id %>/edit" class="li-t"><%= a.title %></a>
+    <span class="li-m"><%= a.author || '—' %> · <span class="bz-status-pill bz-pill-draft"><%= a.status %></span></span>
+  </li>
+  <% }) %>
+</ul>
+<% } %>

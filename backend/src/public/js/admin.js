@@ -1,37 +1,27 @@
-/**
- * Bytezone Admin — client JS
- *
- * Zatiaľ minimum: zatvorí offcanvas sidebar po kliknutí na link na mobile,
- * a flash auto-dismiss. Postupne sem pribudnú handlery pre konkrétne stránky.
- */
-
 (function () {
   'use strict';
 
-  // ------------------------------------------------------------------------
-  // Sidebar: po kliknutí na link na mobile zatvor offcanvas
-  // ------------------------------------------------------------------------
-  const sidebar = document.getElementById('bzSidebar');
-  if (sidebar && window.bootstrap && window.bootstrap.Offcanvas) {
-    sidebar.querySelectorAll('a.nav-link').forEach((link) => {
-      link.addEventListener('click', () => {
-        // len ak je v offcanvas režime (mobile)
-        if (window.matchMedia('(max-width: 991.98px)').matches) {
-          const oc = window.bootstrap.Offcanvas.getInstance(sidebar);
-          if (oc) oc.hide();
-        }
-      });
-    });
-  }
-
-  // ------------------------------------------------------------------------
-  // Auto-dismiss flash alerts po 5s
-  // ------------------------------------------------------------------------
-  document.querySelectorAll('.alert.bz-flash').forEach((alert) => {
-    setTimeout(() => {
-      if (window.bootstrap && window.bootstrap.Alert) {
-        window.bootstrap.Alert.getOrCreateInstance(alert).close();
+  // Confirm dialógy na formulároch s data-confirm
+  document.querySelectorAll('[data-confirm]').forEach(function (el) {
+    el.addEventListener('submit', function (e) {
+      if (!window.confirm(el.getAttribute('data-confirm'))) {
+        e.preventDefault();
       }
-    }, 5000);
+    });
+  });
+
+  // Alert close — globálny delegovaný handler
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.bz-art-alert-close, .bz-dash-alert-close');
+    if (!btn) return;
+    var alert = btn.closest('.bz-art-alert, .bz-dash-alert');
+    if (alert) alert.remove();
+  });
+
+  // Auto-dismiss flash alerts po 8s
+  document.querySelectorAll('.bz-art-alert-success').forEach(function (alert) {
+    setTimeout(function () {
+      alert.remove();
+    }, 8000);
   });
 })();

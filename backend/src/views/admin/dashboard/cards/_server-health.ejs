@@ -1,6 +1,5 @@
-<div class="stat-server">
-  <div><span>CPU</span><div class="li-p"><i style="width:38%"></i></div><span>38%</span></div>
-  <div><span>RAM</span><div class="li-p"><i style="width:62%"></i></div><span>62%</span></div>
-  <div><span>Disk</span><div class="li-p"><i style="width:54%"></i></div><span>54%</span></div>
-  <div><span>NET</span><div class="li-p"><i style="width:24%"></i></div><span>24%</span></div>
-</div>
+<ul class="bz-sys-list">
+  <li class="bz-sys-item"><span class="bz-sys-label"><i class="bi bi-clock"></i> Uptime</span><span class="bz-status-pill bz-pill-pub"><%= s.serverUptime %>h</span></li>
+  <li class="bz-sys-item"><span class="bz-sys-label"><i class="bi bi-memory"></i> Pamäť</span><span class="bz-status-pill bz-pill-pub"><%= s.serverMemory %> MB</span></li>
+  <li class="bz-sys-item"><span class="bz-sys-label"><i class="bi bi-code-slash"></i> Node.js</span><span class="bz-status-pill bz-pill-draft"><%= s.nodeVersion %></span></li>
+</ul>

@@ -1,6 +1,9 @@
-<ul class="stat-list">
-  <li><span class="li-t">Pixel 11 Pro</span><span class="li-score">9.4</span></li>
-  <li><span class="li-t">Sony WH-1000XM6</span><span class="li-score">9.2</span></li>
-  <li><span class="li-t">MacBook Pro M5</span><span class="li-score">9.1</span></li>
-  <li><span class="li-t">Steam Deck 2</span><span class="li-score">9.0</span></li>
-</ul>
+<% if (s.topReviews.length === 0) { %>
+<div class="stat-empty">Žiadne hodnotené recenzie.</div>
+<% } else { %>
+<ol class="stat-rank">
+  <% s.topReviews.forEach((a, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><a href="/admin/articles/<%= a.id %>/edit" class="rk-t"><%= a.title %></a><span class="rk-v" style="color:var(--accent)"><%= a.score %>/10</span></li>
+  <% }) %>
+</ol>
+<% } %>

@@ -1,6 +1,9 @@
+<% if (s.topPages.length === 0) { %>
+<div class="stat-empty">Žiadne dáta.</div>
+<% } else { %>
 <ol class="stat-rank">
-  <li><span class="rk">1</span><span class="rk-t" style="font-family:var(--font-mono);font-size:12px">/recenzia/pixel-11-pro</span><span class="rk-v">12.4k</span></li>
-  <li><span class="rk">2</span><span class="rk-t" style="font-family:var(--font-mono);font-size:12px">/top-10-mobilov-2026</span><span class="rk-v">11.2k</span></li>
-  <li><span class="rk">3</span><span class="rk-t" style="font-family:var(--font-mono);font-size:12px">/macos-16-novinky</span><span class="rk-v">8.7k</span></li>
-  <li><span class="rk">4</span><span class="rk-t" style="font-family:var(--font-mono);font-size:12px">/sony-wh1000xm6</span><span class="rk-v">6.4k</span></li>
+  <% s.topPages.slice(0,7).forEach(function(p, i) { %>
+  <li><span class="rk"><%= i+1 %></span><span class="rk-t" style="font-size:11px"><%= p.path %></span><span class="rk-v"><%= p.views %></span></li>
+  <% }) %>
 </ol>
+<% } %>

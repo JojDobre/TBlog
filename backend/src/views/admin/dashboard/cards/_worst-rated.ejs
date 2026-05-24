@@ -1,5 +1,9 @@
-<ul class="stat-list">
-  <li><span class="li-t">Tecno Camon 30 Premier</span><span class="li-score li-score-bad">5.4</span></li>
-  <li><span class="li-t">Realme Note 60</span><span class="li-score li-score-bad">5.8</span></li>
-  <li><span class="li-t">Doogee S100</span><span class="li-score li-score-bad">6.0</span></li>
-</ul>
+<% if (s.worstRated.length === 0) { %>
+<div class="stat-empty">Žiadne hodnotené recenzie.</div>
+<% } else { %>
+<ol class="stat-rank">
+  <% s.worstRated.forEach((a, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><a href="/admin/articles/<%= a.id %>/edit" class="rk-t"><%= a.title %></a><span class="rk-v" style="color:oklch(0.7 0.18 25)"><%= a.score %>/10</span></li>
+  <% }) %>
+</ol>
+<% } %>

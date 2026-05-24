@@ -1,5 +1,12 @@
+<% if (s.scheduled.length === 0) { %>
+<div class="stat-empty">Žiadne naplánované články.</div>
+<% } else { %>
 <ul class="stat-list">
-  <li><span class="dot dot-amber"></span><span class="li-t">Pixel 11 Pro: 6-mesačné aktualizovanie</span><span class="li-m">Zajtra · 09:00</span></li>
-  <li><span class="dot dot-amber"></span><span class="li-t">Top 5 mechanických klávesníc 2026</span><span class="li-m">Št · 12:00</span></li>
-  <li><span class="dot dot-amber"></span><span class="li-t">Galaxy S26 vs iPhone 17 Pro</span><span class="li-m">Pi · 18:00</span></li>
+  <% s.scheduled.forEach(a => { %>
+  <li>
+    <a href="/admin/articles/<%= a.id %>/edit" class="li-t"><%= a.title %></a>
+    <span class="li-m"><%= a.author || '—' %> · <%= a.scheduled_at ? new Date(a.scheduled_at).toLocaleDateString('sk-SK') : '—' %></span>
+  </li>
+  <% }) %>
 </ul>
+<% } %>

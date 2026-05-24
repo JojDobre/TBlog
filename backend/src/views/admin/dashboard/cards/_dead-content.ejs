@@ -1,1 +1,11 @@
-<div class="stat-mini"><span class="mini-n">147</span><span class="mini-l">mŕtvy obsah (žiadne pozretia 6m+)</span></div>
+<div class="stat-big">
+  <span class="big-n"><%= s.deadContent.length %></span>
+  <span class="big-l">publikovaných s 0 views</span>
+</div>
+<% if (s.deadContent.length > 0) { %>
+<ul class="stat-list" style="margin-top:8px">
+  <% s.deadContent.slice(0,5).forEach(function(a) { %>
+  <li><a href="/admin/articles/<%= a.id %>/edit" class="li-t"><%= a.title %></a></li>
+  <% }) %>
+</ul>
+<% } %>

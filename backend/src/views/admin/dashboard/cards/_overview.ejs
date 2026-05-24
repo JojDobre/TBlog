@@ -1,6 +1,6 @@
 <div class="stat-overview">
-  <div><span class="ov-num">1.84M</span><span class="ov-l">pozretí · 30d</span></div>
-  <div><span class="ov-num">284k</span><span class="ov-l">unikátnych</span></div>
-  <div><span class="ov-num">47</span><span class="ov-l">publikovaných</span></div>
-  <div><span class="ov-num" style="color:var(--accent)">+12%</span><span class="ov-l">rast vs. min.</span></div>
+  <div><span class="ov-num"><%= typeof fmt !== 'undefined' ? fmt(s.views30d) : s.views30d %></span><span class="ov-l">pozretí · 30d</span></div>
+  <div><span class="ov-num"><%= typeof fmt !== 'undefined' ? fmt(s.uniqueVisitors30d) : s.uniqueVisitors30d %></span><span class="ov-l">unikátnych</span></div>
+  <div><span class="ov-num"><%= s.totalPublished %></span><span class="ov-l">publikovaných</span></div>
+  <div><span class="ov-num" style="color:var(--accent)"><%= s.viewsGrowth >= 0 ? '+' : '' %><%= s.viewsGrowth %>%</span><span class="ov-l">rast vs. min.</span></div>
 </div>

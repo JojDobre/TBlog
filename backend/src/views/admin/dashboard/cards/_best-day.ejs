@@ -1,1 +1,7 @@
-<div class="stat-mini"><span class="mini-n">Štvrtok</span><span class="mini-l">najlepší deň</span></div>
+<div class="stat-big">
+  <span class="big-n"><%= s.bestDayName %></span>
+  <span class="big-l">najaktívnejší deň · 30d</span>
+</div>
+<% if (s.bestDayCount > 0) { %>
+<div style="font-size:12px;color:var(--text-subtle);margin-top:8px"><%= s.bestDayCount %> návštev</div>
+<% } %>

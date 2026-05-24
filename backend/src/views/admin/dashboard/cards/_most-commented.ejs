@@ -1,6 +1,9 @@
+<% if (s.mostCommented.length === 0) { %>
+<div class="stat-empty">Zatiaľ žiadne komentáre.</div>
+<% } else { %>
 <ol class="stat-rank">
-  <li><span class="rk">1</span><span class="rk-t">Apple vs PC: 12 rokov debatovania</span><span class="rk-v"><i class="bi bi-chat-dots"></i> 324</span></li>
-  <li><span class="rk">2</span><span class="rk-t">GPT-6 zničí weby?</span><span class="rk-v"><i class="bi bi-chat-dots"></i> 287</span></li>
-  <li><span class="rk">3</span><span class="rk-t">Linux ready for desktop?</span><span class="rk-v"><i class="bi bi-chat-dots"></i> 198</span></li>
-  <li><span class="rk">4</span><span class="rk-t">RTX 5090 cena = nezmysel</span><span class="rk-v"><i class="bi bi-chat-dots"></i> 176</span></li>
+  <% s.mostCommented.forEach((a, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><a href="/admin/articles/<%= a.id %>/edit" class="rk-t"><%= a.title %></a><span class="rk-v"><%= a.cnt %></span></li>
+  <% }) %>
 </ol>
+<% } %>

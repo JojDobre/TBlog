@@ -46,12 +46,22 @@
   background: radial-gradient(circle, oklch(0.55 0.2 280 / 0.1), transparent 70%);
 }
 @keyframes profile-orb-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(5vw, 4vh) scale(1.08); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(5vw, 4vh) scale(1.08);
+  }
 }
 @keyframes profile-orb-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-4vw, -5vh) scale(1.05); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-4vw, -5vh) scale(1.05);
+  }
 }
 
 /* --- Main wrapper ---------------------------------------------------------- */
@@ -106,6 +116,8 @@
   border: 2px solid var(--border-strong);
   position: relative;
   z-index: 1;
+  display: flex;
+  justify-content: center;
 }
 .profile-show-avatar img {
   width: 100%;
@@ -232,7 +244,10 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  transition: border-color 0.15s, color 0.15s, transform 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    transform 0.15s;
 }
 .profile-social-pill:hover {
   border-color: var(--accent);
@@ -295,6 +310,8 @@
   display: grid;
   place-items: center;
   border: 2px solid var(--border-strong);
+  display: flex;
+  justify-content: center;
 }
 .profile-edit-avatar img {
   width: 100%;
@@ -341,7 +358,9 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 .profile-edit-nav-item:hover {
   background: var(--bg-card-hover);
@@ -475,7 +494,9 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .profile-input-wrap:focus-within {
   border-color: var(--accent);
@@ -510,7 +531,9 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .profile-textarea-wrap:focus-within {
   border-color: var(--accent);
@@ -543,13 +566,15 @@
   border: 1.5px dashed var(--border);
   border-radius: var(--r-md);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 .profile-file-wrap:hover {
   border-color: var(--accent);
   background: var(--bg-elev);
 }
-.profile-file-wrap input[type="file"] {
+.profile-file-wrap input[type='file'] {
   position: absolute;
   inset: 0;
   opacity: 0;
@@ -600,11 +625,15 @@
   display: grid;
   place-items: center;
   border: 2px solid var(--border);
+  display: flex;
+  justify-content: center;
 }
 .profile-avatar-preview img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: flex;
+  justify-content: center;
 }
 .profile-avatar-preview-initials {
   font-family: var(--font-mono);
@@ -617,6 +646,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
+  display: flex;
+  justify-content: center;
 }
 
 /* Info box (security question current) */
@@ -697,7 +728,9 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition:
+    background 0.15s,
+    transform 0.1s;
 }
 .profile-submit:hover {
   background: var(--accent-hover);
@@ -721,7 +754,9 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 .profile-btn-danger:hover {
   background: oklch(0.35 0.12 25 / 0.22);

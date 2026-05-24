@@ -1,6 +1,9 @@
-<ul class="stat-list">
-  <li><span class="li-t">Pixel 11 Pro: Google sa konečne pohol vpred</span><span class="li-m">29. apríla 2026 · 8 min</span></li>
-  <li><span class="li-t">Framework 16: oprávniteľnosť vs. výkon v jednom šasi</span><span class="li-m">27. apríla 2026 · 12 min</span></li>
-  <li><span class="li-t">macOS 16 Aurora: tichá revolúcia v multitaskingu</span><span class="li-m">25. apríla 2026 · 6 min</span></li>
-  <li><span class="li-t">AMD Ryzen 9 9950X3D vs. Intel Core Ultra 9 285K</span><span class="li-m">22. apríla 2026 · 15 min</span></li>
-</ul>
+<% if (s.recentlyPublished.length === 0) { %>
+<div class="stat-empty">Žiadne publikované články.</div>
+<% } else { %>
+<ol class="stat-rank">
+  <% s.recentlyPublished.forEach((a, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><a href="/admin/articles/<%= a.id %>/edit" class="rk-t"><%= a.title %></a><span class="rk-v"><%= a.view_count %> views</span></li>
+  <% }) %>
+</ol>
+<% } %>

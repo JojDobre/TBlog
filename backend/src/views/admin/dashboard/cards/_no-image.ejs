@@ -1,5 +1,11 @@
 <div class="stat-big">
-  <span class="big-n">14</span>
-  <span class="big-l">článkov bez titulného obrázka</span>
-  <button class="bz-btn bz-btn-sm" style="margin-top:10px; align-self:flex-start">Doplniť →</button>
+  <span class="big-n"><%= s.noImage.length %></span>
+  <span class="big-l">publikovaných bez titulného obrázka</span>
 </div>
+<% if (s.noImage.length > 0) { %>
+<ul class="stat-list" style="margin-top:8px">
+  <% s.noImage.slice(0,5).forEach(a => { %>
+  <li><a href="/admin/articles/<%= a.id %>/edit" class="li-t"><%= a.title %></a></li>
+  <% }) %>
+</ul>
+<% } %>

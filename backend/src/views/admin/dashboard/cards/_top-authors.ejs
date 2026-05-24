@@ -1,5 +1,9 @@
-<ol class="stat-rank stat-rank-avatars">
-  <li><span class="bz-stat-avatar">MT</span><div class="rk-stack"><span>Marek Tóth</span><small>47 článkov · 312k pozretí</small></div></li>
-  <li><span class="bz-stat-avatar">LH</span><div class="rk-stack"><span>Lucia Hoľa</span><small>28 · 198k</small></div></li>
-  <li><span class="bz-stat-avatar">DK</span><div class="rk-stack"><span>Dárius Kollár</span><small>22 · 156k</small></div></li>
+<% if (s.topAuthors.length === 0) { %>
+<div class="stat-empty">Žiadni autori.</div>
+<% } else { %>
+<ol class="stat-rank">
+  <% s.topAuthors.forEach((a, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><a href="/admin/users/<%= a.id %>" class="rk-t"><%= a.nickname %></a><span class="rk-v"><%= a.cnt %> článkov</span></li>
+  <% }) %>
 </ol>
+<% } %>

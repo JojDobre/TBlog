@@ -6,8 +6,8 @@
     <span class="astats-card-group"><%= cardGroup %></span>
     <div class="astats-card-actions">
       <div class="astats-size-toggle">
-        <% ['S','M','L'].forEach(function(s) { %>
-        <button class="<%= cardSize === s ? 'active' : '' %>" data-size="<%= s %>"><%= s %></button>
+        <% ['S','M','L'].forEach(function(sz) { %>
+        <button class="<%= cardSize === sz ? 'active' : '' %>" data-size="<%= sz %>"><%= sz %></button>
         <% }) %>
       </div>
       <button class="astats-height-toggle" title="Dvojitá výška"><i class="bi bi-arrows-expand"></i></button>

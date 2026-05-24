@@ -1,9 +1,15 @@
-<div class="stat-big">
-  <span class="big-n">+12.4%</span>
-  <span class="big-l">rast vs. minulé 30d</span>
-  <% var _v=[42,48,52,49,58,62,68,71,75,82,88,91,94,98,104,112],_w=100,_h=30,_mx=Math.max.apply(null,_v),_mn=Math.min.apply(null,_v),_s=_mx-_mn||1,_p=_v.map(function(v,i){return((i/(_v.length-1))*_w)+','+(_h-((v-_mn)/_s)*(_h-4)-2)}).join(' '); %>
-  <svg class="stat-spark" viewBox="0 0 100 30" preserveAspectRatio="none">
-    <polyline points="<%=_p%>" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
-    <polyline points="0,30 <%=_p%> 100,30" fill="var(--accent)" opacity="0.12"/>
-  </svg>
+<% if (s.trafficTrend.length === 0) { %>
+<div class="stat-empty">Nedostatok dát.</div>
+<% } else { %>
+<%
+  var last7 = s.trafficTrend.slice(-7);
+  var prev7 = s.trafficTrend.slice(-14, -7);
+  var sum7 = last7.reduce(function(a,b){return a+b.views},0);
+  var sumP7 = prev7.reduce(function(a,b){return a+b.views},0);
+  var change = sumP7 > 0 ? Math.round(((sum7-sumP7)/sumP7)*100) : 0;
+%>
+<div class="stat-overview" style="grid-template-columns:1fr 1fr">
+  <div><span class="ov-num"><%= sum7 %></span><span class="ov-l">posledných 7d</span></div>
+  <div><span class="ov-num" style="color:<%= change >= 0 ? 'var(--accent)' : 'oklch(0.7 0.18 25)' %>"><%= change >= 0 ? '+' : '' %><%= change %>%</span><span class="ov-l">vs. predchádzajúcich 7d</span></div>
 </div>
+<% } %>

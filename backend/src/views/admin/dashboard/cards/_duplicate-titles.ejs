@@ -1,1 +1,12 @@
-<div class="stat-mini"><span class="mini-n">4</span><span class="mini-l">duplicitné titulky</span></div>
+<% if (s.duplicateTitles.length === 0) { %>
+<div class="stat-empty">Žiadne duplicitné titulky.</div>
+<% } else { %>
+<ul class="stat-list">
+  <% s.duplicateTitles.forEach(function(d) { %>
+  <li>
+    <span class="li-t"><%= d.seo_title %></span>
+    <span class="li-m"><%= d.cnt %>× duplicitný</span>
+  </li>
+  <% }) %>
+</ul>
+<% } %>

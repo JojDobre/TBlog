@@ -1,7 +1,9 @@
-<div class="stat-trending">
-  <div class="trend-row"><span class="trend-flame trend-hot"><i class="bi bi-fire"></i></span><span class="trend-t">Tensor G5</span><span class="trend-v">+248%</span></div>
-  <div class="trend-row"><span class="trend-flame trend-hot"><i class="bi bi-fire"></i></span><span class="trend-t">iPhone 17 Pro Max</span><span class="trend-v">+186%</span></div>
-  <div class="trend-row"><span class="trend-flame trend-warm"><i class="bi bi-fire"></i></span><span class="trend-t">macOS Tahoe</span><span class="trend-v">+92%</span></div>
-  <div class="trend-row"><span class="trend-flame trend-warm"><i class="bi bi-fire"></i></span><span class="trend-t">GPT-6 leaks</span><span class="trend-v">+74%</span></div>
-  <div class="trend-row"><span class="trend-flame trend-warm"><i class="bi bi-fire"></i></span><span class="trend-t">Steam Deck OLED 2</span><span class="trend-v">+41%</span></div>
-</div>
+<% if (s.trending.length === 0) { %>
+<div class="stat-empty">Nedostatok dát pre trending.</div>
+<% } else { %>
+<ol class="stat-rank">
+  <% s.trending.forEach((a, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><span class="rk-t"><%= a.title %></span><span class="rk-v"><%= a.views %> · 7d</span></li>
+  <% }) %>
+</ol>
+<% } %>

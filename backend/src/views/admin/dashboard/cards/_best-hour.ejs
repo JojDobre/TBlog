@@ -1,1 +1,7 @@
-<div class="stat-mini"><span class="mini-n">21:00</span><span class="mini-l">najlepšia hodina</span></div>
+<div class="stat-big">
+  <span class="big-n"><%= s.bestHourVal !== null ? s.bestHourVal + ':00' : '—' %></span>
+  <span class="big-l">najaktívnejšia hodina · 30d</span>
+</div>
+<% if (s.bestHourCount > 0) { %>
+<div style="font-size:12px;color:var(--text-subtle);margin-top:8px"><%= s.bestHourCount %> návštev v tejto hodine</div>
+<% } %>

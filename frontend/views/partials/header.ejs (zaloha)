@@ -1,5 +1,5 @@
 <%
-  const navLinks = [
+const navLinks = [
     { href: '/',          label: 'Domov' },
     { href: '/recenzie',  label: 'Recenzie' },
     { href: '/rebricky',  label: 'Rebríčky' },
@@ -13,14 +13,13 @@
   }
   const cur = typeof currentPath !== 'undefined' ? currentPath : '';
 %>
-<header class="topnav" id="topnav">
+<header class="topnav">
   <div class="container topnav-inner">
-
     <a href="/" class="topnav-brand">
-      <%- include('logo', { size: 'md' }) %>
+      <%- include('logo', {  size: 'md'}) %>
     </a>
 
-    <!-- Desktop pill nav -->
+
     <nav class="topnav-pill">
       <% navLinks.forEach(link => {
         const active = (cur === link.href) || (link.href !== '/' && cur.startsWith(link.href));
@@ -37,8 +36,7 @@
         </svg>
       </a>
 
-      <!-- Theme toggle (desktop only) -->
-      <button id="theme-toggle" class="icon-btn topnav-desktop-only" title="Prepnúť tému">
+      <button id="theme-toggle" class="icon-btn" title="Prepnúť tému">
         <svg id="theme-icon-dark" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
@@ -55,8 +53,9 @@
         </svg>
       </button>
 
+
       <% if (typeof user !== 'undefined' && user) { %>
-      <div class="notif-wrap topnav-desktop-only">
+      <div class="notif-wrap">
         <button class="notif-bell icon-btn" data-notif-bell title="Notifikácie">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -69,8 +68,10 @@
           <div class="notif-dropdown-body" data-notif-list></div>
         </div>
       </div>
+      <% } %>
 
-      <div class="nav-dropdown topnav-desktop-only">
+      <% if (typeof user !== 'undefined' && user) { %>
+      <div class="nav-dropdown">
         <button class="btn btn-sm btn-primary nav-dropdown-toggle" id="user-menu-btn" aria-expanded="false" aria-haspopup="true">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="8" r="4" />
@@ -114,7 +115,7 @@
         </div>
       </div>
       <% } else { %>
-      <a href="/login" class="btn btn-sm btn-primary topnav-desktop-only">
+      <a href="/login" class="btn btn-sm btn-primary">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="8" r="4" />
           <path d="M4 21a8 8 0 0 1 16 0" />
@@ -122,62 +123,8 @@
         Prihlásiť
       </a>
       <% } %>
-
-      <!-- Hamburger (mobile only, same style as icon-btn) -->
-      <button class="icon-btn topnav-burger" id="nav-burger" aria-label="Menu" aria-expanded="false">
-        <svg class="burger-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-          <path d="M4 7h16M4 12h16M4 17h16" />
-        </svg>
-        <svg class="burger-icon-close" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="display:none">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-      </button>
     </div>
   </div>
-
-  <!-- Mobile fullscreen menu (slides from right) -->
-  <div class="mobile-menu" id="mobile-menu">
-    <div class="container">
-      <div class="mobile-menu-header">
-        <%- include('logo', { size: 'md' }) %>
-        <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Zatvoriť">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-      <nav class="mobile-menu-nav">
-        <% navLinks.forEach(link => {
-          const active = (cur === link.href) || (link.href !== '/' && cur.startsWith(link.href));
-        %>
-        <a href="<%= link.href %>" class="mobile-menu-link <%= active ? 'active' : '' %>"><%= link.label %></a>
-        <% }) %>
-      </nav>
-      <div class="mobile-menu-divider"></div>
-      <% if (typeof user !== 'undefined' && user) { %>
-      <a href="/u/<%= user.nickname %>" class="mobile-menu-link">Profil</a>
-      <a href="/spravy" class="mobile-menu-link">Správy</a>
-      <a href="/profil" class="mobile-menu-link">Upraviť profil</a>
-      <div class="mobile-menu-divider"></div>
-      <form method="POST" action="/logout">
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button type="submit" class="mobile-menu-link mobile-menu-link--danger">Odhlásiť</button>
-      </form>
-      <% } else { %>
-      <a href="/login" class="mobile-menu-link">Prihlásiť sa</a>
-      <a href="/registracia" class="mobile-menu-link">Registrácia</a>
-      <% } %>
-      <div class="mobile-menu-spacer"></div>
-      <div class="mobile-menu-divider"></div>
-      <button class="mobile-menu-link" id="mobile-theme-toggle">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-        </svg>
-        Prepnúť tému
-      </button>
-    </div>
-  </div>
-  <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
 
   <% if (typeof user !== 'undefined' && user) { %>
   <script src="/js/notifications.js" defer></script>

@@ -28,14 +28,14 @@
           <div class="bz-art-alert bz-art-alert-success">
             <i class="bi bi-check-circle-fill"></i>
             <%= f[1] %>
-            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()" aria-label="Zatvoriť">×</button>
+            <button class="bz-art-alert-close">×</button>
           </div>
         <% }}) %>
         <% if (flash.err) { %>
           <div class="bz-art-alert bz-art-alert-error">
             <i class="bi bi-exclamation-triangle-fill"></i>
             <%= flash.err %>
-            <button class="bz-art-alert-close" onclick="this.closest('.bz-art-alert').remove()" aria-label="Zatvoriť">×</button>
+            <button class="bz-art-alert-close">×</button>
           </div>
         <% } %>
 

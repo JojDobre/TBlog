@@ -1,6 +1,9 @@
-<ol class="stat-rank stat-rank-avatars">
-  <li><span class="bz-stat-avatar">PK</span><span class="rk-t">Peter Kováč</span><span class="rk-v">248</span></li>
-  <li><span class="bz-stat-avatar">JT</span><span class="rk-t">Janka Tóth</span><span class="rk-v">187</span></li>
-  <li><span class="bz-stat-avatar">T9</span><span class="rk-t">Tom_99</span><span class="rk-v">142</span></li>
-  <li><span class="bz-stat-avatar">DK</span><span class="rk-t">DevOpsKing</span><span class="rk-v">121</span></li>
+<% if (s.topCommenters.length === 0) { %>
+<div class="stat-empty">Žiadne komentáre.</div>
+<% } else { %>
+<ol class="stat-rank">
+  <% s.topCommenters.forEach((u, i) => { %>
+  <li><span class="rk"><%= i+1 %></span><a href="/admin/users/<%= u.id %>" class="rk-t"><%= u.nickname %></a><span class="rk-v"><%= u.cnt %></span></li>
+  <% }) %>
 </ol>
+<% } %>
