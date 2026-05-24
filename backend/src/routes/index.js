@@ -26,6 +26,7 @@ const apiCommentsRouter = require('./api-comments');
 const apiMessagesRouter = require('./api-messages');
 const apiBannersRouter = require('./api-banners');
 const apiNotificationsRouter = require('./api-notifications');
+const apiBookmarksRouter = require('./api-bookmarks');
 const apiRouter = require('./api');
 const blockRenderer = require('../utils/block-renderer');
 const pageRenderer = require('../utils/page-renderer');
@@ -60,6 +61,7 @@ router.use('/api/messages', apiMessagesRouter);
 router.use('/api/notifications', apiNotificationsRouter);
 router.use('/api/comments', apiCommentsRouter);
 router.use('/api/banners', apiBannersRouter);
+router.use('/api/bookmarks', apiBookmarksRouter);
 
 router.use('/health', healthRouter);
 router.use('/api', apiRouter);
@@ -67,7 +69,7 @@ router.use('/', rankingRoutes);
 router.use('/', newsletterRouter);
 router.use('/', authRouter);
 router.use('/', profileRouter);
-router.use('/', messagesRouter);
+router.use('/spravy', messagesRouter);
 
 // ---------------------------------------------------------------------------
 // SEARCH
@@ -1267,6 +1269,43 @@ router.post('/kontakt', async (req, res, next) => {
 
     return renderStaticPage(req, res, next, 'kontakt', {
       flashSuccess: 'Ďakujeme! Tvoja správa bola odoslaná. Ozveme sa čo najskôr.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// BOOKMARKS — GET /ulozene
+// ---------------------------------------------------------------------------
+router.get('/ulozene', async (req, res, next) => {
+  try {
+    let bookmarks = [];
+    if (req.user) {
+      bookmarks = await db('user_bookmarks')
+        .join('articles', 'user_bookmarks.article_id', 'articles.id')
+        .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media', 'articles.cover_media_id', 'media.id')
+        .where('user_bookmarks.user_id', req.user.id)
+        .where('articles.status', 'published')
+        .select(
+          'articles.id',
+          'articles.title',
+          'articles.slug',
+          'articles.excerpt',
+          'articles.type',
+          'articles.published_at',
+          'articles.view_count',
+          'users.nickname as author_name',
+          'media.thumbnail_path as cover_thumb',
+          'user_bookmarks.created_at as saved_at'
+        )
+        .orderBy('user_bookmarks.created_at', 'desc');
+    }
+    res.render('bookmarks/index', {
+      title: 'Uložené články',
+      currentPath: '/ulozene',
+      bookmarks,
     });
   } catch (err) {
     next(err);

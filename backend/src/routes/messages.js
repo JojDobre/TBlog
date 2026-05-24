@@ -17,7 +17,7 @@ const router = express.Router();
 router.use(requireAuth({ redirectTo: '/login' }));
 
 // Inbox
-router.get('/spravy', (req, res) => {
+router.get('/', (req, res) => {
   res.render('messages/inbox', {
     title: 'Správy',
     currentPath: '/spravy',
@@ -25,7 +25,7 @@ router.get('/spravy', (req, res) => {
 });
 
 // Detail konverzácie
-router.get('/spravy/:id', (req, res) => {
+router.get('/:id', (req, res) => {
   const convId = Number(req.params.id);
   if (!Number.isInteger(convId) || convId < 1) {
     return res.redirect('/spravy');
@@ -38,7 +38,7 @@ router.get('/spravy/:id', (req, res) => {
 });
 
 // Nájdi alebo vytvor konverzáciu s userom a presmeruj do nej
-router.get('/spravy/novy/:nickname', async (req, res, next) => {
+router.get('/novy/:nickname', async (req, res, next) => {
   try {
     const db = require('../db');
     const nickname = req.params.nickname;

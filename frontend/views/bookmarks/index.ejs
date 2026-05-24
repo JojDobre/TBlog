@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="sk" data-theme="dark" data-density="comfortable" data-cardstyle="bordered">
+<head>
+  <%- include('../partials/head', { title: 'Uložené články', description: 'Tvoje uložené články' }) %>
+</head>
+<body>
+  <%- include('../partials/header', { currentPath: '/ulozene' }) %>
+
+  <main class="page">
+    <div class="container" style="max-width:860px;padding-top:48px;padding-bottom:80px">
+
+      <header style="margin-bottom:32px">
+        <span class="eyebrow">Knižnica</span>
+        <h1 class="h-1" style="margin:12px 0 8px">Uložené články</h1>
+        <p class="lead" style="color:var(--text-muted)">
+          <% if (typeof user !== 'undefined' && user) { %>
+            Tvoje uložené články sú synchronizované naprieč zariadeniami.
+          <% } else { %>
+            Uložené články sú dostupné len v tomto prehliadači. <a href="/login" style="color:var(--accent)">Prihlás sa</a> pre synchronizáciu.
+          <% } %>
+        </p>
+      </header>
+
+      <% if (typeof user !== 'undefined' && user) { %>
+        <!-- Prihlásený — server-rendered bookmarky -->
+        <% if (bookmarks.length === 0) { %>
+          <div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:16px;opacity:0.4">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+            </svg>
+            <h3 style="font-size:16px;margin:0 0 8px">Zatiaľ nič uložené</h3>
+            <p style="font-size:14px">Klikni na „Uložiť" pri článku a nájdeš ho tu.</p>
+          </div>
+        <% } else { %>
+          <div class="bookmarks-list">
+            <% bookmarks.forEach(function(a) { %>
+              <a href="/clanok/<%= a.slug %>" class="bookmark-card">
+                <% if (a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_thumb %>" alt="" class="bookmark-thumb" loading="lazy">
+                <% } else { %>
+                  <div class="bookmark-thumb ph ph-<%= (a.id % 9) + 1 %>"></div>
+                <% } %>
+                <div class="bookmark-body">
+                  <span class="bookmark-type"><%= a.type === 'review' ? 'Recenzia' : 'Článok' %></span>
+                  <h3 class="bookmark-title"><%= a.title %></h3>
+                  <p class="bookmark-excerpt"><%= (a.excerpt || '').slice(0, 120) %><%= (a.excerpt || '').length > 120 ? '…' : '' %></p>
+                  <span class="bookmark-meta">
+                    <%= a.author_name || 'Redakcia' %>
+                    · <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %>
+                  </span>
+                </div>
+                <button type="button" class="bookmark-remove" data-remove-bookmark="<%= a.id %>" title="Odstrániť">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+
+      <% } else { %>
+        <!-- Neprihlásený — localStorage bookmarky (JS rendered) -->
+        <div id="local-bookmarks">
+          <div style="text-align:center;padding:60px 20px;color:var(--text-muted)">
+            <span>Načítavam...</span>
+          </div>
+        </div>
+      <% } %>
+
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/bookmarks-page.js" defer></script>
+</body>
+</html>

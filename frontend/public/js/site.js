@@ -188,17 +188,100 @@ function updateBookmarkBtn(btn, saved) {
   }
 }
 
-// Init bookmark buttons
+// ---- Bookmark (localStorage + DB pre prihlásených) ----
+var BOOKMARKS_KEY = 'bz_bookmarks';
+var isLoggedIn = !!document.querySelector('[data-notif-bell]');
+
+function getLocalBookmarks() {
+  try {
+    return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+
+function isLocalBookmarked(url) {
+  return getLocalBookmarks().some(function (b) {
+    return b.url === url;
+  });
+}
+
+function toggleLocalBookmark(url, title) {
+  var bk = getLocalBookmarks();
+  var idx = bk.findIndex(function (b) {
+    return b.url === url;
+  });
+  if (idx > -1) {
+    bk.splice(idx, 1);
+  } else {
+    bk.unshift({ url: url, title: title, saved_at: new Date().toISOString() });
+  }
+  if (bk.length > 100) bk = bk.slice(0, 100);
+  localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bk));
+  return idx === -1;
+}
+
+function updateBookmarkBtn(btn, saved) {
+  var svg = btn.querySelector('svg');
+  if (saved) {
+    btn.classList.add('btn-bookmarked');
+    if (svg) svg.setAttribute('fill', 'currentColor');
+  } else {
+    btn.classList.remove('btn-bookmarked');
+    if (svg) svg.setAttribute('fill', 'none');
+  }
+  // Update text (last text node)
+  var textNodes = [];
+  btn.childNodes.forEach(function (n) {
+    if (n.nodeType === 3 && n.textContent.trim()) textNodes.push(n);
+  });
+  if (textNodes.length > 0)
+    textNodes[textNodes.length - 1].textContent = saved ? ' Uložené' : ' Uložiť';
+}
+
+// Init
 document.querySelectorAll('[data-bookmark]').forEach(function (btn) {
-  if (isBookmarked(location.pathname)) updateBookmarkBtn(btn, true);
+  var articleId = btn.getAttribute('data-article-id');
+
+  if (isLoggedIn && articleId) {
+    // Check z DB
+    fetch('/api/bookmarks/check?article_id=' + articleId, { credentials: 'same-origin' })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        if (data.saved) updateBookmarkBtn(btn, true);
+      });
+  } else {
+    if (isLocalBookmarked(location.pathname)) updateBookmarkBtn(btn, true);
+  }
 });
 
+// Click handler
 document.addEventListener('click', function (e) {
   var btn = e.target.closest('[data-bookmark]');
   if (!btn) return;
   e.preventDefault();
-  var saved = toggleBookmark(location.pathname, document.title);
-  updateBookmarkBtn(btn, saved);
+  var articleId = btn.getAttribute('data-article-id');
+
+  if (isLoggedIn && articleId) {
+    var csrf = document.querySelector('input[name="_csrf"]');
+    fetch('/api/bookmarks/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': csrf ? csrf.value : '' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ article_id: Number(articleId) }),
+    })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        if (data.ok) updateBookmarkBtn(btn, data.saved);
+      });
+  } else {
+    var saved = toggleLocalBookmark(location.pathname, document.title);
+    updateBookmarkBtn(btn, saved);
+  }
 });
 
 // ---- Avatar remove ----

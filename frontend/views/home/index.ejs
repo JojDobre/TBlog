@@ -46,11 +46,10 @@
                 </svg>
               </a>
               <div class="hero-author-info">
-                <% if (user.avatar_path) { %>
-                <span class="avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+                <% if (a.author_avatar) { %>
+                <span class="avatar"><img src="/uploads/<%= a.author_avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
                 <% } else { %>
-                <span class="avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
-                <% } %>
+                <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span> <% } %>
                 <div class="hero-author-text">
                   <span class="hero-author-name"><%= a.author_name || 'Redakcia' %></span>
                   <span class="hero-author-date">
@@ -339,10 +338,10 @@
           <div style="margin:32px 0; height:1px; background:var(--border);"></div>
           <div class="editorial-split-footer">
             <div class="editorial-author">
-              <% if (user.avatar_path) { %>
-              <span class="avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+              <% if (editorsPick.author_avatar) { %>
+              <span class="avatar"><img src="/uploads/<%= editorsPick.author_avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
               <% } else { %>
-              <span class="avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+              <span class="avatar"><%= (editorsPick.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
               <% } %>
               <div>
                 <div class="editorial-author-name"><%= editorsPick.author_name || 'Redakcia' %></div>
@@ -626,10 +625,10 @@
                 <p class="acard-excerpt"><%= a.excerpt %></p>
                 <div class="acard-foot">
                   <div class="acard-author">
-                   <% if (user.avatar_path) { %>
-                      <span class="avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+                   <% if (a.author_avatar) { %>
+                      <span class="avatar"><img src="/uploads/<%= a.author_avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
                     <% } else { %>
-                      <span class="avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                      <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
                     <% } %>
                     <span><%= a.author_name || 'Redakcia' %></span>
                     <span class="dot"></span>
@@ -683,10 +682,10 @@
                 <p class="acard-excerpt"><%= a.excerpt %></p>
                 <div class="acard-foot">
                   <div class="acard-author">
-                                        <% if (user.avatar_path) { %>
-                      <span class="avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+                                        <% if (a.author_avatar) { %>
+                      <span class="avatar"><img src="/uploads/<%= a.author_avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
                     <% } else { %>
-                      <span class="avatar"><%= user.nickname.split(' ').map(s => s[0]).slice(0,2).join('') %></span>
+                      <span class="avatar"><%= (a.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
                     <% } %>
                     <span><%= a.author_name %></span>
                   </div>
