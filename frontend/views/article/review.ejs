@@ -39,7 +39,7 @@
           <span class="eyebrow">Recenzia<% if (category) { %> · <%= category.name %><% } %></span>
           <h1 class="h-1" style="margin:16px 0;"><%= article.title %></h1>
           <% if (article.excerpt) { %>
-          <p class="lead" style="max-width:520px;"><%= article.excerpt %></p>
+          <p class="lead"><%= article.excerpt %></p>
           <% } %>
           <div class="review-header-author">
             <% if (article.author_avatar) { %>
@@ -57,7 +57,7 @@
               </div>
             </div>
           </div>
-          <div style="display:flex; gap:8px; margin-top:24px;">
+          <div style="display:flex; gap:8px; margin-top:24px; justify-content: flex-start;">
             <div class="article-authorbar-actions">
               <button class="btn btn-sm" data-bookmark data-article-id="<%= article.id %>">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">

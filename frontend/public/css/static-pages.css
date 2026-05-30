@@ -793,6 +793,10 @@
 
 /* Responsive */
 @media (max-width: 1100px) {
+  .sp-content {
+    max-width: 100%;
+  }
+
   .sp-body {
     grid-template-columns: 1fr;
     gap: 32px;
@@ -842,11 +846,23 @@
     grid-template-columns: 1fr;
   }
   .sp-section-head {
-    grid-template-columns: 1fr;
     gap: 8px;
   }
   .sp-section-num {
     justify-self: start;
+  }
+  .sp-toc-inner {
+    padding: 0;
+  }
+
+  .sp-body {
+    padding: 16px;
+  }
+
+  .sp-toc-list {
+    flex-wrap: wrap;
+    display: flex;
+    flex-direction: column;
   }
 }
 

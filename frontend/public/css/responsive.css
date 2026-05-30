@@ -572,3 +572,365 @@
     height: 50px;
   }
 }
+
+/* -----------------------------------------------------------------------
+   DOPLNKY — chýbajúce responsive pre ďalšie stránky
+   ----------------------------------------------------------------------- */
+
+/* --- Search page --- */
+@media (max-width: 540px) {
+  .search-suggestions {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .search-input-wrap {
+    height: 52px;
+    padding: 0 var(--s-4);
+  }
+  .search-filter-bar {
+    gap: 6px;
+  }
+  .search-filter-bar .btn {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+}
+
+/* --- Ranking pages --- */
+@media (max-width: 860px) {
+  .podium {
+    gap: var(--s-4);
+  }
+  .podium-rank {
+    min-width: 0;
+  }
+  .rank-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .rank-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 540px) {
+  .ritem {
+    grid-template-columns: 40px 60px 1fr auto;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+  .ritem-img {
+    width: 60px;
+    height: 60px;
+  }
+  .rank-num {
+    font-size: 28px;
+  }
+  .ritem-name {
+    font-size: 14px;
+  }
+  .ritem-brand {
+    font-size: 11px;
+  }
+  .ritem-final-num {
+    font-size: 20px;
+  }
+  .ritem-criteria {
+    display: none;
+  }
+  .podium {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .podium-rank {
+    width: 100%;
+    max-width: 280px;
+  }
+  /* Ranking table — horizontal scroll */
+  .rtable-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .rtable {
+    min-width: 600px;
+  }
+  .ranking-mini-podium {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+/* --- Browse page (kategórie) --- */
+@media (max-width: 860px) {
+  .browse-cats {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+  .browse-cats .tag {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* --- Review article page --- */
+@media (max-width: 540px) {
+  .verdict {
+    padding: var(--s-6);
+  }
+  .verdict-score-num {
+    font-size: 48px;
+  }
+  .score-bd-row {
+    grid-template-columns: 80px 1fr 32px;
+    gap: 8px;
+  }
+  .score-bd-label {
+    font-size: 11px;
+  }
+  .spec-table th,
+  .spec-table td {
+    padding: 8px 8px 8px 0;
+    font-size: 13px;
+  }
+  .review-details {
+    gap: 24px;
+  }
+}
+
+/* --- Messages page --- */
+@media (max-width: 540px) {
+  .msg-input-wrap {
+    flex-direction: column;
+  }
+  .msg-input-wrap .btn {
+    width: 100%;
+  }
+}
+
+/* --- Static pages --- */
+@media (max-width: 540px) {
+  .sp-legal-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .sp-hero-inner {
+    padding: 0 var(--s-4);
+  }
+  .sp-toc-inner {
+    padding: var(--s-4);
+  }
+}
+
+/* --- Comments section --- */
+@media (max-width: 540px) {
+  .comment-item {
+    padding: var(--s-4);
+  }
+  .comment-form textarea {
+    min-height: 80px;
+  }
+}
+
+/* --- Listing pagination --- */
+@media (max-width: 540px) {
+  .listing-pagination {
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .listing-pagination .btn {
+    min-width: 32px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+/* --- Review hero — prehodenie obrázka a popisu na tablet/mobile --- */
+@media (max-width: 1100px) {
+  .review-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: flex-start;
+  }
+
+  .review-header-text {
+    display: contents;
+    width: 100%;
+  }
+
+  .review-header-text > .eyebrow {
+    order: 2;
+    margin-bottom: 16px;
+  }
+  .review-header-text > .h-1 {
+    order: 1;
+    margin: 0 12px;
+    margin-bottom: 8px;
+  }
+  .review-header-img {
+    order: 3;
+    max-height: none;
+    margin-bottom: 24px;
+    width: 100%;
+    max-height: 400px;
+  }
+  .review-header-text > .review-header-author {
+    order: 4;
+    margin-top: 0;
+  }
+  .review-header-text > div:last-child {
+    order: 5;
+    margin-top: 16px;
+    margin-bottom: 24px;
+  }
+  .review-header-text > .lead {
+    order: 6;
+    max-width: 100%;
+    margin: 0;
+    width: 100%;
+  }
+  .lead {
+    width: 100% !important;
+  }
+}
+
+/* --- Podium: 3 vedľa seba od 1100px, menšie --- */
+@media (max-width: 1100px) {
+  .podium {
+    gap: 16px;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .podium-rank {
+    font-size: 48px;
+  }
+  .podium-rank--gold {
+    font-size: 64px;
+  }
+  .podium-rank--silver {
+    font-size: 48px;
+  }
+  .podium-body {
+    padding: var(--s-4);
+  }
+  .podium-score-num {
+    font-size: 28px;
+  }
+  .podium-name {
+    font-size: 16px;
+  }
+  .sp-content {
+    max-width: 100%;
+  }
+  .rank-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .rank-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+/* --- Podium: po jednom od 860px --- */
+@media (max-width: 860px) {
+  .podium {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    max-width: 420px;
+  }
+  .podium-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+  .podium-card--first {
+    transform: none;
+  }
+  .podium-rank {
+    font-size: 36px;
+  }
+  .podium-rank--gold {
+    font-size: 42px;
+  }
+  .podium-body {
+    padding: var(--s-3);
+  }
+  .podium-name {
+    font-size: 14px;
+  }
+  .podium-score-num {
+    font-size: 22px;
+  }
+  .browse-cats {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+  .browse-cats .tag {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* --- Podium + ranking mobile --- */
+@media (max-width: 540px) {
+  .ritem {
+    grid-template-columns: 40px 60px 1fr auto;
+    gap: 8px;
+    padding: 12px 8px;
+  }
+  .ritem-img {
+    width: 60px;
+    height: 60px;
+  }
+  .rank-num {
+    font-size: 28px;
+  }
+  .ritem-name {
+    font-size: 14px;
+  }
+  .ritem-brand {
+    font-size: 11px;
+  }
+  .ritem-final-num {
+    font-size: 20px;
+  }
+  .ritem-criteria {
+    display: none;
+  }
+  .rtable-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .rtable {
+    min-width: 600px;
+  }
+  .ranking-mini-podium {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .search-suggestions {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .search-input-wrap {
+    height: 52px;
+    padding: 0 var(--s-4);
+  }
+  .search-filter-bar {
+    gap: 6px;
+  }
+  .search-filter-bar .btn {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+}

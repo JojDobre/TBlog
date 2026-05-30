@@ -781,7 +781,7 @@
   .profile-edit-sidebar {
     position: static;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: var(--s-4);
   }
 }
@@ -819,5 +819,57 @@
   }
   .profile-edit-card-body {
     padding: var(--s-5);
+  }
+}
+
+/* --- Profile page --- */
+@media (max-width: 540px) {
+  .profile-public-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-meta-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .profile-social-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-nav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .profile-nav-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .profile-public-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-edit-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--s-4);
+  }
+  .profile-meta-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .profile-social-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-nav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .profile-nav-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 }
