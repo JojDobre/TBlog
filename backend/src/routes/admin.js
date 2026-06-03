@@ -370,6 +370,57 @@ router.get('/stats', async (req, res, next) => {
 });
 
 // =============================================================================
+// Settings
+// =============================================================================
+const FIELD_GROUPS = {
+  general: 'Všeobecné',
+  appearance: 'Vzhľad',
+  seo: 'SEO & Analytics',
+  social: 'Sociálne siete',
+  pagination: 'Stránkovanie',
+  articles: 'Články',
+};
+
+router.get('/settings', requireRole('admin'), async (req, res, next) => {
+  try {
+    const rows = await db('settings').orderBy('field_group').orderBy('display_order');
+    const groups = {};
+    for (const r of rows) {
+      if (!groups[r.field_group])
+        groups[r.field_group] = { label: FIELD_GROUPS[r.field_group] || r.field_group, items: [] };
+      groups[r.field_group].items.push(r);
+    }
+    res.render('admin/settings/index', {
+      title: 'Nastavenia',
+      groups,
+      success: req.query.saved === '1' ? 'Nastavenia uložené.' : null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/settings', requireRole('admin'), async (req, res, next) => {
+  try {
+    const rows = await db('settings').select('key', 'value_type');
+    for (const r of rows) {
+      const raw = req.body['s_' + r.key];
+      if (raw === undefined) continue;
+      let val = String(raw).trim();
+      if (r.value_type === 'bool') val = raw === '1' || raw === 'on' ? '1' : '0';
+      await db('settings')
+        .where('key', r.key)
+        .update({ value: val || null });
+    }
+    // Clear cached settings
+    if (global.__bzSettingsCache) global.__bzSettingsCache = null;
+    res.redirect('/admin/settings?saved=1');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// =============================================================================
 // 404 fallback (admin sub-router)
 // =============================================================================
 

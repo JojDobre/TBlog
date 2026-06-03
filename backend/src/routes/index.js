@@ -694,44 +694,37 @@ router.get('/clanok/:slug', async (req, res, next) => {
     if (article.og_path) ogImage = '/uploads/' + article.og_path;
     else if (article.cover_full) ogImage = '/uploads/' + article.cover_full;
 
-    // Review mock data (neskôr z DB — Phase 8)
-    const reviewData =
-      article.type === 'review'
-        ? {
-            score: 9.1,
-            badge: "Editor's Choice",
-            verdict_title: 'Náš verdikt',
-            verdict_text: article.excerpt || '',
-            breakdown: [
-              { label: 'Dizajn', val: 9.2 },
-              { label: 'Displej', val: 9.5 },
-              { label: 'Výkon', val: 9.0 },
-              { label: 'Kamera', val: 9.6 },
-              { label: 'Batéria', val: 8.4 },
-              { label: 'Software', val: 9.0 },
-              { label: 'Cena/výkon', val: 8.8 },
-            ],
-            specs: [
-              { label: 'Čip', value: 'Tensor G5 (3 nm)' },
-              { label: 'RAM', value: '12 GB LPDDR5X' },
-              { label: 'Displej', value: '6,7" LTPO OLED, 120 Hz' },
-              { label: 'Hlavná kamera', value: '50 MPx f/1.6 OIS' },
-              { label: 'Batéria', value: '5 100 mAh, 45 W' },
-              { label: 'OS', value: 'Android 16, 7 rokov' },
-              { label: 'Cena', value: '1 099 €' },
-            ],
-            pros: [
-              'Kamera, ktorá konečne vie, kedy má prestať s HDR',
-              '7 rokov softvérovej podpory',
-              'Batéria dva dni bežnej záťaže',
-            ],
-            cons: [
-              '45 W nabíjanie je málo pre túto cenu',
-              'Žiadne fyzické tlačidlo na kameru',
-              'Multi-core výkon zaostáva za Apple',
-            ],
-          }
-        : { score: null, breakdown: [], specs: [], pros: [], cons: [] };
+    // Review data — extracted from article content blocks
+    const reviewData = {
+      score: null,
+      badge: '',
+      verdict_title: '',
+      verdict_text: '',
+      breakdown: [],
+      specs: [],
+      pros: [],
+      cons: [],
+    };
+    if (article.type === 'review' && Array.isArray(content)) {
+      for (const b of content) {
+        if (b.type === 'rating') {
+          reviewData.score = b.total_score || null;
+          reviewData.badge = b.badge || '';
+          reviewData.verdict_title = b.verdict_title || '';
+          reviewData.verdict_text = b.verdict_text || '';
+        }
+        if (b.type === 'rating_breakdown' && Array.isArray(b.criteria)) {
+          reviewData.breakdown = b.criteria.map((c) => ({ label: c.name, val: c.score }));
+        }
+        if (b.type === 'specs' && Array.isArray(b.rows)) {
+          reviewData.specs = b.rows.map((r) => ({ label: r.key, value: r.value }));
+        }
+        if (b.type === 'pros_cons') {
+          if (Array.isArray(b.pros) && b.pros.length) reviewData.pros = b.pros;
+          if (Array.isArray(b.cons) && b.cons.length) reviewData.cons = b.cons;
+        }
+      }
+    }
 
     const viewTemplate = article.type === 'review' ? 'article/review' : 'article/show';
 
@@ -748,13 +741,26 @@ router.get('/clanok/:slug', async (req, res, next) => {
         : undefined,
       dateModified: new Date(article.updated_at).toISOString(),
       publisher: { '@type': 'Organization', name: config.app.name },
-      url: baseUrl + '/clanok/' + article.slug,
+      url: baseUrl + '/' + article.slug,
     };
-    if (ogImage) jsonLd.image = baseUrl + ogImage;
+    if (ogImage) jsonLd.image = ogImage.startsWith('http') ? ogImage : baseUrl + ogImage;
     if (article.type === 'review' && reviewData.score) {
-      jsonLd.reviewRating = { '@type': 'Rating', ratingValue: reviewData.score, bestRating: 10 };
+      jsonLd.reviewRating = {
+        '@type': 'Rating',
+        ratingValue: reviewData.score,
+        bestRating: 10,
+        worstRating: 0,
+      };
+      jsonLd.itemReviewed = {
+        '@type': 'Product',
+        name: article.title.replace(/[–—·|].*/, '').trim(),
+      };
+      if (reviewData.verdict_text) jsonLd.reviewBody = reviewData.verdict_text;
     }
-    const canonicalUrl = baseUrl + '/clanok/' + article.slug;
+    const canonicalUrl = baseUrl + '/' + article.slug;
+
+    // Make ogImage absolute
+    const ogImageAbs = ogImage ? (ogImage.startsWith('http') ? ogImage : baseUrl + ogImage) : null;
 
     res.render(viewTemplate, {
       title: article.seo_title || article.title,
@@ -763,7 +769,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       contentHtml,
       toc,
       coverImage: article.cover_full || null,
-      ogImage,
+      ogImage: ogImageAbs,
       category: catRow || null,
       tags,
       relatedArticles,

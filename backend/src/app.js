@@ -122,14 +122,41 @@ function createApp() {
   // 12. CSRF validácia (POST/PUT/DELETE/PATCH)
   app.use(csrfProtection);
 
-  // 13. Ostatné locals — appName, currentPath, isDev, headerPages
+  // 13. Ostatné locals — appName, currentPath, isDev, headerPages, siteSettings
   let _headerPagesCache = null;
   let _footerPagesCache = null;
   let _headerPagesCacheAt = 0;
   const HEADER_CACHE_TTL = 60000; // 60s
 
+  // Settings cache (global for clearing from admin route)
+  global.__bzSettingsCache = null;
+  let _settingsCacheAt = 0;
+
+  async function loadSettings() {
+    const now = Date.now();
+    if (global.__bzSettingsCache && now - _settingsCacheAt < HEADER_CACHE_TTL)
+      return global.__bzSettingsCache;
+    try {
+      const rows = await db('settings').select('key', 'value', 'value_type');
+      const s = {};
+      for (const r of rows) {
+        if (r.value_type === 'int') s[r.key] = r.value ? parseInt(r.value, 10) : null;
+        else if (r.value_type === 'bool') s[r.key] = r.value === '1';
+        else s[r.key] = r.value || '';
+      }
+      global.__bzSettingsCache = s;
+      _settingsCacheAt = now;
+      return s;
+    } catch (e) {
+      return global.__bzSettingsCache || {};
+    }
+  }
+
   app.use(async (req, res, next) => {
-    res.locals.appName = config.app.name;
+    // Load settings for all routes (including admin)
+    const settings = await loadSettings();
+    res.locals.siteSettings = settings;
+    res.locals.appName = settings.site_title || config.app.name;
     res.locals.currentPath = req.path;
     res.locals.isDev = config.app.isDev;
 

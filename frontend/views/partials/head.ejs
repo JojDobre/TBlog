@@ -18,6 +18,14 @@
   <% } %>
   <meta property="og:site_name" content="<%= appName %>">
 
+  <%# === Twitter Card === %>
+  <meta name="twitter:card" content="<%= (typeof ogImage !== 'undefined' && ogImage) ? 'summary_large_image' : 'summary' %>">
+  <meta name="twitter:title" content="<%= (typeof ogTitle !== 'undefined' && ogTitle) ? ogTitle : ((typeof title !== 'undefined' && title) ? title : appName) %>">
+  <meta name="twitter:description" content="<%= (typeof ogDescription !== 'undefined' && ogDescription) ? ogDescription : ((typeof description !== 'undefined' && description) ? description : '') %>">
+  <% if (typeof ogImage !== 'undefined' && ogImage) { %>
+  <meta name="twitter:image" content="<%= ogImage %>">
+  <% } %>
+
   <%# === JSON-LD Structured Data === %>
   <% if (typeof jsonLd !== 'undefined' && jsonLd) { %>
   <script type="application/ld+json">
@@ -36,4 +44,13 @@
 
   <% if (typeof csrfToken !== 'undefined' && csrfToken) { %>
   <meta name="csrf-token" content="<%= csrfToken %>">
+  <% } %>
+
+  <%# === Favicon === %>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/favicon.svg">
+
+  <%# === Analytics from settings === %>
+  <% if (typeof siteSettings !== 'undefined' && siteSettings.analytics_html) { %>
+  <%- siteSettings.analytics_html %>
   <% } %>

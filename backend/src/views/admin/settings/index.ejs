@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+
+<head>
+  <%- include('../partials/head', { title: 'Nastavenia' }) %>
+</head>
+
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: currentPath }) %>
+
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: 'Nastavenia' }) %>
+
+    <main class="bz-content">
+      <div class="bz-art-wrap" style="max-width:820px">
+
+        <% if (success) { %>
+        <div class="bz-art-alert bz-art-alert-success">
+          <i class="bi bi-check-circle-fill"></i> <%= success %>
+          <button class="bz-art-alert-close" aria-label="Zatvoriť">×</button>
+        </div>
+        <% } %>
+
+        <form method="POST" action="/admin/settings">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <% for (const [groupKey, group] of Object.entries(groups)) { %>
+          <div class="bz-art-side-card mb-4">
+            <div class="bz-art-side-head">
+              <i class="bi bi-gear"></i> <%= group.label %>
+            </div>
+            <div class="bz-art-side-body">
+              <% for (const item of group.items) { %>
+              <div class="mb-3">
+                <label class="form-label form-label-sm" for="s_<%= item.key %>"><%= item.label %></label>
+                <% if (item.value_type === 'bool') { %>
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="s_<%= item.key %>" name="s_<%= item.key %>" value="1" <%= item.value === '1' ? 'checked' : '' %>>
+                </div>
+                <% } else if (item.key.includes('media_id')) { %>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">ID</span>
+                  <input type="number" class="form-control" id="s_<%= item.key %>" name="s_<%= item.key %>" value="<%= item.value || '' %>" min="1" placeholder="Media ID">
+                </div>
+                <% } else if (item.key.includes('html') || item.key.includes('code') || item.key.includes('css')) { %>
+                <textarea class="form-control form-control-sm" id="s_<%= item.key %>" name="s_<%= item.key %>" rows="4" style="font-family:var(--art-mono);font-size:12px"><%= item.value || '' %></textarea>
+                <% } else if (item.key.includes('color')) { %>
+                <div class="input-group input-group-sm">
+                  <input type="color" class="form-control form-control-color" id="s_<%= item.key %>_picker" value="<%= (item.value && item.value.startsWith('#')) ? item.value : '#60a5fa' %>" style="max-width:42px">
+                  <input type="text" class="form-control" id="s_<%= item.key %>" name="s_<%= item.key %>" value="<%= item.value || '' %>" placeholder="#60a5fa alebo oklch(...)">
+                </div>
+                <% } else if (item.key.includes('description') || item.key.includes('text')) { %>
+                <textarea class="form-control form-control-sm" id="s_<%= item.key %>" name="s_<%= item.key %>" rows="2"><%= item.value || '' %></textarea>
+                <% } else { %>
+                <input type="text" class="form-control form-control-sm" id="s_<%= item.key %>" name="s_<%= item.key %>" value="<%= item.value || '' %>">
+                <% } %>
+                <div class="bz-art-hint mt-1" style="font-size:11px;color:var(--art-text-muted)"><%= item.key %></div>
+              </div>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="bz-art-btn bz-art-btn-accent">
+              <i class="bi bi-check-lg me-1"></i> Uložiť nastavenia
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-media-picker.js" defer></script>
+  <script src="/admin/static/js/admin.js" defer></script>
+</body>
+
+</html>

@@ -5943,13 +5943,18 @@ img {
   white-space: nowrap;
 }
 .logo-word-dot {
-  position: absolute;
+  display: inline-block;
   width: 5px;
   height: 5px;
   background: var(--accent);
   border-radius: 50%;
   box-shadow: 0 0 8px oklch(from var(--accent) l c h / 0.6);
   animation: logo-dot-pulse 2.4s ease-in-out infinite;
+  vertical-align: baseline;
+  margin: 0 2px 3px;
+  font-size: 0;
+  line-height: 0;
+  overflow: hidden;
 }
 .logo-word-sub {
   font-family: var(--font-mono);
@@ -5977,31 +5982,17 @@ img {
 .logo-sm .logo-mark {
   height: 18px;
 }
-.logo-sm .logo-word-dot {
-  right: -10px;
-  bottom: 3px;
-}
 .logo-md {
   font-size: 19px;
 }
 .logo-md .logo-mark {
   height: 22px;
 }
-.logo-md .logo-word-dot {
-  right: -12px;
-  bottom: 3px;
-}
 .logo-lg {
   font-size: 24px;
 }
 .logo-lg .logo-mark {
   height: 26px;
-}
-.logo-lg .logo-word-dot {
-  right: -14px;
-  bottom: 4px;
-  width: 6px;
-  height: 6px;
 }
 
 .rail-logo {

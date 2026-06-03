@@ -29,7 +29,7 @@ const config = {
   // Aplikácia
   // ---------------------------------------------------------------------------
   app: {
-    name: 'Bytezone',
+    name: 'Kukni.Tech',
     description: 'Tech blog so zameraním na recenzie technológií.',
     env,
     isProd,
