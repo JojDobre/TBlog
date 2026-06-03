@@ -47,6 +47,25 @@ router.get('/media-thumb/:id', async (req, res, next) => {
 
 router.get('/media-picker', async (req, res, next) => {
   try {
+    // Fetch specific items by IDs (for preview loading)
+    if (req.query.ids) {
+      const ids = String(req.query.ids)
+        .split(',')
+        .map(Number)
+        .filter((n) => n > 0);
+      if (ids.length === 0) return res.json({ items: [] });
+      const items = await db('media')
+        .select('id', 'thumbnail_path', 'original_filename', 'alt_text', 'type', 'width', 'height')
+        .whereIn('id', ids);
+      return res.json({
+        items,
+        total: items.length,
+        page: 1,
+        per_page: items.length,
+        total_pages: 1,
+      });
+    }
+
     const PER_PAGE = 24;
     const q = String(req.query.q || '').trim();
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);

@@ -1,30 +1,23 @@
 /**
- * Media picker modal  (Phase 5.5)
+ * Media picker modal  (Phase 5.5 — v2)
  *
- * Vytvorí Bootstrap modal s grid pickerom obrázkov.
- * Hookuje sa na všetky inputy ktoré majú name='cover_media_id', name='og_image_media_id',
- * alebo data-field='media_id' v image blokoch.
+ * Vizuálny picker pre všetky media_id inputy v celej admin sekcii.
+ * Automaticky sa napája na:
+ *   - input[name="cover_media_id"], input[name="og_image_media_id"]
+ *   - input[data-field="media_id"]
+ *   - input[data-i] kde data-i obsahuje "media_id" (rvx bloky)
  *
- * Pri každom takom inpute pridá tlačidlo "Vybrať z knižnice" (modré, ikona obrázku).
- *
- * Pri kliknutí:
- *   1. Zapamätá si target input
- *   2. Otvorí modal, načíta prvú stránku obrázkov
- *   3. User klikne na obrázok → modal zatvorí, nastaví hodnotu inputu
- *   4. Trigger 'input' event aby existujúce listeners zafungovali (preview update, JSON sync)
- *
- * CSP-safe: žiadne inline scripty, len addEventListener.
+ * Po výbere obrázka zobrazí thumbnail náhľad vedľa inputu.
  *
  * Globálne API:
- *   window.bzMediaPicker.open(targetInput)   — otvorí modal pre daný input
+ *   window.bzMediaPicker.open(targetInput)
  */
-
 (function () {
   'use strict';
 
-  // -------------------------------------------------------------------------
-  // 1. Vytvor modal HTML štruktúru a vlož na koniec body
-  // -------------------------------------------------------------------------
+  // =========================================================================
+  // 1. Modal HTML
+  // =========================================================================
   function buildModal() {
     var modal = document.createElement('div');
     modal.className = 'modal fade';
@@ -34,65 +27,60 @@
     modal.setAttribute('aria-hidden', 'true');
     modal.innerHTML =
       '<div class="modal-dialog modal-xl modal-dialog-scrollable">' +
-        '<div class="modal-content">' +
-          '<div class="modal-header">' +
-            '<h5 class="modal-title" id="bzMediaPickerLabel">' +
-              '<i class="bi bi-images me-2"></i>Vybrať z knižnice' +
-            '</h5>' +
-            '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvoriť"></button>' +
-          '</div>' +
-          '<div class="modal-body">' +
-            '<div class="bz-picker-toolbar mb-3">' +
-              '<div class="input-group">' +
-                '<span class="input-group-text"><i class="bi bi-search"></i></span>' +
-                '<input type="search" class="form-control" data-picker-search ' +
-                  'placeholder="Hľadať podľa názvu, alt textu alebo popisu...">' +
-                '<button type="button" class="btn btn-outline-secondary" data-picker-search-btn>' +
-                  'Hľadať' +
-                '</button>' +
-              '</div>' +
-            '</div>' +
-            '<div class="bz-picker-grid" data-picker-grid></div>' +
-            '<div class="bz-picker-empty d-none text-center text-muted py-5" data-picker-empty>' +
-              '<i class="bi bi-image fs-1 d-block mb-2 text-body-tertiary"></i>' +
-              '<div>Žiadne obrázky</div>' +
-              '<div class="small">Skús zmeniť hľadanie alebo nahraj nové cez ' +
-                '<a href="/admin/media" target="_blank">mediálnu knižnicu</a>.</div>' +
-            '</div>' +
-            '<div class="bz-picker-loading d-none text-center text-muted py-5" data-picker-loading>' +
-              '<div class="spinner-border" role="status">' +
-                '<span class="visually-hidden">Načítavam...</span>' +
-              '</div>' +
-            '</div>' +
-            '<nav class="mt-3 d-none" data-picker-pagination>' +
-              '<ul class="pagination justify-content-center mb-0" data-picker-pages></ul>' +
-            '</nav>' +
-          '</div>' +
-          '<div class="modal-footer">' +
-            '<small class="text-muted me-auto" data-picker-stats></small>' +
-            '<a href="/admin/media" target="_blank" class="btn btn-sm btn-outline-primary">' +
-              '<i class="bi bi-upload me-1"></i>Nahrať nové' +
-            '</a>' +
-            '<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Zrušiť</button>' +
-          '</div>' +
-        '</div>' +
+      '<div class="modal-content">' +
+      '<div class="modal-header">' +
+      '<h5 class="modal-title" id="bzMediaPickerLabel">' +
+      '<i class="bi bi-images me-2"></i>Vybrať z knižnice' +
+      '</h5>' +
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvoriť"></button>' +
+      '</div>' +
+      '<div class="modal-body">' +
+      '<div class="bz-picker-toolbar mb-3">' +
+      '<div class="input-group">' +
+      '<span class="input-group-text"><i class="bi bi-search"></i></span>' +
+      '<input type="search" class="form-control" data-picker-search ' +
+      'placeholder="Hľadať podľa názvu, alt textu alebo popisu...">' +
+      '<button type="button" class="btn btn-outline-secondary" data-picker-search-btn>Hľadať</button>' +
+      '</div>' +
+      '</div>' +
+      '<div class="bz-picker-grid" data-picker-grid></div>' +
+      '<div class="bz-picker-empty d-none text-center text-muted py-5" data-picker-empty>' +
+      '<i class="bi bi-image fs-1 d-block mb-2 text-body-tertiary"></i>' +
+      '<div>Žiadne obrázky</div>' +
+      '<div class="small">Skús zmeniť hľadanie alebo nahraj nové cez ' +
+      '<a href="/admin/media" target="_blank">mediálnu knižnicu</a>.</div>' +
+      '</div>' +
+      '<div class="bz-picker-loading d-none text-center text-muted py-5" data-picker-loading>' +
+      '<div class="spinner-border" role="status"><span class="visually-hidden">Načítavam...</span></div>' +
+      '</div>' +
+      '<nav class="mt-3 d-none" data-picker-pagination>' +
+      '<ul class="pagination justify-content-center mb-0" data-picker-pages></ul>' +
+      '</nav>' +
+      '</div>' +
+      '<div class="modal-footer">' +
+      '<small class="text-muted me-auto" data-picker-stats></small>' +
+      '<a href="/admin/media" target="_blank" class="btn btn-sm btn-outline-primary">' +
+      '<i class="bi bi-upload me-1"></i>Nahrať nové</a>' +
+      '<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Zrušiť</button>' +
+      '</div>' +
+      '</div>' +
       '</div>';
     document.body.appendChild(modal);
     return modal;
   }
 
-  // -------------------------------------------------------------------------
-  // 2. Picker state
-  // -------------------------------------------------------------------------
+  // =========================================================================
+  // 2. State
+  // =========================================================================
   var modalEl = null;
   var bsModal = null;
   var targetInput = null;
   var currentQuery = '';
   var currentPage = 1;
 
-  // -------------------------------------------------------------------------
-  // 3. Render fns
-  // -------------------------------------------------------------------------
+  // =========================================================================
+  // 3. Render
+  // =========================================================================
   function showLoading(show) {
     modalEl.querySelector('[data-picker-loading]').classList.toggle('d-none', !show);
     modalEl.querySelector('[data-picker-grid]').classList.toggle('d-none', show);
@@ -112,19 +100,29 @@
       card.type = 'button';
       card.className = 'bz-picker-card';
       card.setAttribute('data-picker-item-id', String(item.id));
-      var dimensions = (item.width && item.height) ? (item.width + '×' + item.height) : '';
+      var dimensions = item.width && item.height ? item.width + '×' + item.height : '';
       card.innerHTML =
         '<div class="bz-picker-thumb">' +
-          (thumbUrl
-            ? '<img src="' + thumbUrl + '" alt="' + escapeAttr(item.alt_text || item.original_filename) + '">'
-            : '<i class="bi bi-image text-body-tertiary"></i>') +
+        (thumbUrl
+          ? '<img src="' +
+            thumbUrl +
+            '" alt="' +
+            esc(item.alt_text || item.original_filename) +
+            '">'
+          : '<i class="bi bi-image text-body-tertiary"></i>') +
         '</div>' +
         '<div class="bz-picker-meta">' +
-          '<div class="bz-picker-name">' + escapeHtml(item.original_filename) + '</div>' +
-          '<div class="bz-picker-dim small text-muted">#' + item.id +
-            (dimensions ? ' · ' + dimensions : '') + '</div>' +
+        '<div class="bz-picker-name">' +
+        esc(item.original_filename) +
+        '</div>' +
+        '<div class="bz-picker-dim small text-muted">#' +
+        item.id +
+        (dimensions ? ' · ' + dimensions : '') +
+        '</div>' +
         '</div>';
-      card.addEventListener('click', function () { selectItem(item); });
+      card.addEventListener('click', function () {
+        selectItem(item);
+      });
       grid.appendChild(card);
     });
   }
@@ -138,11 +136,13 @@
     }
     nav.classList.remove('d-none');
     ul.innerHTML = '';
-
     var visible = new Set([1, totalPages, page - 1, page, page + 1]);
-    var pages = Array.from(visible).filter(function (p) { return p >= 1 && p <= totalPages; });
-    pages.sort(function (a, b) { return a - b; });
-
+    var pages = Array.from(visible).filter(function (p) {
+      return p >= 1 && p <= totalPages;
+    });
+    pages.sort(function (a, b) {
+      return a - b;
+    });
     function addLi(p, label, disabled, active) {
       var li = document.createElement('li');
       li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
@@ -150,13 +150,13 @@
       btn.type = 'button';
       btn.className = 'page-link';
       btn.textContent = label;
-      if (!disabled && !active) {
-        btn.addEventListener('click', function () { goToPage(p); });
-      }
+      if (!disabled && !active)
+        btn.addEventListener('click', function () {
+          goToPage(p);
+        });
       li.appendChild(btn);
       ul.appendChild(li);
     }
-
     addLi(page - 1, '‹', page <= 1, false);
     pages.forEach(function (p, idx) {
       if (idx > 0 && pages[idx - 1] < p - 1) {
@@ -172,23 +172,24 @@
 
   function renderStats(total, page, totalPages) {
     var el = modalEl.querySelector('[data-picker-stats]');
-    if (total === 0) { el.textContent = ''; return; }
+    if (total === 0) {
+      el.textContent = '';
+      return;
+    }
     el.textContent = 'Stránka ' + page + ' z ' + totalPages + ' · spolu ' + total + ' obrázkov';
   }
 
-  // -------------------------------------------------------------------------
+  // =========================================================================
   // 4. Actions
-  // -------------------------------------------------------------------------
+  // =========================================================================
   function load(page, query) {
     currentPage = page;
     currentQuery = query || '';
     showLoading(true);
     showEmpty(false);
-
     var params = new URLSearchParams();
     if (query) params.set('q', query);
     if (page > 1) params.set('page', String(page));
-
     fetch('/admin/articles/media-picker?' + params.toString(), { credentials: 'same-origin' })
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -208,14 +209,13 @@
       })
       .catch(function (err) {
         showLoading(false);
-        var grid = modalEl.querySelector('[data-picker-grid]');
-        grid.innerHTML = '<div class="alert alert-danger">Načítanie zlyhalo: ' + escapeHtml(err.message) + '</div>';
+        modalEl.querySelector('[data-picker-grid]').innerHTML =
+          '<div class="alert alert-danger">Načítanie zlyhalo: ' + esc(err.message) + '</div>';
       });
   }
 
   function goToPage(p) {
     load(p, currentQuery);
-    // Scroll do horneho okraja modal-body
     var body = modalEl.querySelector('.modal-body');
     if (body) body.scrollTop = 0;
   }
@@ -223,25 +223,69 @@
   function selectItem(item) {
     if (!targetInput) return;
     targetInput.value = String(item.id);
-    // Trigger 'input' event aby preview/JSON sync zafungovali
     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
     targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+    // Show thumbnail preview
+    updatePreview(targetInput, item);
     bsModal.hide();
   }
 
-  // -------------------------------------------------------------------------
-  // 5. Open API
-  // -------------------------------------------------------------------------
+  // =========================================================================
+  // 5. Thumbnail preview
+  // =========================================================================
+  function updatePreview(input, item) {
+    var wrap = input.closest('.bz-media-wrap');
+    if (!wrap) return;
+    var prev = wrap.querySelector('.bz-media-preview');
+    if (!prev) {
+      prev = document.createElement('div');
+      prev.className = 'bz-media-preview';
+      wrap.appendChild(prev);
+    }
+    if (item && item.thumbnail_path) {
+      prev.innerHTML =
+        '<img src="/uploads/' +
+        esc(item.thumbnail_path) +
+        '" alt="">' +
+        '<button type="button" class="bz-media-remove" title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
+      prev.querySelector('.bz-media-remove').addEventListener('click', function () {
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        prev.innerHTML = '';
+      });
+    } else {
+      prev.innerHTML = '';
+    }
+  }
+
+  function loadPreviewForInput(input) {
+    var val = input.value;
+    if (!val || val === '0' || val === 'null') return;
+    // Fetch thumbnail for existing media_id
+    fetch('/admin/articles/media-picker?ids=' + val, { credentials: 'same-origin' })
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        if (data.items && data.items.length > 0) updatePreview(input, data.items[0]);
+      })
+      .catch(function () {});
+  }
+
+  // =========================================================================
+  // 6. Open API
+  // =========================================================================
   function open(input) {
     targetInput = input;
     if (!modalEl) {
       modalEl = buildModal();
       bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-      // Wire search
       var searchInput = modalEl.querySelector('[data-picker-search]');
       var searchBtn = modalEl.querySelector('[data-picker-search-btn]');
-      var doSearch = function () { load(1, searchInput.value.trim()); };
+      var doSearch = function () {
+        load(1, searchInput.value.trim());
+      };
       searchBtn.addEventListener('click', doSearch);
       searchInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') {
@@ -250,88 +294,131 @@
         }
       });
     }
-
-    // Reset state pri každom otvorení
-    var searchInput = modalEl.querySelector('[data-picker-search]');
-    searchInput.value = '';
-
+    modalEl.querySelector('[data-picker-search]').value = '';
     bsModal.show();
     load(1, '');
-    // Focus search po otvorení
-    setTimeout(function () { searchInput.focus(); }, 200);
+    setTimeout(function () {
+      modalEl.querySelector('[data-picker-search]').focus();
+    }, 200);
   }
 
-  // -------------------------------------------------------------------------
-  // 6. Auto-attach picker buttons to existing inputs
-  // -------------------------------------------------------------------------
-  function attachButtonToInputGroup(input, labelText) {
-    // Nájdi `.input-group` parent
+  // =========================================================================
+  // 7. Auto-attach to ALL media inputs
+  // =========================================================================
+  function isMediaInput(input) {
+    if (input.type !== 'number' && input.type !== 'text') return false;
+    var name = input.name || '';
+    var field = input.getAttribute('data-field') || '';
+    var di = input.getAttribute('data-i') || '';
+    return (
+      name.indexOf('media_id') !== -1 ||
+      field.indexOf('media_id') !== -1 ||
+      di.indexOf('media_id') !== -1
+    );
+  }
+
+  function wrapInput(input) {
+    if (input.getAttribute('data-media-attached')) return;
+    input.setAttribute('data-media-attached', '1');
+
     var group = input.closest('.input-group');
-    if (!group) return;
 
-    // Ak už máme picker tlačidlo, skip
-    if (group.querySelector('[data-picker-trigger]')) return;
+    if (group) {
+      // Input is in an input-group (cover, OG image) — add button to group, don't rewrap
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-outline-primary';
+      btn.title = 'Vybrať z knižnice';
+      btn.innerHTML = '<i class="bi bi-images"></i>';
+      btn.addEventListener('click', function () {
+        open(input);
+      });
+      // Insert before the existing library link if it exists
+      var existingLink = group.querySelector('a[href*="/admin/media"]');
+      if (existingLink) group.insertBefore(btn, existingLink);
+      else group.appendChild(btn);
 
-    // Vytvor tlačidlo
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn btn-outline-primary';
-    btn.setAttribute('data-picker-trigger', '');
-    btn.title = labelText || 'Vybrať z knižnice';
-    btn.setAttribute('aria-label', labelText || 'Vybrať z knižnice');
-    btn.innerHTML = '<i class="bi bi-images"></i>';
-    btn.addEventListener('click', function () { open(input); });
-
-    // Vlož PRED externý link na knižnicu (ak existuje), inak na koniec
-    var existingLink = group.querySelector('a[href="/admin/media"]');
-    if (existingLink) {
-      group.insertBefore(btn, existingLink);
+      // Update existing cover preview on selection
+      input.addEventListener('change', function () {
+        var previewEl = group.closest('.bz-art-side-body, .mb-3, div')
+          ? group.parentElement.querySelector('[data-cover-preview]')
+          : null;
+        if (!previewEl) return;
+        var val = input.value;
+        if (!val || val === '0') {
+          previewEl.innerHTML =
+            '<span style="font-family:var(--art-mono);font-size:11px">bez obrázka</span>';
+          return;
+        }
+        fetch('/admin/articles/media-picker?ids=' + val, { credentials: 'same-origin' })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (data) {
+            if (data.items && data.items[0] && data.items[0].thumbnail_path) {
+              previewEl.innerHTML =
+                '<img src="/uploads/' + esc(data.items[0].thumbnail_path) + '" alt="Cover">';
+            }
+          })
+          .catch(function () {});
+      });
     } else {
-      group.appendChild(btn);
+      // Standalone input (rvx blocks) — wrap in .bz-media-wrap
+      var wrap = document.createElement('div');
+      wrap.className = 'bz-media-wrap';
+      input.parentNode.insertBefore(wrap, input);
+      wrap.appendChild(input);
+
+      var pickerBtn = document.createElement('button');
+      pickerBtn.type = 'button';
+      pickerBtn.className = 'bz-media-btn';
+      pickerBtn.title = 'Vybrať z knižnice';
+      pickerBtn.innerHTML = '<i class="bi bi-images"></i>';
+      pickerBtn.addEventListener('click', function () {
+        open(input);
+      });
+      wrap.appendChild(pickerBtn);
+
+      // Load existing preview
+      if (input.value && input.value !== '0' && input.value !== 'null') {
+        loadPreviewForInput(input);
+      }
     }
   }
 
-  function scanInputs(root) {
+  function scanAll(root) {
     root = root || document;
-    // Cover, OG image
-    root.querySelectorAll('input[name="cover_media_id"], input[name="og_image_media_id"]')
-      .forEach(function (input) {
-        attachButtonToInputGroup(input, 'Vybrať obrázok z knižnice');
-      });
-    // Image bloky (data-field="media_id" v image template)
-    root.querySelectorAll('input[data-field="media_id"]')
-      .forEach(function (input) {
-        attachButtonToInputGroup(input, 'Vybrať obrázok z knižnice');
-      });
+    // Named inputs
+    root.querySelectorAll('input[name*="media_id"]').forEach(wrapInput);
+    // data-field
+    root.querySelectorAll('input[data-field*="media_id"]').forEach(wrapInput);
+    // data-i (rvx blocks)
+    root.querySelectorAll('input[data-i*="media_id"]').forEach(wrapInput);
   }
 
-  // Scan pri page load
-  scanInputs(document);
+  // Initial scan
+  scanAll(document);
 
-  // Watch DOM — keď editor pridá nový image blok, treba zavesiť tlačidlo aj naň.
-  // Použijeme MutationObserver na hlavný blocks-container.
-  var blocksContainer = document.querySelector('[data-blocks-container]');
-  if (blocksContainer && typeof MutationObserver !== 'undefined') {
+  // MutationObserver — catch dynamically added inputs (new blocks)
+  if (typeof MutationObserver !== 'undefined') {
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (m) {
         m.addedNodes.forEach(function (node) {
-          if (node.nodeType === 1) scanInputs(node);
+          if (node.nodeType === 1) scanAll(node);
         });
       });
     });
-    observer.observe(blocksContainer, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  // -------------------------------------------------------------------------
-  // 7. Helpers
-  // -------------------------------------------------------------------------
-  function escapeHtml(s) {
+  // =========================================================================
+  // 8. Helpers
+  // =========================================================================
+  function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
-  function escapeAttr(s) { return escapeHtml(s); }
 
-  // Expose
-  window.bzMediaPicker = { open: open };
+  window.bzMediaPicker = { open: open, scan: scanAll };
 })();
