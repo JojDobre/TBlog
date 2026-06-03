@@ -691,6 +691,28 @@
 
     var actionsEl = node.querySelector('.bz-block-actions');
     if (actionsEl) {
+      // Collapse toggle
+      var collapseBtn = document.createElement('button');
+      collapseBtn.type = 'button';
+      collapseBtn.className = 'bz-block-collapse';
+      collapseBtn.title = 'Zbaliť/Rozbaliť';
+      collapseBtn.innerHTML = '<i class="bi bi-chevron-down"></i>';
+      collapseBtn.addEventListener('click', function () {
+        node.classList.toggle('bz-block--collapsed');
+        collapseBtn.innerHTML = node.classList.contains('bz-block--collapsed')
+          ? '<i class="bi bi-chevron-right"></i>'
+          : '<i class="bi bi-chevron-down"></i>';
+        saveCollapseState();
+      });
+      actionsEl.insertBefore(collapseBtn, actionsEl.firstChild);
+
+      // Drag handle
+      var grip = document.createElement('span');
+      grip.className = 'bz-block-grip';
+      grip.title = 'Presunúť';
+      grip.innerHTML = '<i class="bi bi-grip-vertical"></i>';
+      actionsEl.insertBefore(grip, collapseBtn.nextSibling);
+
       actionsEl.appendChild(
         makeIconBtn('arrow-up', 'Hore', function () {
           move(node, -1);
@@ -713,6 +735,63 @@
       );
     }
 
+    // Drag & drop — simplified
+    node.setAttribute('draggable', 'true');
+    node.addEventListener('dragstart', function (e) {
+      dragSrcIdx = currentIndex(node);
+      node.classList.add('bz-block--dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', String(dragSrcIdx));
+      // Auto-collapse all blocks for smooth dragging
+      savedCollapseState = [];
+      container.querySelectorAll('[data-block-type]').forEach(function (n) {
+        savedCollapseState.push(n.classList.contains('bz-block--collapsed'));
+        n.classList.add('bz-block--collapsed');
+      });
+      node.classList.remove('bz-block--collapsed');
+    });
+    node.addEventListener('dragend', function () {
+      node.classList.remove('bz-block--dragging');
+      clearDropIndicator();
+      dragSrcIdx = -1;
+      // Restore collapse state
+      if (savedCollapseState.length) {
+        container.querySelectorAll('[data-block-type]').forEach(function (n, i) {
+          if (savedCollapseState[i]) n.classList.add('bz-block--collapsed');
+          else n.classList.remove('bz-block--collapsed');
+        });
+        savedCollapseState = [];
+      }
+    });
+    node.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      var rect = node.getBoundingClientRect();
+      var mid = rect.top + rect.height / 2;
+      var idx = currentIndex(node);
+      showDropIndicator(e.clientY < mid ? idx : idx + 1);
+    });
+    node.addEventListener('drop', function (e) {
+      e.preventDefault();
+      if (dragSrcIdx === -1) return;
+      var rect = node.getBoundingClientRect();
+      var mid = rect.top + rect.height / 2;
+      var targetIdx = currentIndex(node);
+      if (e.clientY >= mid) targetIdx++;
+      if (targetIdx > dragSrcIdx) targetIdx--;
+      if (targetIdx === dragSrcIdx) {
+        clearDropIndicator();
+        return;
+      }
+      var moved = blocks.splice(dragSrcIdx, 1)[0];
+      blocks.splice(targetIdx, 0, moved);
+      clearDropIndicator();
+      savedCollapseState = [];
+      renderAll();
+      refreshInserters();
+      syncHidden();
+    });
+
     node.setAttribute('data-block-index', String(index));
     return node;
   }
@@ -729,12 +808,12 @@
   }
 
   function currentIndex(node) {
-    var children = Array.prototype.slice.call(container.children);
+    var children = Array.prototype.slice.call(container.querySelectorAll('[data-block-type]'));
     return children.indexOf(node);
   }
 
   function reindexDom() {
-    Array.prototype.forEach.call(container.children, function (n, i) {
+    Array.prototype.forEach.call(container.querySelectorAll('[data-block-type]'), function (n, i) {
       n.setAttribute('data-block-index', String(i));
     });
   }
@@ -788,6 +867,134 @@
     });
   }
 
+  // ---- Collapse persistence ----
+  var articleId = form.getAttribute('data-article-id') || '';
+  var collapseKey = articleId ? 'bz-collapsed-' + articleId : '';
+
+  function saveCollapseState() {
+    if (!collapseKey) return;
+    var collapsed = [];
+    container.querySelectorAll('[data-block-type]').forEach(function (n, i) {
+      if (n.classList.contains('bz-block--collapsed')) collapsed.push(i);
+    });
+    try {
+      localStorage.setItem(collapseKey, JSON.stringify(collapsed));
+    } catch (e) {}
+  }
+
+  function restoreCollapseState() {
+    if (!collapseKey) return;
+    try {
+      var saved = JSON.parse(localStorage.getItem(collapseKey) || '[]');
+      if (!Array.isArray(saved) || !saved.length) return;
+      container.querySelectorAll('[data-block-type]').forEach(function (n, i) {
+        if (saved.indexOf(i) !== -1) {
+          n.classList.add('bz-block--collapsed');
+          var btn = n.querySelector('.bz-block-collapse');
+          if (btn) btn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+        }
+      });
+    } catch (e) {}
+  }
+
+  // ---- Drag & drop state ----
+  var dragSrcIdx = -1;
+  var savedCollapseState = [];
+  var dropIndicator = null;
+
+  function showDropIndicator(beforeIdx) {
+    clearDropIndicator();
+    dropIndicator = document.createElement('div');
+    dropIndicator.className = 'bz-block-drop-indicator';
+    var children = Array.prototype.slice.call(container.querySelectorAll('[data-block-type]'));
+    if (beforeIdx >= children.length) container.appendChild(dropIndicator);
+    else container.insertBefore(dropIndicator, children[beforeIdx]);
+  }
+
+  function clearDropIndicator() {
+    if (dropIndicator && dropIndicator.parentNode)
+      dropIndicator.parentNode.removeChild(dropIndicator);
+    dropIndicator = null;
+  }
+
+  // ---- Inserters between blocks ----
+  function createInserter(position) {
+    var ins = document.createElement('div');
+    ins.className = 'bz-block-inserter';
+    ins.setAttribute('data-insert-pos', String(position));
+    ins.innerHTML =
+      '<button type="button" class="bz-block-inserter-btn" title="Pridať blok"><i class="bi bi-plus-lg"></i></button>';
+    ins.querySelector('button').addEventListener('click', function () {
+      toggleInserterPalette(ins, position);
+    });
+    return ins;
+  }
+
+  function toggleInserterPalette(ins, position) {
+    var existing = ins.querySelector('.bz-block-inserter-palette');
+    if (existing) {
+      existing.remove();
+      return;
+    }
+    // Close all other palettes
+    container.querySelectorAll('.bz-block-inserter-palette').forEach(function (p) {
+      p.remove();
+    });
+    var palette = document.createElement('div');
+    palette.className = 'bz-block-inserter-palette';
+    // Copy all add-block buttons
+    document.querySelectorAll('[data-add-block]').forEach(function (btn) {
+      var clone = document.createElement('button');
+      clone.type = 'button';
+      clone.className = 'bz-art-btn bz-art-btn-sm';
+      clone.innerHTML = btn.innerHTML;
+      clone.addEventListener('click', function () {
+        var type = btn.getAttribute('data-add-block');
+        insertAt(type, position);
+        palette.remove();
+      });
+      palette.appendChild(clone);
+    });
+    ins.appendChild(palette);
+  }
+
+  function insertAt(type, position) {
+    var b = defaultBlock(type);
+    if (!b) return;
+    blocks.splice(position, 0, b);
+    renderAll();
+    refreshInserters();
+    syncHidden();
+    // Focus new block
+    var children = Array.prototype.slice.call(container.querySelectorAll('[data-block-type]'));
+    if (children[position]) {
+      children[position].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var first = children[position].querySelector('input, textarea, select');
+      if (first)
+        setTimeout(function () {
+          first.focus();
+        }, 200);
+    }
+  }
+
+  function refreshInserters() {
+    // Remove old inserters
+    container.querySelectorAll('.bz-block-inserter').forEach(function (i) {
+      i.remove();
+    });
+    // Add inserter before first block
+    var blockNodes = Array.prototype.slice.call(container.querySelectorAll('[data-block-type]'));
+    if (blockNodes.length > 0) {
+      container.insertBefore(createInserter(0), blockNodes[0]);
+    }
+    // Add inserter after each block
+    blockNodes.forEach(function (node, i) {
+      var ins = createInserter(i + 1);
+      if (node.nextSibling) container.insertBefore(ins, node.nextSibling);
+      else container.appendChild(ins);
+    });
+  }
+
   function add(type) {
     var b = defaultBlock(type);
     if (!b) return;
@@ -800,6 +1007,7 @@
     }
     reindexDom();
     syncHidden();
+    refreshInserters();
     var first = node && node.querySelector('input, textarea, select');
     if (first) first.focus();
   }
@@ -816,6 +1024,7 @@
     else container.insertBefore(node, container.children[newIdx].nextSibling);
     reindexDom();
     syncHidden();
+    refreshInserters();
   }
 
   function remove(node) {
@@ -826,6 +1035,7 @@
     container.removeChild(node);
     reindexDom();
     syncHidden();
+    refreshInserters();
   }
 
   function renderAll() {
@@ -845,6 +1055,7 @@
       setupNestedBlock(p.node, p.type);
     });
     syncHidden();
+    refreshInserters();
   }
 
   document.querySelectorAll('[data-add-block]').forEach(function (btn) {
@@ -858,4 +1069,5 @@
   });
 
   renderAll();
+  restoreCollapseState();
 })();
