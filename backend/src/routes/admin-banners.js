@@ -110,6 +110,148 @@ const TEMPLATES = {
   },
 };
 
+// --- New banner templates ---
+TEMPLATES['pro-membership'] = {
+  label: 'Členstvo Pro',
+  description: 'Výzva na predplatenie Pro členstva',
+  fields: [
+    { key: 'eyebrow', label: 'Eyebrow', type: 'text' },
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+    { key: 'cta_label', label: 'CTA text', type: 'text' },
+    { key: 'cta_url', label: 'CTA odkaz', type: 'url' },
+    { key: 'bg_color', label: 'Farba pozadia', type: 'text', placeholder: 'oklch(0.22 0.03 260)' },
+  ],
+};
+TEMPLATES['affiliate-product'] = {
+  label: 'Affiliate produkt',
+  description: 'Reklama na affiliate produkt',
+  fields: [
+    { key: 'title', label: 'Názov produktu', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+    { key: 'price', label: 'Cena', type: 'text' },
+    { key: 'cta_label', label: 'CTA text', type: 'text' },
+    { key: 'cta_url', label: 'Affiliate odkaz', type: 'url' },
+    { key: 'product_media_id', label: 'Obrázok produktu', type: 'media' },
+    { key: 'badge', label: 'Badge (napr. "Reklama")', type: 'text' },
+  ],
+};
+TEMPLATES['inline-ad'] = {
+  label: 'Inline reklama',
+  description: 'Jednoduchá textová/obrázkova reklama',
+  fields: [
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+    { key: 'cta_label', label: 'CTA text', type: 'text' },
+    { key: 'cta_url', label: 'Odkaz', type: 'url' },
+    { key: 'badge', label: 'Badge (napr. "Sponzorované")', type: 'text' },
+  ],
+};
+TEMPLATES['related-article'] = {
+  label: 'Súvisiaci článok',
+  description: 'Odkaz na súvisiaci článok',
+  fields: [
+    { key: 'eyebrow', label: 'Eyebrow (napr. "Čítajte tiež")', type: 'text' },
+    { key: 'title', label: 'Titulok článku', type: 'text', required: true },
+    { key: 'description', label: 'Krátky popis', type: 'textarea' },
+    { key: 'url', label: 'Odkaz na článok', type: 'url' },
+  ],
+};
+TEMPLATES['alert-notice'] = {
+  label: 'Upozornenie / Alert',
+  description: 'Informačný banner s upozornením',
+  fields: [
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Text upozornenia', type: 'textarea' },
+    {
+      key: 'style',
+      label: 'Štýl (info / warning / error / success)',
+      type: 'text',
+      placeholder: 'info',
+    },
+    { key: 'cta_label', label: 'CTA text (voliteľné)', type: 'text' },
+    { key: 'cta_url', label: 'CTA odkaz', type: 'url' },
+  ],
+};
+TEMPLATES['video-embed'] = {
+  label: 'Video / YouTube embed',
+  description: 'Embednuté YouTube video',
+  fields: [
+    { key: 'title', label: 'Titulok', type: 'text' },
+    { key: 'video_id', label: 'YouTube Video ID', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+  ],
+};
+TEMPLATES['countdown'] = {
+  label: 'Countdown timer',
+  description: 'Odpočet do udalosti / akcie',
+  fields: [
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+    {
+      key: 'target_date',
+      label: 'Cieľový dátum (ISO)',
+      type: 'text',
+      placeholder: '2026-12-31T23:59:59',
+    },
+    { key: 'cta_label', label: 'CTA text', type: 'text' },
+    { key: 'cta_url', label: 'CTA odkaz', type: 'url' },
+  ],
+};
+TEMPLATES['pull-quote'] = {
+  label: 'Citát / Pull quote',
+  description: 'Výrazný citát v článku',
+  fields: [
+    { key: 'text', label: 'Text citátu', type: 'textarea', required: true },
+    { key: 'author', label: 'Autor', type: 'text' },
+  ],
+};
+TEMPLATES['discord'] = {
+  label: 'Discord komunita',
+  description: 'Výzva na pripojenie do Discord servera',
+  fields: [
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+    { key: 'cta_label', label: 'CTA text', type: 'text', placeholder: 'Pridaj sa' },
+    { key: 'cta_url', label: 'Discord odkaz', type: 'url' },
+    { key: 'members_count', label: 'Počet členov', type: 'text' },
+  ],
+};
+TEMPLATES['deal-promo'] = {
+  label: 'Akcia / Zľava',
+  description: 'Reklama na zľavu alebo akciu',
+  fields: [
+    { key: 'badge', label: 'Badge (napr. "-30%")', type: 'text' },
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+    { key: 'original_price', label: 'Pôvodná cena', type: 'text' },
+    { key: 'sale_price', label: 'Akciová cena', type: 'text' },
+    { key: 'cta_label', label: 'CTA text', type: 'text' },
+    { key: 'cta_url', label: 'Odkaz', type: 'url' },
+  ],
+};
+TEMPLATES['testimonials'] = {
+  label: 'Testimonials',
+  description: 'Riadok recenzií / testimonials',
+  fields: [
+    { key: 'title', label: 'Titulok sekcie', type: 'text' },
+    { key: 't1_text', label: 'Testimonial 1 text', type: 'textarea' },
+    { key: 't1_author', label: 'Testimonial 1 autor', type: 'text' },
+    { key: 't2_text', label: 'Testimonial 2 text', type: 'textarea' },
+    { key: 't2_author', label: 'Testimonial 2 autor', type: 'text' },
+    { key: 't3_text', label: 'Testimonial 3 text', type: 'textarea' },
+    { key: 't3_author', label: 'Testimonial 3 autor', type: 'text' },
+  ],
+};
+TEMPLATES['social-share'] = {
+  label: 'Social share',
+  description: 'Výzva na zdieľanie na sociálnych sieťach',
+  fields: [
+    { key: 'title', label: 'Titulok', type: 'text', required: true },
+    { key: 'description', label: 'Popis', type: 'textarea' },
+  ],
+};
+
 // Export pre použitie v iných moduloch (frontend rendering)
 router.TEMPLATES = TEMPLATES;
 

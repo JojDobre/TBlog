@@ -125,6 +125,10 @@
       '</select>' +
       '</div>' +
       '</div>' +
+      '<div class="row g-2 mb-3">' +
+      '<div class="col-md-4"><input type="text" class="form-control form-control-sm" data-field="eyebrow" placeholder="Eyebrow (voliteľné)"></div>' +
+      '<div class="col-md-8"><input type="text" class="form-control form-control-sm" data-field="title" placeholder="Nadpis sekcie (voliteľné)"></div>' +
+      '</div>' +
       '<div class="row g-3">' +
       '<div class="col-md-6">' +
       '<h6 class="text-success small fw-bold mb-2"><i class="bi bi-plus-circle me-1"></i>Plusy</h6>' +

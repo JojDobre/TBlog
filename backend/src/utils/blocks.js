@@ -31,6 +31,42 @@ const BLOCK_TYPES = [
   'color_variants',
   'review_banner',
   'banner',
+  'rvx_glance',
+  'rvx_keyspecs',
+  'rvx_quickstrip',
+  'rvx_connect',
+  'rvx_quotes',
+  'rvx_versus',
+  'rvx_gallery_full',
+  'rvx_gallery_exif',
+  'rvx_gallery_compare',
+  'rvx_gallery_modes',
+  'rvx_gallery_samples',
+  'rvx_gallery_hero',
+  'rvx_buyers',
+  'rvx_deepdive',
+  'rvx_bench',
+  'rvx_timeline',
+  'rvx_pricing',
+  'rvx_hilo',
+  'rvx_generations',
+  'rvx_profile',
+  'rvx_awards',
+  'rvx_box',
+  'rvx_experts',
+  'rvx_usecases',
+  'rvx_battery',
+  'rvx_software',
+  'rvx_design',
+  'rvx_sustain',
+  'rvx_accessories',
+  'rvx_repair',
+  'rvx_buy',
+  'rvx_faq',
+  'rvx_alts',
+  'rvx_pricehist',
+  'rvx_editornote',
+  'rvx_method',
 ];
 const HEADING_LEVELS = [2, 3];
 
@@ -218,6 +254,12 @@ function sanitizeBlocks(raw) {
         if (pros.length === 0 && cons.length === 0) return;
         blocks.push({
           type: 'pros_cons',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
           pros,
           cons,
           width: ['full', 'half'].includes(b.width) ? b.width : 'full',
@@ -348,6 +390,1055 @@ function sanitizeBlocks(raw) {
         if (bid && Number.isInteger(bid) && bid > 0) {
           blocks.push({ type: 'banner', banner_id: bid });
         }
+        break;
+      }
+      case 'rvx_glance': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 6)
+          .map((it) => ({
+            icon: String(it.icon || 'check')
+              .slice(0, 30)
+              .trim(),
+            title: String(it.title || '')
+              .slice(0, 120)
+              .trim(),
+            text: String(it.text || '')
+              .slice(0, 400)
+              .trim(),
+          }))
+          .filter((it) => it.title);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_glance',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_keyspecs': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 12)
+          .map((it) => ({
+            num: String(it.num || '')
+              .slice(0, 40)
+              .trim(),
+            label: String(it.label || '')
+              .slice(0, 80)
+              .trim(),
+          }))
+          .filter((it) => it.num);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_keyspecs',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_quickstrip': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 8)
+          .map((it) => ({
+            label: String(it.label || '')
+              .slice(0, 60)
+              .trim(),
+            value: String(it.value || '')
+              .slice(0, 80)
+              .trim(),
+            style: ['', 'good', 'great', 'bad'].includes(it.style) ? it.style : '',
+          }))
+          .filter((it) => it.label);
+        if (!items.length) return;
+        blocks.push({ type: 'rvx_quickstrip', items });
+        break;
+      }
+      case 'rvx_connect': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 30)
+          .map((it) =>
+            String(it || '')
+              .slice(0, 60)
+              .trim()
+          )
+          .filter(Boolean);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_connect',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_quotes': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            text: String(it.text || '')
+              .slice(0, 1000)
+              .trim(),
+            author: String(it.author || '')
+              .slice(0, 120)
+              .trim(),
+          }))
+          .filter((it) => it.text);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_quotes',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_versus': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 5)
+          .map((it) => ({
+            name: String(it.name || '')
+              .slice(0, 120)
+              .trim(),
+            desc: String(it.desc || '')
+              .slice(0, 300)
+              .trim(),
+            score: Math.min(10, Math.max(0, Number(it.score) || 0)),
+            pros: Array.isArray(it.pros)
+              ? it.pros
+                  .slice(0, 5)
+                  .map((s) =>
+                    String(s || '')
+                      .slice(0, 200)
+                      .trim()
+                  )
+                  .filter(Boolean)
+              : [],
+            cons: Array.isArray(it.cons)
+              ? it.cons
+                  .slice(0, 5)
+                  .map((s) =>
+                    String(s || '')
+                      .slice(0, 200)
+                      .trim()
+                  )
+                  .filter(Boolean)
+              : [],
+          }))
+          .filter((it) => it.name);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_versus',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_gallery_full': {
+        if (!Array.isArray(b.items)) return;
+        const items = [];
+        for (const it of b.items.slice(0, 50)) {
+          const mid = Number(it.media_id);
+          if (!Number.isInteger(mid) || mid < 1) continue;
+          const o = { media_id: mid };
+          if (it.caption) o.caption = String(it.caption).slice(0, 500).trim();
+          items.push(o);
+        }
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_gallery_full',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_gallery_exif': {
+        if (!Array.isArray(b.items)) return;
+        const items = [];
+        for (const it of b.items.slice(0, 30)) {
+          const mid = Number(it.media_id);
+          if (!Number.isInteger(mid) || mid < 1) continue;
+          items.push({
+            media_id: mid,
+            title: String(it.title || '')
+              .slice(0, 200)
+              .trim(),
+            focal: String(it.focal || '')
+              .slice(0, 40)
+              .trim(),
+            aperture: String(it.aperture || '')
+              .slice(0, 20)
+              .trim(),
+            iso: String(it.iso || '')
+              .slice(0, 20)
+              .trim(),
+            shutter: String(it.shutter || '')
+              .slice(0, 20)
+              .trim(),
+          });
+        }
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_gallery_exif',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_gallery_compare': {
+        if (!Array.isArray(b.items)) return;
+        const items = [];
+        for (const it of b.items.slice(0, 10)) {
+          const bid2 = Number(it.before_media_id),
+            aid = Number(it.after_media_id);
+          if (!Number.isInteger(bid2) || bid2 < 1 || !Number.isInteger(aid) || aid < 1) continue;
+          items.push({
+            before_media_id: bid2,
+            after_media_id: aid,
+            label: String(it.label || '')
+              .slice(0, 100)
+              .trim(),
+            before_label: String(it.before_label || 'PRED')
+              .slice(0, 40)
+              .trim(),
+            after_label: String(it.after_label || 'PO')
+              .slice(0, 40)
+              .trim(),
+          });
+        }
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_gallery_compare',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_gallery_modes': {
+        if (!Array.isArray(b.items)) return;
+        const items = [];
+        for (const it of b.items.slice(0, 12)) {
+          const mid = Number(it.media_id);
+          if (!Number.isInteger(mid) || mid < 1) continue;
+          items.push({
+            media_id: mid,
+            title: String(it.title || '')
+              .slice(0, 100)
+              .trim(),
+            desc: String(it.desc || '')
+              .slice(0, 200)
+              .trim(),
+            icon: String(it.icon || 'image')
+              .slice(0, 30)
+              .trim(),
+          });
+        }
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_gallery_modes',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_gallery_samples': {
+        if (!Array.isArray(b.items)) return;
+        const items = [];
+        for (const it of b.items.slice(0, 30)) {
+          const mid = Number(it.media_id);
+          if (!Number.isInteger(mid) || mid < 1) continue;
+          items.push({
+            media_id: mid,
+            caption: String(it.caption || '')
+              .slice(0, 300)
+              .trim(),
+            settings: String(it.settings || '')
+              .slice(0, 200)
+              .trim(),
+          });
+        }
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_gallery_samples',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_gallery_hero': {
+        if (!Array.isArray(b.items)) return;
+        const items = [];
+        for (const it of b.items.slice(0, 10)) {
+          const mid = Number(it.media_id);
+          if (!Number.isInteger(mid) || mid < 1) continue;
+          items.push({
+            media_id: mid,
+            caption: String(it.caption || '')
+              .slice(0, 300)
+              .trim(),
+          });
+        }
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_gallery_hero',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_buyers': {
+        const yes = Array.isArray(b.yes)
+          ? b.yes
+              .slice(0, 10)
+              .map((s) =>
+                String(s || '')
+                  .slice(0, 200)
+                  .trim()
+              )
+              .filter(Boolean)
+          : [];
+        const maybe = Array.isArray(b.maybe)
+          ? b.maybe
+              .slice(0, 10)
+              .map((s) =>
+                String(s || '')
+                  .slice(0, 200)
+                  .trim()
+              )
+              .filter(Boolean)
+          : [];
+        const no = Array.isArray(b.no)
+          ? b.no
+              .slice(0, 10)
+              .map((s) =>
+                String(s || '')
+                  .slice(0, 200)
+                  .trim()
+              )
+              .filter(Boolean)
+          : [];
+        if (!yes.length && !maybe.length && !no.length) return;
+        blocks.push({
+          type: 'rvx_buyers',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          yes,
+          maybe,
+          no,
+        });
+        break;
+      }
+      case 'rvx_deepdive': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            tab_title: String(it.tab_title || '')
+              .slice(0, 100)
+              .trim(),
+            text: String(it.text || '')
+              .slice(0, 5000)
+              .trim(),
+          }))
+          .filter((it) => it.tab_title);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_deepdive',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_bench': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 20)
+          .map((it) => ({
+            name: String(it.name || '')
+              .slice(0, 100)
+              .trim(),
+            score: Math.max(0, Number(it.score) || 0),
+            max: Math.max(1, Number(it.max) || 100),
+            label: String(it.label || '')
+              .slice(0, 60)
+              .trim(),
+          }))
+          .filter((it) => it.name);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_bench',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_timeline': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 30)
+          .map((it) => ({
+            day: String(it.day || '')
+              .slice(0, 40)
+              .trim(),
+            title: String(it.title || '')
+              .slice(0, 200)
+              .trim(),
+            text: String(it.text || '')
+              .slice(0, 1000)
+              .trim(),
+          }))
+          .filter((it) => it.title);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_timeline',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_pricing': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            name: String(it.name || '')
+              .slice(0, 120)
+              .trim(),
+            price: String(it.price || '')
+              .slice(0, 60)
+              .trim(),
+            specs: String(it.specs || '')
+              .slice(0, 500)
+              .trim(),
+            url: String(it.url || '')
+              .slice(0, 500)
+              .trim(),
+          }))
+          .filter((it) => it.name);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_pricing',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_hilo': {
+        const highs = Array.isArray(b.highs)
+          ? b.highs
+              .slice(0, 10)
+              .map((s) =>
+                String(s || '')
+                  .slice(0, 300)
+                  .trim()
+              )
+              .filter(Boolean)
+          : [];
+        const lows = Array.isArray(b.lows)
+          ? b.lows
+              .slice(0, 10)
+              .map((s) =>
+                String(s || '')
+                  .slice(0, 300)
+                  .trim()
+              )
+              .filter(Boolean)
+          : [];
+        if (!highs.length && !lows.length) return;
+        blocks.push({
+          type: 'rvx_hilo',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          highs,
+          lows,
+        });
+        break;
+      }
+      case 'rvx_generations': {
+        if (!Array.isArray(b.headers) || !Array.isArray(b.rows)) return;
+        const headers = b.headers
+          .slice(0, 10)
+          .map((s) =>
+            String(s || '')
+              .slice(0, 100)
+              .trim()
+          )
+          .filter(Boolean);
+        const rows = b.rows
+          .slice(0, 30)
+          .map((r) => ({
+            cells: Array.isArray(r.cells)
+              ? r.cells.slice(0, 10).map((s) =>
+                  String(s || '')
+                    .slice(0, 200)
+                    .trim()
+                )
+              : [],
+          }))
+          .filter((r) => r.cells.length);
+        if (!headers.length || !rows.length) return;
+        blocks.push({
+          type: 'rvx_generations',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          headers,
+          rows,
+        });
+        break;
+      }
+      case 'rvx_profile': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 20)
+          .map((it) => ({
+            label: String(it.label || '')
+              .slice(0, 100)
+              .trim(),
+            value: String(it.value || '')
+              .slice(0, 200)
+              .trim(),
+          }))
+          .filter((it) => it.label);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_profile',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_awards': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            title: String(it.title || '')
+              .slice(0, 200)
+              .trim(),
+            org: String(it.org || '')
+              .slice(0, 120)
+              .trim(),
+            year: String(it.year || '')
+              .slice(0, 10)
+              .trim(),
+          }))
+          .filter((it) => it.title);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_awards',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_box': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 20)
+          .map((it) => {
+            if (typeof it === 'string') return { icon: 'category', text: it.slice(0, 200).trim() };
+            return {
+              icon: String(it.icon || 'category')
+                .slice(0, 30)
+                .trim(),
+              text: String(it.text || '')
+                .slice(0, 200)
+                .trim(),
+            };
+          })
+          .filter((it) => it.text);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_box',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_experts': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            name: String(it.name || '')
+              .slice(0, 120)
+              .trim(),
+            role: String(it.role || '')
+              .slice(0, 120)
+              .trim(),
+            text: String(it.text || '')
+              .slice(0, 1000)
+              .trim(),
+            score: it.score ? Math.min(10, Math.max(0, Number(it.score) || 0)) : null,
+          }))
+          .filter((it) => it.name && it.text);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_experts',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_usecases': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            icon: String(it.icon || 'check')
+              .slice(0, 30)
+              .trim(),
+            title: String(it.title || '')
+              .slice(0, 120)
+              .trim(),
+            text: String(it.text || '')
+              .slice(0, 500)
+              .trim(),
+            verdict: ['yes', 'maybe', 'no'].includes(it.verdict) ? it.verdict : 'yes',
+          }))
+          .filter((it) => it.title);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_usecases',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_battery': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 15)
+          .map((it) => ({
+            scenario: String(it.scenario || '')
+              .slice(0, 100)
+              .trim(),
+            hours: String(it.hours || '')
+              .slice(0, 20)
+              .trim(),
+            pct: Math.min(100, Math.max(0, Number(it.pct) || 0)),
+          }))
+          .filter((it) => it.scenario);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_battery',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_software': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 15)
+          .map((it) => ({
+            title: String(it.title || '')
+              .slice(0, 120)
+              .trim(),
+            text: String(it.text || '')
+              .slice(0, 500)
+              .trim(),
+          }))
+          .filter((it) => it.title);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_software',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_design': {
+        const text = String(b.text || '')
+          .slice(0, 3000)
+          .trim();
+        const items = Array.isArray(b.items)
+          ? b.items
+              .slice(0, 15)
+              .map((it) => ({
+                label: String(it.label || '')
+                  .slice(0, 100)
+                  .trim(),
+                value: String(it.value || '')
+                  .slice(0, 200)
+                  .trim(),
+              }))
+              .filter((it) => it.label)
+          : [];
+        if (!text && !items.length) return;
+        blocks.push({
+          type: 'rvx_design',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          text,
+          items,
+        });
+        break;
+      }
+      case 'rvx_sustain': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 15)
+          .map((it) => ({
+            label: String(it.label || '')
+              .slice(0, 100)
+              .trim(),
+            value: String(it.value || '')
+              .slice(0, 200)
+              .trim(),
+          }))
+          .filter((it) => it.label);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_sustain',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_accessories': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 20)
+          .map((it) => {
+            const mid = Number(it.media_id);
+            return {
+              name: String(it.name || '')
+                .slice(0, 120)
+                .trim(),
+              price: String(it.price || '')
+                .slice(0, 60)
+                .trim(),
+              url: String(it.url || '')
+                .slice(0, 500)
+                .trim(),
+              note: String(it.note || '')
+                .slice(0, 200)
+                .trim(),
+              media_id: Number.isInteger(mid) && mid > 0 ? mid : null,
+            };
+          })
+          .filter((it) => it.name);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_accessories',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_repair': {
+        const score = Math.min(10, Math.max(0, Number(b.score) || 0));
+        const items = Array.isArray(b.items)
+          ? b.items
+              .slice(0, 10)
+              .map((it) => ({
+                label: String(it.label || '')
+                  .slice(0, 100)
+                  .trim(),
+                value: String(it.value || '')
+                  .slice(0, 200)
+                  .trim(),
+              }))
+              .filter((it) => it.label)
+          : [];
+        blocks.push({
+          type: 'rvx_repair',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          score,
+          items,
+        });
+        break;
+      }
+      case 'rvx_buy': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 20)
+          .map((it) => ({
+            shop: String(it.shop || '')
+              .slice(0, 120)
+              .trim(),
+            price: String(it.price || '')
+              .slice(0, 60)
+              .trim(),
+            url: String(it.url || '')
+              .slice(0, 500)
+              .trim(),
+          }))
+          .filter((it) => it.shop);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_buy',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_faq': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 20)
+          .map((it) => ({
+            q: String(it.q || '')
+              .slice(0, 300)
+              .trim(),
+            a: String(it.a || '')
+              .slice(0, 2000)
+              .trim(),
+          }))
+          .filter((it) => it.q && it.a);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_faq',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_alts': {
+        if (!Array.isArray(b.items)) return;
+        const items = b.items
+          .slice(0, 10)
+          .map((it) => ({
+            name: String(it.name || '')
+              .slice(0, 120)
+              .trim(),
+            score: it.score ? Math.min(10, Math.max(0, Number(it.score) || 0)) : null,
+            reason: String(it.reason || '')
+              .slice(0, 300)
+              .trim(),
+            url: String(it.url || '')
+              .slice(0, 500)
+              .trim(),
+            slug: String(it.slug || '')
+              .slice(0, 200)
+              .trim(),
+          }))
+          .filter((it) => it.name);
+        if (!items.length) return;
+        blocks.push({
+          type: 'rvx_alts',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          items,
+        });
+        break;
+      }
+      case 'rvx_pricehist': {
+        blocks.push({
+          type: 'rvx_pricehist',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          note: String(b.note || '')
+            .slice(0, 500)
+            .trim(),
+          url: String(b.url || '')
+            .slice(0, 500)
+            .trim(),
+        });
+        break;
+      }
+      case 'rvx_editornote': {
+        const text = String(b.text || '')
+          .slice(0, 3000)
+          .trim();
+        if (!text) return;
+        blocks.push({
+          type: 'rvx_editornote',
+          text,
+          author: String(b.author || '')
+            .slice(0, 120)
+            .trim(),
+        });
+        break;
+      }
+      case 'rvx_method': {
+        const text = String(b.text || '')
+          .slice(0, 3000)
+          .trim();
+        const items = Array.isArray(b.items)
+          ? b.items
+              .slice(0, 20)
+              .map((s) =>
+                String(s || '')
+                  .slice(0, 200)
+                  .trim()
+              )
+              .filter(Boolean)
+          : [];
+        if (!text && !items.length) return;
+        blocks.push({
+          type: 'rvx_method',
+          eyebrow: String(b.eyebrow || '')
+            .slice(0, 120)
+            .trim(),
+          title: String(b.title || '')
+            .slice(0, 200)
+            .trim(),
+          text,
+          items,
+        });
         break;
       }
       default:

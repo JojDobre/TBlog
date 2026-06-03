@@ -568,6 +568,32 @@ router.get('/clanok/:slug', async (req, res, next) => {
           }
         }
       }
+      // rvx galleries
+      if (
+        [
+          'rvx_gallery_full',
+          'rvx_gallery_exif',
+          'rvx_gallery_modes',
+          'rvx_gallery_samples',
+          'rvx_gallery_hero',
+        ].includes(b.type) &&
+        Array.isArray(b.items)
+      ) {
+        for (const it of b.items) {
+          if (it.media_id) mediaIds.push(it.media_id);
+        }
+      }
+      if (b.type === 'rvx_accessories' && Array.isArray(b.items)) {
+        for (const it of b.items) {
+          if (it.media_id) mediaIds.push(it.media_id);
+        }
+      }
+      if (b.type === 'rvx_gallery_compare' && Array.isArray(b.items)) {
+        for (const it of b.items) {
+          if (it.before_media_id) mediaIds.push(it.before_media_id);
+          if (it.after_media_id) mediaIds.push(it.after_media_id);
+        }
+      }
     }
 
     let mediaMap = new Map();

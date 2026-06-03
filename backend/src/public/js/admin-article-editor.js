@@ -84,7 +84,7 @@
           width: 'full',
         };
       case 'pros_cons':
-        return { type: 'pros_cons', pros: [''], cons: [''], width: 'full' };
+        return { type: 'pros_cons', eyebrow: '', title: '', pros: [''], cons: [''], width: 'full' };
       case 'specs':
         return { type: 'specs', rows: [{ key: '', value: '' }], width: 'full' };
       case 'rating':
@@ -117,6 +117,200 @@
           buttons: [],
           width: 'full',
         };
+
+      case 'rvx_glance':
+        return {
+          type: 'rvx_glance',
+          eyebrow: '',
+          title: '',
+          items: [{ icon: 'check', title: '', text: '' }],
+        };
+      case 'rvx_keyspecs':
+        return { type: 'rvx_keyspecs', eyebrow: '', title: '', items: [{ num: '', label: '' }] };
+      case 'rvx_quickstrip':
+        return { type: 'rvx_quickstrip', items: [{ label: '', value: '', style: '' }] };
+      case 'rvx_connect':
+        return { type: 'rvx_connect', eyebrow: '', title: '', items: [''] };
+      case 'rvx_quotes':
+        return { type: 'rvx_quotes', eyebrow: '', title: '', items: [{ text: '', author: '' }] };
+      case 'rvx_versus':
+        return {
+          type: 'rvx_versus',
+          eyebrow: '',
+          title: '',
+          items: [{ name: '', desc: '', score: 0, pros: [], cons: [] }],
+        };
+      case 'rvx_gallery_full':
+        return {
+          type: 'rvx_gallery_full',
+          eyebrow: '',
+          title: '',
+          items: [{ media_id: null, caption: '' }],
+        };
+      case 'rvx_gallery_exif':
+        return {
+          type: 'rvx_gallery_exif',
+          eyebrow: '',
+          title: '',
+          items: [{ media_id: null, title: '', focal: '', aperture: '', iso: '', shutter: '' }],
+        };
+      case 'rvx_gallery_compare':
+        return {
+          type: 'rvx_gallery_compare',
+          eyebrow: '',
+          title: '',
+          items: [
+            {
+              before_media_id: null,
+              after_media_id: null,
+              label: '',
+              before_label: 'PRED',
+              after_label: 'PO',
+            },
+          ],
+        };
+      case 'rvx_gallery_modes':
+        return {
+          type: 'rvx_gallery_modes',
+          eyebrow: '',
+          title: '',
+          items: [{ media_id: null, title: '', desc: '', icon: 'image' }],
+        };
+      case 'rvx_gallery_samples':
+        return {
+          type: 'rvx_gallery_samples',
+          eyebrow: '',
+          title: '',
+          items: [{ media_id: null, caption: '', settings: '' }],
+        };
+      case 'rvx_gallery_hero':
+        return {
+          type: 'rvx_gallery_hero',
+          eyebrow: '',
+          title: '',
+          items: [{ media_id: null, caption: '' }],
+        };
+      case 'rvx_buyers':
+        return { type: 'rvx_buyers', eyebrow: '', title: '', yes: [''], maybe: [''], no: [''] };
+      case 'rvx_deepdive':
+        return {
+          type: 'rvx_deepdive',
+          eyebrow: '',
+          title: '',
+          items: [{ tab_title: '', text: '' }],
+        };
+      case 'rvx_bench':
+        return {
+          type: 'rvx_bench',
+          eyebrow: '',
+          title: '',
+          items: [{ name: '', score: 0, max: 100, label: '' }],
+        };
+      case 'rvx_timeline':
+        return {
+          type: 'rvx_timeline',
+          eyebrow: '',
+          title: '',
+          items: [{ day: '', title: '', text: '' }],
+        };
+      case 'rvx_pricing':
+        return {
+          type: 'rvx_pricing',
+          eyebrow: '',
+          title: '',
+          items: [{ name: '', price: '', specs: '', url: '' }],
+        };
+      case 'rvx_hilo':
+        return { type: 'rvx_hilo', eyebrow: '', title: '', highs: [''], lows: [''] };
+      case 'rvx_generations':
+        return {
+          type: 'rvx_generations',
+          eyebrow: '',
+          title: '',
+          headers: [''],
+          rows: [{ cells: [''] }],
+        };
+      case 'rvx_profile':
+        return { type: 'rvx_profile', eyebrow: '', title: '', items: [{ label: '', value: '' }] };
+      case 'rvx_awards':
+        return {
+          type: 'rvx_awards',
+          eyebrow: '',
+          title: '',
+          items: [{ title: '', org: '', year: '' }],
+        };
+      case 'rvx_box':
+        return { type: 'rvx_box', eyebrow: '', title: '', items: [{ icon: 'category', text: '' }] };
+      case 'rvx_experts':
+        return {
+          type: 'rvx_experts',
+          eyebrow: '',
+          title: '',
+          items: [{ name: '', role: '', text: '', score: null }],
+        };
+      case 'rvx_usecases':
+        return {
+          type: 'rvx_usecases',
+          eyebrow: '',
+          title: '',
+          items: [{ icon: 'check', title: '', text: '', verdict: 'yes' }],
+        };
+      case 'rvx_battery':
+        return {
+          type: 'rvx_battery',
+          eyebrow: '',
+          title: '',
+          items: [{ scenario: '', hours: '', pct: 0 }],
+        };
+      case 'rvx_software':
+        return { type: 'rvx_software', eyebrow: '', title: '', items: [{ title: '', text: '' }] };
+      case 'rvx_design':
+        return {
+          type: 'rvx_design',
+          eyebrow: '',
+          title: '',
+          text: '',
+          items: [{ label: '', value: '' }],
+        };
+      case 'rvx_sustain':
+        return { type: 'rvx_sustain', eyebrow: '', title: '', items: [{ label: '', value: '' }] };
+      case 'rvx_accessories':
+        return {
+          type: 'rvx_accessories',
+          eyebrow: '',
+          title: '',
+          items: [{ name: '', price: '', url: '', note: '', media_id: null }],
+        };
+      case 'rvx_repair':
+        return {
+          type: 'rvx_repair',
+          eyebrow: '',
+          title: '',
+          score: 0,
+          items: [{ label: '', value: '' }],
+        };
+      case 'rvx_buy':
+        return {
+          type: 'rvx_buy',
+          eyebrow: '',
+          title: '',
+          items: [{ shop: '', price: '', url: '' }],
+        };
+      case 'rvx_faq':
+        return { type: 'rvx_faq', eyebrow: '', title: '', items: [{ q: '', a: '' }] };
+      case 'rvx_alts':
+        return {
+          type: 'rvx_alts',
+          eyebrow: '',
+          title: '',
+          items: [{ name: '', score: null, reason: '', url: '', slug: '' }],
+        };
+      case 'rvx_pricehist':
+        return { type: 'rvx_pricehist', eyebrow: '', title: '', note: '', url: '' };
+      case 'rvx_editornote':
+        return { type: 'rvx_editornote', text: '', author: '' };
+      case 'rvx_method':
+        return { type: 'rvx_method', eyebrow: '', title: '', text: '', items: [''] };
 
       default:
         return null;
@@ -413,6 +607,12 @@
     else if (type === 'list') setupList(node);
     else if (window.__bzReviewBlocks && window.__bzReviewBlocks.setup) {
       window.__bzReviewBlocks.setup(node, type);
+    }
+    if (window.__bzRvxBlocks1 && window.__bzRvxBlocks1.setup) {
+      window.__bzRvxBlocks1.setup(node, type);
+    }
+    if (window.__bzRvxBlocks && window.__bzRvxBlocks.setup) {
+      window.__bzRvxBlocks.setup(node, type);
     }
     if (type === 'banner' && window.__bzBannerBlock) {
       window.__bzBannerBlock.setup(node, blocks[currentIndex(node)].banner_id);
