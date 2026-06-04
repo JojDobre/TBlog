@@ -76,8 +76,8 @@
         <article class="card card-link browse-item <%= cls %>">
           <a href="/clanok/<%= a.slug %>">
             <% if (hasImage) { %>
-            <% if (a.cover_full || a.cover_thumb) { %>
-            <div class="ph" style="background-image:url('/uploads/<%= a.cover_full || a.cover_thumb %>');background-size:cover;background-position:center;"></div>
+            <% if (a.cover_medium || a.cover_full || a.cover_thumb) { %>
+            <div class="ph" style="background-image:url('/uploads/<%= a.cover_medium || a.cover_full || a.cover_thumb %>');background-size:cover;background-position:center;"></div>
             <% } else { %>
             <div class="ph ph-<%= (a.id % 9) + 1 %>"></div>
             <% } %>

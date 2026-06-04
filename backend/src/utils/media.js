@@ -21,12 +21,13 @@ const config = require('../../../config');
 
 const ORIGINALS_DIR = path.join(config.paths.uploads, 'originals');
 const THUMBNAILS_DIR = path.join(config.paths.uploads, 'thumbnails');
+const MEDIUM_DIR = path.join(config.paths.uploads, 'medium');
 
 const EXT_BY_MIME = {
   'image/jpeg': '.jpg',
-  'image/png':  '.png',
+  'image/png': '.png',
   'image/webp': '.webp',
-  'image/gif':  '.gif',
+  'image/gif': '.gif',
 };
 
 async function processImageUpload({ file, uploaderId, altText, caption }) {
@@ -36,9 +37,11 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
   const uuid = uuidv4();
   const originalName = uuid + ext;
   const thumbnailName = uuid + '.jpg';
+  const mediumName = uuid + '.webp';
 
   await fs.mkdir(ORIGINALS_DIR, { recursive: true });
   await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
+  await fs.mkdir(MEDIUM_DIR, { recursive: true });
 
   const originalAbs = path.join(ORIGINALS_DIR, originalName);
   const thumbnailAbs = path.join(THUMBNAILS_DIR, thumbnailName);
@@ -62,26 +65,39 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
     await fs.unlink(file.path).catch(() => {});
   }
 
-  // 3) Generate thumbnail
+  // 3) Generate thumbnail (400px JPEG for admin)
   try {
     await sharp(originalAbs)
-      .rotate() // auto-orient based on EXIF
+      .rotate()
       .resize(config.uploads.image.thumbnailWidth, null, { withoutEnlargement: true })
       .jpeg({ quality: 80, progressive: true })
       .toFile(thumbnailAbs);
   } catch (err) {
     log.error('thumbnail generation failed', { err: err.message });
-    // thumbnail failure shouldn't kill the upload — but we want a thumbnail.
-    // Clean up original and re-throw.
     await fs.unlink(originalAbs).catch(() => {});
     throw new Error('Nepodarilo sa vytvoriť náhľad obrázka.');
   }
 
-  // 4) DB insert
+  // 4) Generate medium (1200px WebP for frontend)
+  const mediumAbs = path.join(MEDIUM_DIR, mediumName);
+  let mediumPath = null;
+  try {
+    await sharp(originalAbs)
+      .rotate()
+      .resize(1200, null, { withoutEnlargement: true })
+      .webp({ quality: 85 })
+      .toFile(mediumAbs);
+    mediumPath = 'medium/' + mediumName;
+  } catch (err) {
+    log.warn('medium generation failed (non-fatal)', { err: err.message });
+  }
+
+  // 5) DB insert
   const inserted = await db('media').insert({
     type: 'image',
     original_path: 'originals/' + originalName,
     thumbnail_path: 'thumbnails/' + thumbnailName,
+    medium_path: mediumPath,
     mime: file.mimetype,
     size_bytes: file.size,
     width: metadata.width || null,

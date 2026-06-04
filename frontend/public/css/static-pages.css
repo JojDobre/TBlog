@@ -200,7 +200,7 @@
 
 /* Content */
 .sp-content {
-  max-width: 720px;
+  max-width: 90%;
 }
 .sp-section {
   padding: 24px 0 56px;
@@ -228,7 +228,7 @@
   background: oklch(from var(--accent) l c h / 0.08);
   border-radius: 99px;
   font-weight: 600;
-  align-self: start;
+  align-self: center;
   white-space: nowrap;
 }
 .sp-section-head h2 {
@@ -245,7 +245,6 @@
   line-height: 1.7;
   color: var(--text-muted);
   margin: 0 0 18px;
-  max-width: 60ch;
 }
 
 /* Section foot */

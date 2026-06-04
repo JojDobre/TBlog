@@ -112,8 +112,8 @@
         <% relatedArticles.forEach(r => { %>
         <a href="/clanok/<%= r.slug %>" class="card card-link minimal-review">
           <div class="ph" style="aspect-ratio:1; position:relative;">
-            <% if (r.cover_thumb) { %>
-            <img src="/uploads/<%= r.cover_thumb %>" alt="<%= r.title %>" loading="lazy">
+            <% if (r.cover_medium || r.cover_thumb) { %>
+            <img src="/uploads/<%= r.cover_medium || r.cover_thumb %>" alt="<%= r.title %>" loading="lazy">
             <% } else { %>
             <div class="ph ph-<%= (r.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
             <% } %>

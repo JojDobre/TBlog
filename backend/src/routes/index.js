@@ -116,7 +116,8 @@ router.get('/hladaj', async (req, res, next) => {
           'articles.view_count',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
-          'media.thumbnail_path as cover_thumb'
+          'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium'
         )
         .orderBy('articles.view_count', 'desc')
         .limit(perPage)
@@ -196,6 +197,7 @@ async function buildListing(queryBuilder, { page, sort, type }) {
       'users.nickname as author_name',
       'author_media.thumbnail_path as author_avatar',
       'media.thumbnail_path as cover_thumb',
+      'media.medium_path as cover_medium',
       'media.original_path as cover_full'
     )
     .orderBy(orderCol, 'desc')
@@ -530,6 +532,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
         'users.nickname as author_name',
         'author_media.thumbnail_path as author_avatar',
         'cover.thumbnail_path as cover_thumb',
+        'cover.medium_path as cover_medium',
         'cover.original_path as cover_full',
         'og.original_path as og_path'
       )
@@ -658,7 +661,8 @@ router.get('/clanok/:slug', async (req, res, next) => {
         'ra.slug',
         'ra.published_at',
         'ra.view_count',
-        'rm.thumbnail_path as cover_thumb'
+        'rm.thumbnail_path as cover_thumb',
+        'rm.medium_path as cover_medium'
       )
       .orderBy('article_related.display_order', 'asc')
       .limit(5);
@@ -679,7 +683,8 @@ router.get('/clanok/:slug', async (req, res, next) => {
           'ra.slug',
           'ra.published_at',
           'ra.view_count',
-          'rm.thumbnail_path as cover_thumb'
+          'rm.thumbnail_path as cover_thumb',
+          'rm.medium_path as cover_medium'
         )
         .orderBy('ra.published_at', 'desc')
         .limit(5);
@@ -823,6 +828,7 @@ router.get('/', async (req, res, next) => {
         'users.nickname as author_name',
         'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
+        'media.medium_path as cover_medium',
         'media.original_path as cover_full'
       )
       .orderBy('articles.published_at', 'desc')
@@ -845,6 +851,7 @@ router.get('/', async (req, res, next) => {
         'users.nickname as author_name',
         'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
+        'media.medium_path as cover_medium',
         'media.original_path as cover_full'
       )
       .orderBy('articles.published_at', 'desc')
@@ -868,7 +875,8 @@ router.get('/', async (req, res, next) => {
         'articles.view_count',
         'users.nickname as author_name',
         'author_media.thumbnail_path as author_avatar',
-        'media.thumbnail_path as cover_thumb'
+        'media.thumbnail_path as cover_thumb',
+        'media.medium_path as cover_medium'
       )
       .orderBy('articles.view_count', 'desc')
       .limit(6);
@@ -892,7 +900,8 @@ router.get('/', async (req, res, next) => {
           'articles.view_count',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
-          'media.thumbnail_path as cover_thumb'
+          'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium'
         )
         .orderBy('articles.view_count', 'desc')
         .limit(6 - trending.length);
@@ -916,6 +925,7 @@ router.get('/', async (req, res, next) => {
         'users.nickname as author_name',
         'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
+        'media.medium_path as cover_medium',
         'media.original_path as cover_full'
       )
       .orderBy('articles.view_count', 'desc')
@@ -939,6 +949,7 @@ router.get('/', async (req, res, next) => {
         'users.nickname as author_name',
         'author_media.thumbnail_path as author_avatar',
         'media.thumbnail_path as cover_thumb',
+        'media.medium_path as cover_medium',
         'media.original_path as cover_full'
       )
       .orderBy('articles.published_at', 'desc')
@@ -1341,6 +1352,7 @@ router.get('/ulozene', async (req, res, next) => {
           'articles.view_count',
           'users.nickname as author_name',
           'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium',
           'user_bookmarks.created_at as saved_at'
         )
         .orderBy('user_bookmarks.created_at', 'desc');

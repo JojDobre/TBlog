@@ -63,8 +63,8 @@
           <div class="hero-banner-visual">
             <div class="hero-banner-shadow"></div>
             <div class="hero-banner-img">
-              <% if (a.cover_full) { %>
-              <img src="/uploads/<%= a.cover_full %>" alt="<%= a.title %>" loading="<%= idx === 0 ? 'eager' : 'lazy' %>">
+              <% if (a.cover_medium || a.cover_full) { %>
+              <img src="/uploads/<%= a.cover_medium || a.cover_full %>" alt="<%= a.title %>" loading="<%= idx === 0 ? 'eager' : 'lazy' %>">
               <% } else { %>
               <div class="ph ph-<%= (a.id % 9) + 1 %>"></div>
               <% } %>
@@ -125,8 +125,8 @@
         <% if (latest[0]) { %>
         <article class="card card-link bento-a">
           <a href="/clanok/<%= latest[0].slug %>">
-            <% if (latest[0].cover_full) { %>
-            <div class="ph" style="background-image: url('/uploads/<%= latest[0].cover_full %>'); background-size: cover; background-position: center;"></div>
+            <% if (latest[0].cover_medium || latest[0].cover_full) { %>
+            <div class="ph" style="background-image: url('/uploads/<%= latest[0].cover_medium || latest[0].cover_full %>'); background-size: cover; background-position: center;"></div>
             <% } else { %>
             <div class="ph ph-<%= (latest[0].id % 9) + 1 %>"></div>
             <% } %>
@@ -143,8 +143,8 @@
         <% if (latest[1]) { %>
         <article class="card card-link bento-b">
           <a href="/clanok/<%= latest[1].slug %>">
-            <% if (latest[1].cover_full) { %>
-            <div class="ph" style="background-image: url('/uploads/<%= latest[1].cover_full %>'); background-size: cover; background-position: center;"></div>
+            <% if (latest[1].cover_medium || latest[1].cover_full) { %>
+            <div class="ph" style="background-image: url('/uploads/<%= latest[1].cover_medium || latest[1].cover_full %>'); background-size: cover; background-position: center;"></div>
             <% } else { %>
             <div class="ph ph-<%= (latest[1].id % 9) + 1 %>"></div>
             <% } %>
@@ -170,8 +170,8 @@
         <% if (latest[3]) { %>
         <article class="card card-link bento-d">
           <a href="/clanok/<%= latest[3].slug %>">
-            <% if (latest[3].cover_full) { %>
-            <div class="ph" style="background-image: url('/uploads/<%= latest[3].cover_full %>'); background-size: cover; background-position: center;"></div>
+            <% if (latest[3].cover_medium || latest[3].cover_full) { %>
+            <div class="ph" style="background-image: url('/uploads/<%= latest[3].cover_medium || latest[3].cover_full %>'); background-size: cover; background-position: center;"></div>
             <% } else { %>
             <div class="ph ph-<%= (latest[3].id % 9) + 1 %>"></div>
             <% } %>
@@ -198,8 +198,8 @@
         <% if (latest[5]) { %>
         <article class="card card-link bento-b">
           <a href="/clanok/<%= latest[5].slug %>">
-            <% if (latest[5].cover_full) { %>
-            <div class="ph" style="background-image: url('/uploads/<%= latest[5].cover_full %>'); background-size: cover; background-position: center;"></div>
+            <% if (latest[5].cover_medium || latest[5].cover_full) { %>
+            <div class="ph" style="background-image: url('/uploads/<%= latest[5].cover_medium || latest[5].cover_full %>'); background-size: cover; background-position: center;"></div>
             <% } else { %>
             <div class="ph ph-<%= (latest[5].id % 9) + 1 %>"></div>
             <% } %>
@@ -294,8 +294,8 @@
         <% reviews.slice(0, 15).forEach(a => { %>
         <a href="/clanok/<%= a.slug %>" class="card card-link minimal-review">
           <div class="ph" style="aspect-ratio:1; position:relative;">
-            <% if (a.cover_thumb) { %>
-            <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+            <% if (a.cover_medium || a.cover_thumb) { %>
+            <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
             <% } else { %>
             <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
             <% } %>
@@ -325,8 +325,8 @@
       </div>
       <a href="/clanok/<%= editorsPick.slug %>" class="editorial-split card card-link">
         <div class="editorial-split-img">
-          <% if (editorsPick.cover_full) { %>
-          <img src="/uploads/<%= editorsPick.cover_full %>" alt="<%= editorsPick.title %>" loading="lazy">
+          <% if (editorsPick.cover_medium || editorsPick.cover_full) { %>
+          <img src="/uploads/<%= editorsPick.cover_medium || editorsPick.cover_full %>" alt="<%= editorsPick.title %>" loading="lazy">
           <% } else { %>
           <div class="ph ph-<%= (editorsPick.id % 9) + 1 %>"></div>
           <% } %>
@@ -471,8 +471,8 @@
         <% latest.slice(0, 6).forEach(a => { %>
         <a href="/clanok/<%= a.slug %>" class="compact-item">
           <div class="compact-thumb">
-            <% if (a.cover_thumb) { %>
-            <img src="/uploads/<%= a.cover_thumb %>" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm);">
+            <% if (a.cover_medium || a.cover_thumb) { %>
+            <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r-sm);">
             <% } else { %>
             <div class="ph ph-<%= (a.id % 9) + 1 %>" style="aspect-ratio:1;border-radius:var(--r-sm);"></div>
             <% } %>
@@ -567,8 +567,8 @@
           <% latest.slice(0, 6).forEach(a => { %>
             <a href="/clanok/<%= a.slug %>" class="card card-link title-only">
               <div class="ph" style="aspect-ratio:4/3; position:relative;">
-                <% if (a.cover_thumb) { %>
-                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% if (a.cover_medium || a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
                 <% } else { %>
                   <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
                 <% } %>
@@ -605,8 +605,8 @@
           <% latest.slice(0, 6).forEach(a => { %>
             <a href="/clanok/<%= a.slug %>" class="card card-link acard">
               <div class="ph">
-                <% if (a.cover_thumb) { %>
-                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% if (a.cover_medium || a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
                 <% } else { %>
                   <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
                 <% } %>
@@ -662,8 +662,8 @@
           <% reviews.forEach(a => { %>
             <a href="/clanok/<%= a.slug %>" class="card card-link review-card">
               <div class="ph" style="aspect-ratio:16/10; position:relative;">
-                <% if (a.cover_thumb) { %>
-                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% if (a.cover_medium || a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
                 <% } else { %>
                   <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
                 <% } %>
@@ -721,8 +721,8 @@
           <% latest.forEach(a => { %>
             <a href="/clanok/<%= a.slug %>" class="carousel-card card card-link">
               <div class="ph" style="aspect-ratio:4/5;">
-                <% if (a.cover_thumb) { %>
-                  <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+                <% if (a.cover_medium || a.cover_thumb) { %>
+                  <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
                 <% } else { %>
                   <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
                 <% } %>

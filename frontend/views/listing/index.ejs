@@ -92,8 +92,8 @@
           </div>
         </div>
         <div class="listing-featured-img">
-          <% if (feat.cover_full) { %>
-          <img src="/uploads/<%= feat.cover_full %>" alt="<%= feat.title %>" loading="eager">
+          <% if (feat.cover_medium || feat.cover_full) { %>
+          <img src="/uploads/<%= feat.cover_medium || feat.cover_full %>" alt="<%= feat.title %>" loading="eager">
           <% } else { %>
           <div class="ph ph-<%= (feat.id % 9) + 1 %>"></div>
           <% } %>
@@ -108,8 +108,8 @@
         <% gridArticles.forEach(a => { %>
         <a href="/clanok/<%= a.slug %>" class="card card-link acard">
           <div class="ph">
-            <% if (a.cover_thumb) { %>
-            <img src="/uploads/<%= a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
+            <% if (a.cover_medium || a.cover_thumb) { %>
+            <img src="/uploads/<%= a.cover_medium || a.cover_thumb %>" alt="<%= a.title %>" loading="lazy">
             <% } else { %>
             <div class="ph ph-<%= (a.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
             <% } %>
