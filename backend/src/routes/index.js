@@ -513,7 +513,18 @@ router.get('/clanok/:slug', async (req, res, next) => {
       .leftJoin('media as cover', 'articles.cover_media_id', 'cover.id')
       .leftJoin('media as og', 'articles.og_image_media_id', 'og.id')
       .where('articles.slug', slug)
-      .where('articles.status', 'published')
+      .where(function () {
+        this.where('articles.status', 'published');
+        // Allow admin preview of drafts
+        if (
+          req.query.preview === '1' &&
+          req.session &&
+          req.session.user &&
+          req.session.user.role === 'admin'
+        ) {
+          this.orWhereIn('articles.status', ['draft', 'review']);
+        }
+      })
       .select(
         'articles.*',
         'users.nickname as author_name',

@@ -65,8 +65,14 @@ function renderSingle(b, mediaMap, opts) {
     // ---- PROSE BLOCKS (unchanged) ----
     case 'paragraph':
       if (b.text) {
-        for (const par of b.text.split(/\n\n+/).filter(Boolean)) {
-          p.push('<p>' + inlineFormat(par).replace(/\n/g, '<br>') + '</p>');
+        if (b.format === 'html') {
+          // HTML from Quill — output directly (already sanitized by server)
+          p.push(b.text);
+        } else {
+          // Legacy markdown format
+          for (const par of b.text.split(/\n\n+/).filter(Boolean)) {
+            p.push('<p>' + inlineFormat(par).replace(/\n/g, '<br>') + '</p>');
+          }
         }
       }
       break;

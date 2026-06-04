@@ -32,6 +32,11 @@
           <a href="/admin/articles" class="bz-art-btn bz-art-btn-sm bz-art-btn-ghost">
             <i class="bi bi-arrow-left"></i> Späť
           </a>
+          <% if (!isNew && article.slug) { %>
+          <a href="/clanok/<%= article.slug %>?preview=1" target="_blank" class="bz-art-btn bz-art-btn-sm">
+            <i class="bi bi-eye"></i> Náhľad
+          </a>
+          <% } %>
           <button type="submit" form="article-form" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent">
             <i class="bi bi-check-lg"></i>
             <%= isNew ? 'Vytvoriť' : 'Uložiť zmeny' %>
@@ -82,7 +87,7 @@
                 <% } %>
 
                 <div class="bz-art-slug-row">
-                  <span class="bz-art-slug-prefix">Kukni.tech/</span>
+                  <span class="bz-art-slug-prefix">kukni.tech/</span>
                   <input type="text" name="slug" id="slug" class="bz-art-slug-inp <%= errors.slug ? 'is-invalid' : '' %>" maxlength="255" pattern="[a-z0-9]+(-[a-z0-9]+)*" value="<%= article.slug || '' %>" placeholder="<%= isNew ? 'slug-sa-auto-generuje' : 'slug' %>">
                 </div>
                 <% if (errors.slug) { %>
@@ -214,7 +219,7 @@
                     <div>
                       <label class="bz-art-field-label">Náhľad vo vyhľadávaní</label>
                       <div class="bz-art-serp">
-                        <div class="bz-art-serp-url">bytezone.sk › <%= article.slug || 'slug-clanku' %></div>
+                        <div class="bz-art-serp-url">kukni.tech › <%= article.slug || 'slug-clanku' %></div>
                         <div class="bz-art-serp-title"><%= article.seo_title || article.title || 'SEO Title článku' %></div>
                         <div class="bz-art-serp-desc"><%= article.seo_description || article.excerpt || 'Meta description sa zobrazí tu…' %></div>
                       </div>
@@ -288,6 +293,12 @@
                     <% } else { %>
                     <div class="bz-art-hint mt-1"><i class="bi bi-info-circle"></i> Cron tick: každých 5 min.</div>
                     <% } %>
+                  </div>
+
+                  <div>
+                    <label for="published_at" class="bz-art-field-label">Dátum publikovania</label>
+                    <input type="datetime-local" class="form-control form-control-sm" id="published_at" name="published_at" value="<%= utils.toDatetimeLocalString(article.published_at) %>">
+                    <div class="bz-art-hint mt-1"><i class="bi bi-info-circle"></i> Nechaj prázdne = automaticky pri publikovaní</div>
                   </div>
 
                   <div>
@@ -469,7 +480,7 @@
         <span class="bz-block-label"><i class="bi bi-paragraph me-1"></i>Odsek</span>
         <div class="bz-block-actions"></div>
       </div>
-      <textarea class="form-control" rows="4" data-field="text" placeholder="Text odseku…"></textarea>
+      <div data-quill-editor class="bz-quill-wrap"></div>
     </div>
   </template>
   <template data-block-template="heading">
@@ -527,6 +538,8 @@
   <% } %>
 
   <%- include('../partials/scripts') %>
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js" defer></script>
   <script src="/admin/static/js/admin-taxonomy.js" defer></script>
   <script src="/admin/static/js/admin-media-picker.js" defer></script>
   <script src="/admin/static/js/admin-article-review-blocks.js" defer></script>

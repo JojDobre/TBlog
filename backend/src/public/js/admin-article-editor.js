@@ -49,7 +49,7 @@
   function defaultBlock(type) {
     switch (type) {
       case 'paragraph':
-        return { type: 'paragraph', text: '' };
+        return { type: 'paragraph', text: '', format: 'html' };
       case 'heading':
         return { type: 'heading', level: 2, text: '' };
       case 'image':
@@ -599,11 +599,77 @@
     renderItems();
   }
 
+  // ---- Quill paragraph editor ----
+  function setupParagraph(node) {
+    var editorEl = node.querySelector('[data-quill-editor]');
+    if (!editorEl || editorEl.getAttribute('data-quill-init')) return;
+    editorEl.setAttribute('data-quill-init', '1');
+
+    // Wait for Quill to load (deferred script)
+    function tryInit() {
+      if (typeof Quill === 'undefined') {
+        setTimeout(tryInit, 100);
+        return;
+      }
+
+      var quill = new Quill(editorEl, {
+        theme: 'snow',
+        placeholder: 'Text odseku…',
+        modules: {
+          toolbar: [
+            [{ header: [2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link', 'clean'],
+          ],
+        },
+      });
+
+      // Load existing content
+      var ci = currentIndex(node);
+      if (ci !== -1 && blocks[ci]) {
+        var text = blocks[ci].text || '';
+        if (text) {
+          if (blocks[ci].format === 'html') {
+            quill.root.innerHTML = text;
+          } else {
+            // Convert old markdown to HTML
+            var html = text
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+              .replace(/\*(.+?)\*/g, '<em>$1</em>')
+              .replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+              .replace(/\n\n+/g, '</p><p>')
+              .replace(/\n/g, '<br>');
+            quill.root.innerHTML = '<p>' + html + '</p>';
+          }
+        }
+      }
+
+      // Sync on change
+      quill.on('text-change', function () {
+        var idx = currentIndex(node);
+        if (idx === -1) return;
+        var html = quill.root.innerHTML;
+        // Clean empty content
+        if (html === '<p><br></p>' || html === '<p></p>') html = '';
+        blocks[idx].text = html;
+        blocks[idx].format = 'html';
+        syncHidden();
+      });
+    }
+    tryInit();
+  }
+
   /**
    * Zavolá setup pre nested-item bloky. MUSÍ sa volať AFTER appendChild.
    */
   function setupNestedBlock(node, type) {
-    if (type === 'gallery') setupGallery(node);
+    if (type === 'paragraph') setupParagraph(node);
+    else if (type === 'gallery') setupGallery(node);
     else if (type === 'list') setupList(node);
     else if (window.__bzReviewBlocks && window.__bzReviewBlocks.setup) {
       window.__bzReviewBlocks.setup(node, type);
@@ -713,6 +779,17 @@
       grip.innerHTML = '<i class="bi bi-grip-vertical"></i>';
       actionsEl.insertBefore(grip, collapseBtn.nextSibling);
 
+      // Drag only via grip handle
+      grip.addEventListener('mousedown', function () {
+        node.setAttribute('draggable', 'true');
+      });
+      grip.addEventListener('mouseup', function () {
+        node.setAttribute('draggable', 'false');
+      });
+      grip.addEventListener('mouseleave', function () {
+        if (dragSrcIdx === -1) node.setAttribute('draggable', 'false');
+      });
+
       actionsEl.appendChild(
         makeIconBtn('arrow-up', 'Hore', function () {
           move(node, -1);
@@ -735,8 +812,8 @@
       );
     }
 
-    // Drag & drop — simplified
-    node.setAttribute('draggable', 'true');
+    // Drag & drop — only via grip handle
+    node.setAttribute('draggable', 'false');
     node.addEventListener('dragstart', function (e) {
       dragSrcIdx = currentIndex(node);
       node.classList.add('bz-block--dragging');
@@ -752,6 +829,7 @@
     });
     node.addEventListener('dragend', function () {
       node.classList.remove('bz-block--dragging');
+      node.setAttribute('draggable', 'false');
       clearDropIndicator();
       dragSrcIdx = -1;
       // Restore collapse state
@@ -1013,15 +1091,17 @@
   }
 
   function move(node, dir) {
-    var idx = currentIndex(node);
+    var blockNodes = Array.prototype.slice.call(container.querySelectorAll('[data-block-type]'));
+    var idx = blockNodes.indexOf(node);
     if (idx === -1) return;
     var newIdx = idx + dir;
     if (newIdx < 0 || newIdx >= blocks.length) return;
     var tmp = blocks[idx];
     blocks[idx] = blocks[newIdx];
     blocks[newIdx] = tmp;
-    if (dir === -1) container.insertBefore(node, container.children[newIdx]);
-    else container.insertBefore(node, container.children[newIdx].nextSibling);
+    var target = blockNodes[newIdx];
+    if (dir === -1) container.insertBefore(node, target);
+    else container.insertBefore(node, target.nextSibling);
     reindexDom();
     syncHidden();
     refreshInserters();

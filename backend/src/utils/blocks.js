@@ -110,7 +110,17 @@ function sanitizeBlocks(raw) {
       case 'paragraph': {
         const text = String(b.text || '').slice(0, MAX_PARAGRAPH_LEN);
         if (!text.trim()) return;
-        blocks.push({ type: 'paragraph', text });
+        const format = b.format === 'html' ? 'html' : 'md';
+        const block = { type: 'paragraph', text };
+        if (format === 'html') {
+          block.format = 'html';
+          // Sanitize HTML — allow only safe tags
+          block.text = text
+            .replace(/<script[\s>][\s\S]*?<\/script>/gi, '')
+            .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+            .replace(/javascript\s*:/gi, '');
+        }
+        blocks.push(block);
         break;
       }
       case 'heading': {
@@ -141,11 +151,7 @@ function sanitizeBlocks(raw) {
       case 'youtube': {
         const candidate = b.video_id || b.url || '';
         const videoId = extractYoutubeId(candidate);
-        if (!videoId) {
-          errors.push(`block[${i}]_youtube_invalid`);
-          return;
-        }
-        const block = { type: 'youtube', video_id: videoId };
+        const block = { type: 'youtube', video_id: videoId || '' };
         if (b.caption) block.caption = String(b.caption).slice(0, MAX_CAPTION_LEN).trim();
         blocks.push(block);
         break;

@@ -3133,3 +3133,77 @@
   padding-bottom: 0;
   border-bottom: none;
 }
+
+/* ---- Quill editor in dark theme ---- */
+.bz-quill-wrap {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--art-border, #374151);
+}
+.bz-quill-wrap .ql-toolbar {
+  background: oklch(from var(--art-bg, #1f2937) calc(l + 0.03) c h);
+  border: none;
+  border-bottom: 1px solid var(--art-border, #374151);
+  padding: 6px 8px;
+}
+.bz-quill-wrap .ql-toolbar .ql-stroke {
+  stroke: var(--art-text-muted, #9ca3af);
+}
+.bz-quill-wrap .ql-toolbar .ql-fill {
+  fill: var(--art-text-muted, #9ca3af);
+}
+.bz-quill-wrap .ql-toolbar .ql-picker-label {
+  color: var(--art-text-muted, #9ca3af);
+}
+.bz-quill-wrap .ql-toolbar button:hover .ql-stroke,
+.bz-quill-wrap .ql-toolbar .ql-active .ql-stroke {
+  stroke: var(--art-accent, #60a5fa);
+}
+.bz-quill-wrap .ql-toolbar button:hover .ql-fill,
+.bz-quill-wrap .ql-toolbar .ql-active .ql-fill {
+  fill: var(--art-accent, #60a5fa);
+}
+.bz-quill-wrap .ql-container {
+  border: none;
+  font-family: 'Inter Tight', system-ui, sans-serif;
+  font-size: 15px;
+  color: var(--art-text, #e5e7eb);
+}
+.bz-quill-wrap .ql-editor {
+  min-height: 120px;
+  padding: 14px 16px;
+  line-height: 1.7;
+}
+.bz-quill-wrap .ql-editor.ql-blank::before {
+  color: var(--art-text-muted, #6b7280);
+  font-style: normal;
+}
+.bz-quill-wrap .ql-editor h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  letter-spacing: -0.02em;
+}
+.bz-quill-wrap .ql-editor h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+.bz-quill-wrap .ql-editor a {
+  color: var(--art-accent, #60a5fa);
+}
+.bz-quill-wrap .ql-snow .ql-picker-options {
+  background: var(--art-bg, #1f2937);
+  border-color: var(--art-border, #374151);
+}
+.bz-quill-wrap .ql-snow .ql-tooltip {
+  background: var(--art-bg, #1f2937);
+  border-color: var(--art-border, #374151);
+  color: var(--art-text, #e5e7eb);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.4);
+}
+.bz-quill-wrap .ql-snow .ql-tooltip input[type='text'] {
+  background: oklch(from var(--art-bg, #1f2937) calc(l - 0.03) c h);
+  border-color: var(--art-border, #374151);
+  color: var(--art-text, #e5e7eb);
+}

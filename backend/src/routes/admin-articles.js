@@ -466,7 +466,11 @@ router.post('/', async (req, res, next) => {
     }
 
     const now = new Date();
-    const publishedAt = value.status === 'published' ? now : null;
+    const publishedAt = req.body.published_at
+      ? new Date(req.body.published_at)
+      : value.status === 'published'
+        ? now
+        : null;
 
     let articleId;
     await db.transaction(async (trx) => {
@@ -669,7 +673,9 @@ router.post('/:id', async (req, res, next) => {
       if (f.length !== tagIds.length) return renderAgain({ tag_ids: 'Niektorý tag neexistuje.' });
     }
 
-    let publishedAt = existing.published_at;
+    let publishedAt = req.body.published_at
+      ? new Date(req.body.published_at)
+      : existing.published_at;
     if (value.status === 'draft' || value.status === 'scheduled') publishedAt = null;
     else if (value.status === 'published' && !publishedAt) publishedAt = new Date();
 
@@ -845,8 +851,11 @@ router.post('/:id/autosave', async (req, res) => {
       finalSlug = await ensureUniqueSlug(finalSlug, id);
     }
 
-    const publishedAt =
-      value.status === 'published' && !existing.published_at ? new Date() : existing.published_at;
+    const publishedAt = req.body.published_at
+      ? new Date(req.body.published_at)
+      : value.status === 'published' && !existing.published_at
+        ? new Date()
+        : existing.published_at;
 
     await db('articles')
       .where('id', id)

@@ -2294,17 +2294,20 @@ img {
 }
 
 /* Prose */
-.article-prose {
-  font-size: 18px;
+.article-prose,
+.article-content {
+  font-size: 17px;
   line-height: 1.7;
-  color: var(--text);
+  color: var(--text-muted);
   letter-spacing: -0.005em;
   min-width: 0;
 }
-.article-prose p {
+.article-prose p,
+.article-content > p {
   margin: 0 0 var(--s-5);
 }
-.article-prose h2 {
+.article-prose h2,
+.article-content > h2 {
   font-family: var(--font-display);
   font-size: 28px;
   margin: var(--s-10) 0 var(--s-4);
@@ -2312,7 +2315,8 @@ img {
   font-weight: 700;
   scroll-margin-top: 100px;
 }
-.article-prose h3 {
+.article-prose h3,
+.article-content > h3 {
   font-family: var(--font-display);
   font-size: 22px;
   margin: var(--s-8) 0 var(--s-3);
@@ -2320,7 +2324,8 @@ img {
   font-weight: 600;
   scroll-margin-top: 100px;
 }
-.article-prose blockquote {
+.article-prose blockquote,
+.article-content > blockquote {
   margin: var(--s-8) 0;
   padding: 0 0 0 var(--s-6);
   border-left: 3px solid var(--accent);
@@ -2330,10 +2335,12 @@ img {
   letter-spacing: -0.02em;
   font-weight: 500;
 }
-.article-prose blockquote p {
+.article-prose blockquote p,
+.article-content > blockquote p {
   margin: 0;
 }
-.article-prose blockquote cite {
+.article-prose blockquote cite,
+.article-content > blockquote cite {
   display: block;
   margin-top: var(--s-3);
   font-size: 14px;
@@ -2343,22 +2350,28 @@ img {
   letter-spacing: 0.02em;
 }
 .article-prose ul,
-.article-prose ol {
+.article-prose ol,
+.article-content > ul,
+.article-content > ol {
   margin: var(--s-4) 0 var(--s-6);
   padding: 0 0 0 var(--s-5);
 }
-.article-prose li {
+.article-prose li,
+.article-content li {
   margin-bottom: var(--s-2);
 }
-.article-prose figure {
+.article-prose figure,
+.article-content > figure {
   margin: var(--s-8) 0;
 }
-.article-prose figure img {
+.article-prose figure img,
+.article-content > figure img {
   border-radius: var(--r-xl);
   width: 100%;
   display: block;
 }
-.article-prose figcaption {
+.article-prose figcaption,
+.article-content figcaption {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-subtle);
@@ -2366,18 +2379,21 @@ img {
   letter-spacing: 0.02em;
   text-align: center;
 }
-.article-prose hr {
+.article-prose hr,
+.article-content > hr {
   border: 0;
   height: 1px;
   background: var(--border);
   margin: var(--s-8) 0;
 }
-.article-prose a {
+.article-prose a,
+.article-content a {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.article-prose a:hover {
+.article-prose a:hover,
+.article-content a:hover {
   color: var(--accent-hover);
 }
 
@@ -5955,6 +5971,8 @@ img {
   font-size: 0;
   line-height: 0;
   overflow: hidden;
+  color: transparent;
+  text-indent: -9999px;
 }
 .logo-word-sub {
   font-family: var(--font-mono);
@@ -6119,7 +6137,9 @@ img {
 
 /* Banner v sidebar článku — bez marginu */
 .article-prose .promo-banner,
-.article-prose .newsletter-section {
+.article-prose .newsletter-section,
+.article-content .promo-banner,
+.article-content .newsletter-section {
   margin: 0;
   margin-bottom: var(--s-8);
 }
@@ -6380,4 +6400,22 @@ body.menu-open {
 .bookmark-remove:hover {
   color: oklch(0.7 0.18 25);
   background: oklch(0.3 0.08 25);
+}
+
+/* Quill HTML output support */
+.article-prose .ql-indent-1,
+.article-content .ql-indent-1 {
+  padding-left: var(--s-6);
+}
+.article-prose .ql-indent-2,
+.article-content .ql-indent-2 {
+  padding-left: calc(var(--s-6) * 2);
+}
+.article-prose u,
+.article-content u {
+  text-underline-offset: 2px;
+}
+.article-prose s,
+.article-content s {
+  opacity: 0.6;
 }
