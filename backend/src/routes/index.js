@@ -40,6 +40,7 @@ const healthRouter = require('./health');
 const config = require('../../../config');
 const db = require('../db');
 const log = require('../logger');
+const cache = require('../utils/cache');
 
 const router = express.Router();
 
@@ -810,86 +811,62 @@ router.get('/clanok/:slug', async (req, res, next) => {
 // ---------------------------------------------------------------------------
 router.get('/', async (req, res, next) => {
   try {
-    // 1. Featured články pre slider (posledné 4 featured + published)
-    const featured = await db('articles')
-      .leftJoin('users', 'articles.author_id', 'users.id')
-      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
-      .leftJoin('media', 'articles.cover_media_id', 'media.id')
-      .where('articles.status', 'published')
-      .where('articles.is_featured', 1)
-      .select(
-        'articles.id',
-        'articles.title',
-        'articles.slug',
-        'articles.excerpt',
-        'articles.type',
-        'articles.published_at',
-        'articles.view_count',
-        'users.nickname as author_name',
-        'author_media.thumbnail_path as author_avatar',
-        'media.thumbnail_path as cover_thumb',
-        'media.medium_path as cover_medium',
-        'media.original_path as cover_full'
-      )
-      .orderBy('articles.published_at', 'desc')
-      .limit(4);
-
-    // 2. Najnovšie články (pre Novinky sekciu — bento)
-    const latest = await db('articles')
-      .leftJoin('users', 'articles.author_id', 'users.id')
-      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
-      .leftJoin('media', 'articles.cover_media_id', 'media.id')
-      .where('articles.status', 'published')
-      .select(
-        'articles.id',
-        'articles.title',
-        'articles.slug',
-        'articles.excerpt',
-        'articles.type',
-        'articles.published_at',
-        'articles.view_count',
-        'users.nickname as author_name',
-        'author_media.thumbnail_path as author_avatar',
-        'media.thumbnail_path as cover_thumb',
-        'media.medium_path as cover_medium',
-        'media.original_path as cover_full'
-      )
-      .orderBy('articles.published_at', 'desc')
-      .limit(8);
-
-    // 3. Trending — TOP 6 najčítanejších za posledný týždeň
-    const oneWeekAgo = new Date(Date.now() - 7 * 86_400_000);
-    const trending = await db('articles')
-      .leftJoin('users', 'articles.author_id', 'users.id')
-      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
-      .leftJoin('media', 'articles.cover_media_id', 'media.id')
-      .where('articles.status', 'published')
-      .where('articles.published_at', '>=', oneWeekAgo)
-      .select(
-        'articles.id',
-        'articles.title',
-        'articles.slug',
-        'articles.excerpt',
-        'articles.type',
-        'articles.published_at',
-        'articles.view_count',
-        'users.nickname as author_name',
-        'author_media.thumbnail_path as author_avatar',
-        'media.thumbnail_path as cover_thumb',
-        'media.medium_path as cover_medium'
-      )
-      .orderBy('articles.view_count', 'desc')
-      .limit(6);
-
-    // Ak nie je dosť trending článkov za týždeň, dopln celkovo najčítanejšie
-    if (trending.length < 6) {
-      const excludeIds = trending.map((a) => a.id);
-      const extra = await db('articles')
+    const homeData = await cache.getOrSet('homepage', 60, async () => {
+      // 1. Featured články pre slider (posledné 4 featured + published)
+      const featured = await db('articles')
         .leftJoin('users', 'articles.author_id', 'users.id')
         .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
         .leftJoin('media', 'articles.cover_media_id', 'media.id')
         .where('articles.status', 'published')
-        .whereNotIn('articles.id', excludeIds)
+        .where('articles.is_featured', 1)
+        .select(
+          'articles.id',
+          'articles.title',
+          'articles.slug',
+          'articles.excerpt',
+          'articles.type',
+          'articles.published_at',
+          'articles.view_count',
+          'users.nickname as author_name',
+          'author_media.thumbnail_path as author_avatar',
+          'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium',
+          'media.original_path as cover_full'
+        )
+        .orderBy('articles.published_at', 'desc')
+        .limit(4);
+
+      // 2. Najnovšie články (pre Novinky sekciu — bento)
+      const latest = await db('articles')
+        .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
+        .leftJoin('media', 'articles.cover_media_id', 'media.id')
+        .where('articles.status', 'published')
+        .select(
+          'articles.id',
+          'articles.title',
+          'articles.slug',
+          'articles.excerpt',
+          'articles.type',
+          'articles.published_at',
+          'articles.view_count',
+          'users.nickname as author_name',
+          'author_media.thumbnail_path as author_avatar',
+          'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium',
+          'media.original_path as cover_full'
+        )
+        .orderBy('articles.published_at', 'desc')
+        .limit(8);
+
+      // 3. Trending — TOP 6 najčítanejších za posledný týždeň
+      const oneWeekAgo = new Date(Date.now() - 7 * 86_400_000);
+      const trending = await db('articles')
+        .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
+        .leftJoin('media', 'articles.cover_media_id', 'media.id')
+        .where('articles.status', 'published')
+        .where('articles.published_at', '>=', oneWeekAgo)
         .select(
           'articles.id',
           'articles.title',
@@ -904,157 +881,192 @@ router.get('/', async (req, res, next) => {
           'media.medium_path as cover_medium'
         )
         .orderBy('articles.view_count', 'desc')
-        .limit(6 - trending.length);
-      trending.push(...extra);
-    }
+        .limit(6);
 
-    // 4. Editor's Pick — najčítanejší published článok
-    const editorsPick = await db('articles')
-      .leftJoin('users', 'articles.author_id', 'users.id')
-      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
-      .leftJoin('media', 'articles.cover_media_id', 'media.id')
-      .where('articles.status', 'published')
-      .select(
-        'articles.id',
-        'articles.title',
-        'articles.slug',
-        'articles.excerpt',
-        'articles.type',
-        'articles.published_at',
-        'articles.view_count',
-        'users.nickname as author_name',
-        'author_media.thumbnail_path as author_avatar',
-        'media.thumbnail_path as cover_thumb',
-        'media.medium_path as cover_medium',
-        'media.original_path as cover_full'
-      )
-      .orderBy('articles.view_count', 'desc')
-      .first();
+      // Ak nie je dosť trending článkov za týždeň, dopln celkovo najčítanejšie
+      if (trending.length < 6) {
+        const excludeIds = trending.map((a) => a.id);
+        const extra = await db('articles')
+          .leftJoin('users', 'articles.author_id', 'users.id')
+          .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
+          .leftJoin('media', 'articles.cover_media_id', 'media.id')
+          .where('articles.status', 'published')
+          .whereNotIn('articles.id', excludeIds)
+          .select(
+            'articles.id',
+            'articles.title',
+            'articles.slug',
+            'articles.excerpt',
+            'articles.type',
+            'articles.published_at',
+            'articles.view_count',
+            'users.nickname as author_name',
+            'author_media.thumbnail_path as author_avatar',
+            'media.thumbnail_path as cover_thumb',
+            'media.medium_path as cover_medium'
+          )
+          .orderBy('articles.view_count', 'desc')
+          .limit(6 - trending.length);
+        trending.push(...extra);
+      }
 
-    // 5. Reviews — posledné published recenzie
-    const reviews = await db('articles')
-      .leftJoin('users', 'articles.author_id', 'users.id')
-      .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
-      .leftJoin('media', 'articles.cover_media_id', 'media.id')
-      .where('articles.status', 'published')
-      .where('articles.type', 'review')
-      .select(
-        'articles.id',
-        'articles.title',
-        'articles.slug',
-        'articles.excerpt',
-        'articles.type',
-        'articles.published_at',
-        'articles.view_count',
-        'users.nickname as author_name',
-        'author_media.thumbnail_path as author_avatar',
-        'media.thumbnail_path as cover_thumb',
-        'media.medium_path as cover_medium',
-        'media.original_path as cover_full'
-      )
-      .orderBy('articles.published_at', 'desc')
-      .limit(6);
-
-    // Načítaj skóre pre všetky recenzie (reviews sekcia + featured slider)
-    const reviewIds = [
-      ...new Set([
-        ...reviews.map((r) => r.id),
-        ...featured.filter((a) => a.type === 'review').map((a) => a.id),
-      ]),
-    ];
-    let reviewScoreMap = new Map();
-    if (reviewIds.length > 0) {
-      const scoreRows = await db('ranking_items as ri')
-        .leftJoin('ranking_item_values as riv', 'riv.ranking_item_id', 'ri.id')
-        .leftJoin('ranking_criteria as rc', 'rc.id', 'riv.criterion_id')
-        .whereIn('ri.article_id', reviewIds)
-        .groupBy('ri.id', 'ri.article_id', 'ri.override_score')
+      // 4. Editor's Pick — najčítanejší published článok
+      const editorsPick = await db('articles')
+        .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
+        .leftJoin('media', 'articles.cover_media_id', 'media.id')
+        .where('articles.status', 'published')
         .select(
-          'ri.article_id',
-          'ri.override_score',
-          db.raw("AVG(CASE WHEN rc.field_type != 'price' THEN riv.value_decimal END) as avg_score")
-        );
-      for (const row of scoreRows) {
-        const score =
-          row.override_score !== null && row.override_score !== undefined
-            ? Number(row.override_score)
-            : row.avg_score !== null
-              ? Math.round(Number(row.avg_score) * 10) / 10
-              : null;
-        if (score !== null && !reviewScoreMap.has(row.article_id)) {
-          reviewScoreMap.set(Number(row.article_id), score);
+          'articles.id',
+          'articles.title',
+          'articles.slug',
+          'articles.excerpt',
+          'articles.type',
+          'articles.published_at',
+          'articles.view_count',
+          'users.nickname as author_name',
+          'author_media.thumbnail_path as author_avatar',
+          'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium',
+          'media.original_path as cover_full'
+        )
+        .orderBy('articles.view_count', 'desc')
+        .first();
+
+      // 5. Reviews — posledné published recenzie
+      const reviews = await db('articles')
+        .leftJoin('users', 'articles.author_id', 'users.id')
+        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
+        .leftJoin('media', 'articles.cover_media_id', 'media.id')
+        .where('articles.status', 'published')
+        .where('articles.type', 'review')
+        .select(
+          'articles.id',
+          'articles.title',
+          'articles.slug',
+          'articles.excerpt',
+          'articles.type',
+          'articles.published_at',
+          'articles.view_count',
+          'users.nickname as author_name',
+          'author_media.thumbnail_path as author_avatar',
+          'media.thumbnail_path as cover_thumb',
+          'media.medium_path as cover_medium',
+          'media.original_path as cover_full'
+        )
+        .orderBy('articles.published_at', 'desc')
+        .limit(6);
+
+      // Načítaj skóre pre všetky recenzie (reviews sekcia + featured slider)
+      const reviewIds = [
+        ...new Set([
+          ...reviews.map((r) => r.id),
+          ...featured.filter((a) => a.type === 'review').map((a) => a.id),
+        ]),
+      ];
+      let reviewScoreMap = new Map();
+      if (reviewIds.length > 0) {
+        const scoreRows = await db('ranking_items as ri')
+          .leftJoin('ranking_item_values as riv', 'riv.ranking_item_id', 'ri.id')
+          .leftJoin('ranking_criteria as rc', 'rc.id', 'riv.criterion_id')
+          .whereIn('ri.article_id', reviewIds)
+          .groupBy('ri.id', 'ri.article_id', 'ri.override_score')
+          .select(
+            'ri.article_id',
+            'ri.override_score',
+            db.raw(
+              "AVG(CASE WHEN rc.field_type != 'price' THEN riv.value_decimal END) as avg_score"
+            )
+          );
+        for (const row of scoreRows) {
+          const score =
+            row.override_score !== null && row.override_score !== undefined
+              ? Number(row.override_score)
+              : row.avg_score !== null
+                ? Math.round(Number(row.avg_score) * 10) / 10
+                : null;
+          if (score !== null && !reviewScoreMap.has(row.article_id)) {
+            reviewScoreMap.set(Number(row.article_id), score);
+          }
         }
       }
-    }
 
-    // 4. Tagy pre článok (pre bento overlay tag)
-    const articleIds = [...new Set([...featured, ...latest, ...trending].map((a) => a.id))];
-    let tagMap = new Map();
-    if (articleIds.length > 0) {
-      const tagRows = await db('article_tags')
-        .join('tags', 'article_tags.tag_id', 'tags.id')
-        .whereIn('article_tags.article_id', articleIds)
-        .select('article_tags.article_id', 'tags.name', 'tags.slug', 'tags.color');
-      for (const r of tagRows) {
-        if (!tagMap.has(r.article_id)) tagMap.set(r.article_id, []);
-        tagMap.get(r.article_id).push(r);
+      // 4. Tagy pre článok (pre bento overlay tag)
+      const articleIds = [...new Set([...featured, ...latest, ...trending].map((a) => a.id))];
+      let tagMap = new Map();
+      if (articleIds.length > 0) {
+        const tagRows = await db('article_tags')
+          .join('tags', 'article_tags.tag_id', 'tags.id')
+          .whereIn('article_tags.article_id', articleIds)
+          .select('article_tags.article_id', 'tags.name', 'tags.slug', 'tags.color');
+        for (const r of tagRows) {
+          if (!tagMap.has(r.article_id)) tagMap.set(r.article_id, []);
+          tagMap.get(r.article_id).push(r);
+        }
       }
-    }
 
-    // 5. Primárna kategória pre článok
-    let catMap = new Map();
-    if (articleIds.length > 0) {
-      const catRows = await db('article_categories')
-        .join('categories', 'article_categories.category_id', 'categories.id')
-        .whereIn('article_categories.article_id', articleIds)
-        .where('article_categories.is_primary', 1)
-        .select('article_categories.article_id', 'categories.name', 'categories.slug');
-      for (const r of catRows) {
-        catMap.set(r.article_id, r);
+      // 5. Primárna kategória pre článok
+      let catMap = new Map();
+      if (articleIds.length > 0) {
+        const catRows = await db('article_categories')
+          .join('categories', 'article_categories.category_id', 'categories.id')
+          .whereIn('article_categories.article_id', articleIds)
+          .where('article_categories.is_primary', 1)
+          .select('article_categories.article_id', 'categories.name', 'categories.slug');
+        for (const r of catRows) {
+          catMap.set(r.article_id, r);
+        }
       }
-    }
 
-    // 6. Rubriky pre článok
-    let rubMap = new Map();
-    if (articleIds.length > 0) {
-      const rubRows = await db('article_rubrics')
-        .join('rubrics', 'article_rubrics.rubric_id', 'rubrics.id')
-        .whereIn('article_rubrics.article_id', articleIds)
-        .select('article_rubrics.article_id', 'rubrics.name', 'rubrics.slug');
-      for (const r of rubRows) {
-        if (!rubMap.has(r.article_id)) rubMap.set(r.article_id, []);
-        rubMap.get(r.article_id).push(r);
+      // 6. Rubriky pre článok
+      let rubMap = new Map();
+      if (articleIds.length > 0) {
+        const rubRows = await db('article_rubrics')
+          .join('rubrics', 'article_rubrics.rubric_id', 'rubrics.id')
+          .whereIn('article_rubrics.article_id', articleIds)
+          .select('article_rubrics.article_id', 'rubrics.name', 'rubrics.slug');
+        for (const r of rubRows) {
+          if (!rubMap.has(r.article_id)) rubMap.set(r.article_id, []);
+          rubMap.get(r.article_id).push(r);
+        }
       }
-    }
 
-    // Helper: obohat článok o relačné dáta
-    function enrich(a) {
+      // Helper: obohat článok o relačné dáta
+      function enrich(a) {
+        return {
+          ...a,
+          tags: tagMap.get(a.id) || [],
+          category: catMap.get(a.id) || null,
+          rubrics: rubMap.get(a.id) || [],
+          readTime: estimateReadTime(a.excerpt),
+          viewsFormatted: formatViews(a.view_count),
+          score: reviewScoreMap.get(Number(a.id)) ?? null,
+        };
+      }
+
+      function estimateReadTime(excerpt) {
+        // Odhad — na reálnej stránke by sa počítalo z content blokov
+        if (!excerpt) return '3 min';
+        const words = excerpt.split(/\s+/).length;
+        const min = Math.max(3, Math.round(words / 40));
+        return min + ' min';
+      }
+
+      function formatViews(count) {
+        if (!count || count === 0) return '0';
+        if (count >= 1000) return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        return String(count);
+      }
+
       return {
-        ...a,
-        tags: tagMap.get(a.id) || [],
-        category: catMap.get(a.id) || null,
-        rubrics: rubMap.get(a.id) || [],
-        readTime: estimateReadTime(a.excerpt),
-        viewsFormatted: formatViews(a.view_count),
-        score: reviewScoreMap.get(Number(a.id)) ?? null,
+        featured: featured.map(enrich),
+        latest: latest.map(enrich),
+        trending: trending.map(enrich),
+        editorsPick: editorsPick ? enrich(editorsPick) : null,
+        reviews: reviews.map(enrich),
       };
-    }
+    }); // end cache
 
-    function estimateReadTime(excerpt) {
-      // Odhad — na reálnej stránke by sa počítalo z content blokov
-      if (!excerpt) return '3 min';
-      const words = excerpt.split(/\s+/).length;
-      const min = Math.max(3, Math.round(words / 40));
-      return min + ' min';
-    }
-
-    function formatViews(count) {
-      if (!count || count === 0) return '0';
-      if (count >= 1000) return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-      return String(count);
-    }
-
-    // Bannery pre homepage pozície
     const banners = await bannerLoader.getBannersForPositions([
       'home_after_hero',
       'home_after_news',
@@ -1068,11 +1080,7 @@ router.get('/', async (req, res, next) => {
     res.render('home/index', {
       title: null,
       currentPath: req.path,
-      featured: featured.map(enrich),
-      latest: latest.map(enrich),
-      trending: trending.map(enrich),
-      editorsPick: editorsPick ? enrich(editorsPick) : null,
-      reviews: reviews.map(enrich),
+      ...homeData,
       canonicalUrl: config.baseUrl || '/',
       banners: banners,
     });

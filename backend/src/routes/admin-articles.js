@@ -511,6 +511,7 @@ router.post('/', async (req, res, next) => {
     });
 
     log.info('article created', { id: articleId, slug: finalSlug, userId: req.user.id });
+    require('../utils/cache').clear();
     res.redirect(`/admin/articles/${articleId}/edit?created=1`);
   } catch (err) {
     next(err);
@@ -723,6 +724,7 @@ router.post('/:id', async (req, res, next) => {
     });
 
     log.info('article updated + revision saved', { id, slug: finalSlug, userId: req.user.id });
+    require('../utils/cache').clear();
     res.redirect(`/admin/articles/${id}/edit?updated=1`);
   } catch (err) {
     next(err);
@@ -788,6 +790,7 @@ router.post('/:id/trash', async (req, res, next) => {
     if (!a) return res.redirect('/admin/articles');
     await db('articles').where('id', id).update({ status: 'trash', deleted_at: new Date() });
     log.info('article trashed', { id, userId: req.user.id });
+    require('../utils/cache').clear();
     res.redirect('/admin/articles?trashed=1');
   } catch (err) {
     next(err);
@@ -802,6 +805,7 @@ router.post('/:id/restore', async (req, res, next) => {
     if (!a || a.status !== 'trash') return res.redirect('/admin/articles');
     await db('articles').where('id', id).update({ status: 'draft', deleted_at: null });
     log.info('article restored', { id, userId: req.user.id });
+    require('../utils/cache').clear();
     res.redirect('/admin/articles?tab=draft&restored=1');
   } catch (err) {
     next(err);
@@ -878,6 +882,7 @@ router.post('/:id/autosave', async (req, res) => {
         default_related_strategy: value.default_related_strategy,
       });
 
+    require('../utils/cache').clear();
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: 'Autosave zlyhal' });
