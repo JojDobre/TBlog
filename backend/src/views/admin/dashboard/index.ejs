@@ -8,244 +8,362 @@
 
 <body class="bz-admin-body bz-art-page">
   <%- include('../partials/sidebar', { currentPath: currentPath }) %>
-
   <div class="bz-main">
     <%- include('../partials/topbar', { pageTitle: 'Dashboard' }) %>
-
     <main class="bz-content">
       <div class="bz-dash-wrap bz-stats-scope">
 
+        <%# ===== HEADER ===== %>
         <div class="bz-dash-header">
           <div>
             <span class="bz-eyebrow">
-              <%
-                const days = ['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota'];
-                const months = ['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra'];
-                const now = new Date();
-              %>
+              <% const days=['Nedeľa','Pondelok','Utorok','Streda','Štvrtok','Piatok','Sobota']; const months=['januára','februára','marca','apríla','mája','júna','júla','augusta','septembra','októbra','novembra','decembra']; const now=new Date(); %>
               <%= days[now.getDay()] %> · <%= now.getDate() %>. <%= months[now.getMonth()] %> <%= now.getFullYear() %>
             </span>
-            <h1 class="bz-dash-title">
-              Dobré ráno<% if (typeof user !== 'undefined' && user && user.nickname) { %>, <%= user.nickname %><% } %> 👋
-            </h1>
+            <h1 class="bz-dash-title">Ahoj<% if (typeof user !== 'undefined' && user && user.nickname) { %>, <%= user.nickname %><% } %> 👋</h1>
           </div>
           <div class="bz-dash-header-actions">
-            <button class="bz-btn bz-btn-sm">Posledných 30 dní <i class="bi bi-chevron-down"></i></button>
-            <button class="bz-btn bz-btn-sm">Export</button>
-            <button class="bz-btn bz-btn-sm" id="bz-dash-edit-btn"><i class="bi bi-grid-3x3-gap"></i> Upraviť</button>
-            <button class="bz-btn bz-btn-sm" id="bz-dash-manage-btn"><i class="bi bi-sliders"></i> Karty</button>
+            <a href="/admin/articles/new" class="bz-btn bz-btn-sm" style="background:var(--accent);color:var(--accent-fg)"><i class="bi bi-plus-lg"></i> Nový článok</a>
+            <a href="/admin/stats" class="bz-btn bz-btn-sm"><i class="bi bi-graph-up"></i> Štatistiky</a>
           </div>
         </div>
 
-        <div class="astats-grid" id="bz-dash-grid">
+        <%# ===== KPI ROW ===== %>
+        <div class="dash-kpi-row">
+          <div class="dash-kpi" style="--kpi-color: oklch(0.72 0.17 155)">
+            <div class="dash-kpi-icon"><i class="bi bi-file-earmark-text"></i></div>
+            <div class="dash-kpi-data">
+              <span class="dash-kpi-num"><%= stats.articles %></span>
+              <span class="dash-kpi-label">Článkov</span>
+            </div>
+          </div>
+          <div class="dash-kpi" style="--kpi-color: oklch(0.65 0.19 260)">
+            <div class="dash-kpi-icon"><i class="bi bi-eye"></i></div>
+            <div class="dash-kpi-data">
+              <span class="dash-kpi-num"><%= fmt(stats.visits24h) %></span>
+              <span class="dash-kpi-label">Návštevy · 24h</span>
+            </div>
+          </div>
+          <div class="dash-kpi" style="--kpi-color: oklch(0.7 0.15 60)">
+            <div class="dash-kpi-icon"><i class="bi bi-chat-dots"></i></div>
+            <div class="dash-kpi-data">
+              <span class="dash-kpi-num"><%= stats.comments %></span>
+              <span class="dash-kpi-label">Komentárov</span>
+            </div>
+          </div>
+          <div class="dash-kpi" style="--kpi-color: oklch(0.65 0.2 330)">
+            <div class="dash-kpi-icon"><i class="bi bi-images"></i></div>
+            <div class="dash-kpi-data">
+              <span class="dash-kpi-num"><%= stats.media %></span>
+              <span class="dash-kpi-label">Médií</span>
+            </div>
+          </div>
+        </div>
 
-          <article class="astats-card astats-L" data-card-id="dash-kpi" data-card-group="Dashboard" data-card-size="L">
-            <header class="astats-card-head">
-              <span class="astats-card-icon"><i class="bi bi-speedometer2"></i></span>
-              <h3>KPI prehľad</h3>
-              <span class="astats-card-group">Dashboard</span>
-              <div class="astats-card-actions">
-                <div class="astats-size-toggle">
-                  <button data-size="S">S</button><button data-size="M">M</button><button class="active" data-size="L">L</button>
-                </div>
-                <button class="astats-card-act astats-card-hide" title="Skryť"><i class="bi bi-eye-slash"></i></button>
-              </div>
-            </header>
-            <div class="astats-card-body">
-              <%
-                const kpiCards = [
-                  { label: 'Článkov celkom',   value: stats.articles,   icon: 'file-earmark-text' },
-                  { label: 'Komentáre',        value: stats.comments,   icon: 'chat-dots' },
-                  { label: 'Médiá',            value: stats.media,      icon: 'images' },
-                  { label: 'Návštevy (24 h)',  value: stats.visits24h,  icon: 'graph-up' },
-                ];
-              %>
-              <div class="stat-overview">
-                <% kpiCards.forEach(k => { %>
-                <div><span class="ov-num"><%= k.value ?? '—' %></span><span class="ov-l"><%= k.label %></span></div>
-                <% }) %>
+        <%# ===== QUICK ACTIONS ===== %>
+        <div class="dash-actions-bar">
+          <a href="/admin/articles/new" class="dash-action-btn"><i class="bi bi-plus-lg"></i> Nový článok</a>
+          <a href="/admin/media" class="dash-action-btn"><i class="bi bi-images"></i> Médiá</a>
+          <a href="/admin/comments" class="dash-action-btn"><i class="bi bi-chat-dots"></i> Komentáre</a>
+          <a href="/admin/templates" class="dash-action-btn"><i class="bi bi-file-earmark-text"></i> Šablóny</a>
+          <a href="/admin/settings" class="dash-action-btn"><i class="bi bi-gear"></i> Nastavenia</a>
+          <a href="/admin/stats" class="dash-action-btn"><i class="bi bi-graph-up"></i> Štatistiky</a>
+        </div>
+
+        <%# ===== MAIN GRID ===== %>
+        <div class="dash-grid">
+
+          <%# --- 30D CHART --- %>
+          <div class="dash-card dash-card-wide">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-graph-up" style="color:var(--accent);opacity:0.7"></i> Návštevnosť · 30 dní</h3>
+              <div class="dash-card-badge"><%= fmt(s.views30d) %> celkom
+                <% if (s.viewsGrowth !== 0) { %>
+                <span style="color:<%= s.viewsGrowth >= 0 ? 'var(--r-great)' : 'var(--r-bad)' %>; margin-left:6px"><%= s.viewsGrowth >= 0 ? '↑' : '↓' %> <%= Math.abs(s.viewsGrowth) %>%</span>
+                <% } %>
               </div>
             </div>
-          </article>
-
-          <article class="astats-card astats-L" data-card-id="dash-chart" data-card-group="Dashboard" data-card-size="L">
-            <header class="astats-card-head">
-              <span class="astats-card-icon"><i class="bi bi-graph-up"></i></span>
-              <h3>Pozretia · 30 dní</h3>
-              <span class="astats-card-group">Dashboard</span>
-              <div class="astats-card-actions">
-                <div class="astats-size-toggle">
-                  <button data-size="S">S</button><button data-size="M">M</button><button class="active" data-size="L">L</button>
-                </div>
-                <button class="astats-card-act astats-card-hide" title="Skryť"><i class="bi bi-eye-slash"></i></button>
-              </div>
-            </header>
-            <div class="astats-card-body" style="padding:12px 14px">
-              <svg viewBox="0 0 800 140" style="width:100%;height:140px;display:block;">
+            <div class="dash-card-body" style="padding:8px 12px 4px">
+              <% if (s.viewsDaily && s.viewsDaily.length > 1) {
+                var maxV = Math.max.apply(null, s.viewsDaily.map(function(d){return d.views})) || 1;
+                var chartDays = s.viewsDaily.map(function(d){
+                  var dt = new Date(d.day);
+                  return { views: d.views, label: dt.getDate() + '.' + (dt.getMonth()+1) + '.' };
+                });
+                var pts = chartDays.map(function(d,i){ var x=(i/(chartDays.length-1))*760+20; var y=110-((d.views/maxV)*95)+5; return {x:x,y:y}; });
+              %>
+              <svg viewBox="0 0 800 135" style="width:100%;height:130px;display:block" id="dash-chart-svg">
                 <defs>
-                  <linearGradient id="bzChartGrad" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stop-color="oklch(0.72 0.17 155)" stop-opacity="0.35" />
+                  <linearGradient id="cg" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="oklch(0.72 0.17 155)" stop-opacity="0.3" />
                     <stop offset="100%" stop-color="oklch(0.72 0.17 155)" stop-opacity="0" />
                   </linearGradient>
                 </defs>
-                <path d="M0,100 C40,90 80,65 120,74 C160,83 200,50 240,46 C280,42 320,58 360,54 C400,50 440,20 480,29 C520,38 560,14 600,21 C640,29 680,44 720,32 C760,20 800,12 800,12 L800,140 L0,140 Z" fill="url(#bzChartGrad)" />
-                <path d="M0,100 C40,90 80,65 120,74 C160,83 200,50 240,46 C280,42 320,58 360,54 C400,50 440,20 480,29 C520,38 560,14 600,21 C640,29 680,44 720,32 C760,20 800,12 800,12" fill="none" stroke="oklch(0.72 0.17 155)" stroke-width="2" />
-                <% ['1.4.','8.4.','15.4.','22.4.','29.4.'].forEach((label, i) => { %>
-                <text x="<%= i * 200 %>" y="136" font-size="10" font-family="IBM Plex Mono, monospace" fill="oklch(0.48 0.01 240)"><%= label %></text>
+                <path d="M<%= pts.map(function(p){return p.x+','+p.y}).join(' L') %> L<%= pts[pts.length-1].x %>,120 L<%= pts[0].x %>,120 Z" fill="url(#cg)" />
+                <path d="M<%= pts.map(function(p){return p.x+','+p.y}).join(' L') %>" fill="none" stroke="oklch(0.72 0.17 155)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                <% var step=Math.max(1,Math.floor(chartDays.length/7)); chartDays.forEach(function(d,i){ if(i%step===0||i===chartDays.length-1){ %>
+                <text x="<%= pts[i].x %>" y="132" font-size="9" font-family="IBM Plex Mono,monospace" fill="oklch(0.48 0.01 240)" text-anchor="middle"><%= d.label %></text>
+                <% }}) %>
+                <% chartDays.forEach(function(d,i){ %>
+                <circle class="dash-chart-dot" cx="<%= pts[i].x %>" cy="<%= pts[i].y %>" r="12" fill="transparent" data-views="<%= d.views %>" data-label="<%= d.label %>" />
+                <circle class="dash-chart-dot-vis" cx="<%= pts[i].x %>" cy="<%= pts[i].y %>" r="0" fill="oklch(0.72 0.17 155)" />
                 <% }) %>
               </svg>
-            </div>
-          </article>
-
-          <article class="astats-card astats-L" data-card-id="dash-articles" data-card-group="Dashboard" data-card-size="L">
-            <header class="astats-card-head">
-              <span class="astats-card-icon"><i class="bi bi-file-earmark-text"></i></span>
-              <h3>Najnovšie články</h3>
-              <span class="astats-card-group">Dashboard</span>
-              <div class="astats-card-actions">
-                <a href="/admin/articles" class="bz-btn bz-btn-sm bz-btn-ghost" style="font-size:11px">Všetky →</a>
-                <div class="astats-size-toggle">
-                  <button data-size="S">S</button><button data-size="M">M</button><button class="active" data-size="L">L</button>
-                </div>
-                <button class="astats-card-act astats-card-hide" title="Skryť"><i class="bi bi-eye-slash"></i></button>
-              </div>
-            </header>
-            <div class="astats-card-body" style="padding:0">
-              <table class="bz-dash-table">
-                <thead>
-                  <tr>
-                    <th>Názov</th>
-                    <th>Autor</th>
-                    <th>Stav</th>
-                    <th style="text-align:right">Akcie</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <% if (typeof recentArticles !== 'undefined' && recentArticles && recentArticles.length > 0) { %>
-                  <% recentArticles.forEach(a => {
-                      const stMap = { published:{cls:'bz-pill-pub',label:'Publikovaný'}, draft:{cls:'bz-pill-draft',label:'Koncept'}, scheduled:{cls:'bz-pill-sched',label:'Naplánovaný'}, archived:{cls:'bz-pill-arch',label:'Archív'}, trash:{cls:'bz-pill-trash',label:'Kôš'} };
-                      const st = stMap[a.status] || { cls:'bz-pill-draft', label:a.status };
-                    %>
-                  <tr>
-                    <td><a href="/admin/articles/<%= a.id %>/edit" class="bz-dash-art-link"><%= a.title %></a><span class="bz-dash-art-date"><%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : (a.updated_at ? new Date(a.updated_at).toLocaleDateString('sk-SK') : '—') %></span></td>
-                    <td class="bz-dash-author"><%= a.author_nickname || '—' %></td>
-                    <td><span class="bz-status-pill <%= st.cls %>"><%= st.label %></span></td>
-                    <td style="text-align:right"><a href="/admin/articles/<%= a.id %>/edit" class="bz-btn bz-btn-sm bz-btn-ghost" title="Upraviť"><i class="bi bi-pencil"></i></a></td>
-                  </tr>
-                  <% }) %>
-                  <% } else { %>
-                  <tr>
-                    <td colspan="4" class="bz-dash-empty">Žiadne články zatiaľ.</td>
-                  </tr>
-                  <% } %>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="astats-card astats-M" data-card-id="dash-system" data-card-group="Dashboard" data-card-size="M">
-            <header class="astats-card-head">
-              <span class="astats-card-icon"><i class="bi bi-cpu"></i></span>
-              <h3>Stav systému</h3>
-              <span class="astats-card-group">Dashboard</span>
-              <div class="astats-card-actions">
-                <div class="astats-size-toggle"><button data-size="S">S</button><button class="active" data-size="M">M</button><button data-size="L">L</button></div>
-                <button class="astats-card-act astats-card-hide" title="Skryť"><i class="bi bi-eye-slash"></i></button>
-              </div>
-            </header>
-            <div class="astats-card-body" style="padding:0">
-              <ul class="bz-sys-list">
-                <li class="bz-sys-item"><span class="bz-sys-label"><i class="bi bi-database"></i> Databáza</span><span class="bz-status-pill bz-pill-pub">OK</span></li>
-                <li class="bz-sys-item"><span class="bz-sys-label"><i class="bi bi-clock-history"></i> Cron joby</span><span class="bz-status-pill bz-pill-pub">3 aktívne</span></li>
-                <li class="bz-sys-item"><span class="bz-sys-label"><i class="bi bi-shield-lock"></i> Rankings</span><span class="bz-status-pill bz-pill-draft">Phase 9</span></li>
-              </ul>
-            </div>
-          </article>
-
-          <article class="astats-card astats-M" data-card-id="dash-review" data-card-group="Dashboard" data-card-size="M">
-            <header class="astats-card-head">
-              <span class="astats-card-icon"><i class="bi bi-clock"></i></span>
-              <h3>Čaká na review</h3>
-              <span class="astats-card-group">Dashboard</span>
-              <div class="astats-card-actions">
-                <div class="astats-size-toggle"><button data-size="S">S</button><button class="active" data-size="M">M</button><button data-size="L">L</button></div>
-                <button class="astats-card-act astats-card-hide" title="Skryť"><i class="bi bi-eye-slash"></i></button>
-              </div>
-            </header>
-            <div class="astats-card-body" style="padding:0">
-              <% if (typeof pendingReview !== 'undefined' && pendingReview && pendingReview.length > 0) { %>
-              <ul class="bz-review-list">
-                <% pendingReview.forEach(r => { %>
-                <li class="bz-review-item">
-                  <div>
-                    <div class="bz-review-title"><%= r.title %></div>
-                    <div class="bz-review-meta"><%= r.author_nickname || '—' %> · <%= r.updated_at ? new Date(r.updated_at).toLocaleDateString('sk-SK') : '—' %></div>
-                  </div><a href="/admin/articles/<%= r.id %>/edit" class="bz-btn bz-btn-sm bz-btn-ghost">Otvoriť</a>
-                </li>
-                <% }) %>
-              </ul>
+              <div class="dash-chart-tooltip" id="dash-chart-tip" style="display:none"></div>
               <% } else { %>
-              <div class="bz-dash-empty" style="padding:16px">Žiadne články nečakajú na review.</div>
+              <div style="text-align:center;padding:40px 0;color:var(--text-subtle)">Nedostatok dát</div>
               <% } %>
             </div>
-          </article>
+          </div>
 
-          <article class="astats-card astats-S" data-card-id="dash-actions" data-card-group="Dashboard" data-card-size="S">
-            <header class="astats-card-head">
-              <span class="astats-card-icon"><i class="bi bi-plus-lg"></i></span>
-              <h3>Rýchle akcie</h3>
-              <span class="astats-card-group">Dashboard</span>
-              <div class="astats-card-actions">
-                <div class="astats-size-toggle"><button class="active" data-size="S">S</button><button data-size="M">M</button><button data-size="L">L</button></div>
-                <button class="astats-card-act astats-card-hide" title="Skryť"><i class="bi bi-eye-slash"></i></button>
-              </div>
-            </header>
-            <div class="astats-card-body">
-              <div class="stat-actions" style="grid-template-columns:1fr">
-                <a href="/admin/articles/new" class="stat-action"><i class="bi bi-plus-lg"></i><span>Nový článok</span></a>
-                <a href="/admin/media" class="stat-action"><i class="bi bi-images"></i><span>Správa médií</span></a>
-                <a href="/admin/comments" class="stat-action"><i class="bi bi-chat-dots"></i><span>Komentáre</span></a>
-                <a href="/admin/stats" class="stat-action"><i class="bi bi-graph-up"></i><span>Štatistiky</span></a>
+          <%# --- TODAY STATS --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-sun" style="color:oklch(0.7 0.15 60);opacity:0.7"></i> Dnes</h3>
+            </div>
+            <div class="dash-card-body">
+              <div class="dash-today-grid">
+                <div><span class="dash-today-num"><%= fmt(s.viewsToday) %></span><span class="dash-today-label">pozretí</span></div>
+                <div><span class="dash-today-num"><%= fmt(s.uniqueToday) %></span><span class="dash-today-label">unikátnych</span></div>
+                <div><span class="dash-today-num"><%= s.onlineUsers %></span><span class="dash-today-label">online teraz</span></div>
+                <div><span class="dash-today-num"><%= fmt(s.viewsYesterday) %></span><span class="dash-today-label">včera</span></div>
               </div>
             </div>
-          </article>
+          </div>
 
-          <%- include('cards/_card-wrapper', { cardId:'overview', cardTitle:'Prehľad', cardIcon:'bi-graph-up', cardGroup:'Obsah', cardSize:'L', cardBody:'./_overview' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'scheduled', cardTitle:'Naplánované články', cardIcon:'bi-calendar', cardGroup:'Obsah', cardSize:'M', cardBody:'./_scheduled' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'drafts', cardTitle:'Draft články', cardIcon:'bi-pencil', cardGroup:'Obsah', cardSize:'M', cardBody:'./_drafts' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'recentlyPublished', cardTitle:'Nedávno publikované', cardIcon:'bi-send', cardGroup:'Obsah', cardSize:'M', cardBody:'./_recently-published' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'topToday', cardTitle:'Najčítanejšie · 24h', cardIcon:'bi-graph-up', cardGroup:'Obsah', cardSize:'M', cardBody:'./_top-today' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'trending', cardTitle:'Trending témy', cardIcon:'bi-fire', cardGroup:'Obsah', cardSize:'M', cardBody:'./_trending' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'noImage', cardTitle:'Bez titulného obrázka', cardIcon:'bi-image', cardGroup:'Obsah', cardSize:'S', cardBody:'./_no-image' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'topReviews', cardTitle:'Top recenzie', cardIcon:'bi-star', cardGroup:'Recenzie', cardSize:'M', cardBody:'./_top-reviews' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'bestRated', cardTitle:'Najlepšie hodnotené', cardIcon:'bi-star-fill', cardGroup:'Recenzie', cardSize:'S', cardBody:'./_best-rated' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'newComments', cardTitle:'Nové komentáre', cardIcon:'bi-chat-dots', cardGroup:'Komunita', cardSize:'M', cardBody:'./_new-comments' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'pendingApproval', cardTitle:'Čaká schválenie', cardIcon:'bi-clock', cardGroup:'Komunita', cardSize:'S', cardBody:'./_pending-approval' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'onlineUsers', cardTitle:'Online používatelia', cardIcon:'bi-people', cardGroup:'Komunita', cardSize:'S', cardBody:'./_online-users' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'topAuthors', cardTitle:'Najaktívnejší autori', cardIcon:'bi-person-badge', cardGroup:'Komunita', cardSize:'M', cardBody:'./_top-authors' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'newRegistrations', cardTitle:'Nové registrácie', cardIcon:'bi-person-plus', cardGroup:'Komunita', cardSize:'M', cardBody:'./_new-registrations' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'viewsToday', cardTitle:'Pozretia dnes', cardIcon:'bi-eye', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_views-today' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'liveTraffic', cardTitle:'Live návštevnosť', cardIcon:'bi-broadcast', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_live-traffic' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'devices', cardTitle:'Podľa zariadenia', cardIcon:'bi-phone', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_devices' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'bounceRate', cardTitle:'Bounce rate', cardIcon:'bi-arrow-return-left', cardGroup:'Návštevnosť', cardSize:'M', cardBody:'./_bounce-rate' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'seoOverview', cardTitle:'SEO overview', cardIcon:'bi-search', cardGroup:'SEO', cardSize:'M', cardBody:'./_seo-overview' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'failedLogins', cardTitle:'Neúspešné prihlásenia', cardIcon:'bi-shield-lock', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_failed-logins' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'backupStatus', cardTitle:'Backup status', cardIcon:'bi-hdd', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_backup-status' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'serverHealth', cardTitle:'Stav servera', cardIcon:'bi-cpu', cardGroup:'Bezpečnosť', cardSize:'M', cardBody:'./_server-health' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'editorialTasks', cardTitle:'Úlohy redakcie', cardIcon:'bi-check2-square', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_editorial-tasks' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'auditLog', cardTitle:'Audit log', cardIcon:'bi-journal-text', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_audit-log' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'contentPlan', cardTitle:'Obsahový plán · týždeň', cardIcon:'bi-calendar3', cardGroup:'Redakcia', cardSize:'M', cardBody:'./_content-plan' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'healthScore', cardTitle:'Health score', cardIcon:'bi-heart-pulse', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_health-score' }) %>
-          <%# MOCK - include('cards/_card-wrapper', { cardId:'engagementScore', cardTitle:'Engagement score', cardIcon:'bi-lightning', cardGroup:'Pokročilé', cardSize:'M', cardBody:'./_engagement-score' }) %>
-          <%- include('cards/_card-wrapper', { cardId:'bannerStats', cardTitle:'Bannery — výkon', cardIcon:'bi-badge-ad', cardGroup:'Monetizácia', cardSize:'L', cardBody:'./_banner-stats' }) %>
+          <%# --- DEVICES --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-phone" style="color:oklch(0.65 0.19 260);opacity:0.7"></i> Zariadenia</h3>
+            </div>
+            <div class="dash-card-body">
+              <div class="dash-devices">
+                <div class="dash-dev-bar">
+                  <div class="dash-dev-fill" style="width:<%= s.devices.desktop %>%;background:oklch(0.65 0.19 260)"></div>
+                </div>
+                <div class="dash-dev-row"><span>🖥 Desktop</span><strong><%= s.devices.desktop %>%</strong></div>
+                <div class="dash-dev-bar">
+                  <div class="dash-dev-fill" style="width:<%= s.devices.mobile %>%;background:oklch(0.72 0.17 155)"></div>
+                </div>
+                <div class="dash-dev-row"><span>📱 Mobil</span><strong><%= s.devices.mobile %>%</strong></div>
+                <div class="dash-dev-bar">
+                  <div class="dash-dev-fill" style="width:<%= s.devices.tablet %>%;background:oklch(0.7 0.15 60)"></div>
+                </div>
+                <div class="dash-dev-row"><span>📟 Tablet</span><strong><%= s.devices.tablet %>%</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <%# --- RECENT ARTICLES --- %>
+          <div class="dash-card dash-card-wide">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-newspaper" style="color:var(--accent);opacity:0.7"></i> Posledné články</h3>
+              <a href="/admin/articles" class="dash-card-link">Všetky →</a>
+            </div>
+            <div class="dash-card-body dash-card-body-flush">
+              <% if (s.recentlyPublished && s.recentlyPublished.length) { s.recentlyPublished.forEach(function(a,i){ %>
+              <a href="/admin/articles/<%= a.id %>/edit" class="dash-article-row">
+                <span class="dash-article-num"><%= i+1 %></span>
+                <div class="dash-article-info">
+                  <strong><%= a.title %></strong>
+                  <span><%= a.author || '—' %> · <%= a.published_at ? new Date(a.published_at).toLocaleDateString('sk-SK') : '' %></span>
+                </div>
+                <span class="dash-article-views"><%= fmt(a.view_count || 0) %> <i class="bi bi-eye"></i></span>
+              </a>
+              <% }); } else { %>
+              <div style="padding:20px;text-align:center;color:var(--text-subtle)">Žiadne publikované články</div>
+              <% } %>
+            </div>
+          </div>
+
+          <%# --- DRAFTS --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-pencil" style="color:oklch(0.7 0.15 60);opacity:0.7"></i> Drafty</h3>
+              <span class="dash-card-badge"><%= s.drafts.length %></span>
+            </div>
+            <div class="dash-card-body dash-card-body-flush">
+              <% if (s.drafts.length) { s.drafts.slice(0,5).forEach(function(d){ %>
+              <a href="/admin/articles/<%= d.id %>/edit" class="dash-mini-row">
+                <span><%= d.title %></span>
+                <span class="dash-mini-meta"><%= d.updated_at ? new Date(d.updated_at).toLocaleDateString('sk-SK') : '' %></span>
+              </a>
+              <% }); } else { %>
+              <div style="padding:16px;text-align:center;color:var(--text-subtle)">Žiadne drafty 🎉</div>
+              <% } %>
+            </div>
+          </div>
+
+          <%# --- SCHEDULED --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-calendar-event" style="color:oklch(0.65 0.2 330);opacity:0.7"></i> Naplánované</h3>
+              <span class="dash-card-badge"><%= s.scheduled.length %></span>
+            </div>
+            <div class="dash-card-body dash-card-body-flush">
+              <% if (s.scheduled.length) { s.scheduled.slice(0,5).forEach(function(a){ %>
+              <a href="/admin/articles/<%= a.id %>/edit" class="dash-mini-row">
+                <span><%= a.title %></span>
+                <span class="dash-mini-meta"><%= a.scheduled_at ? new Date(a.scheduled_at).toLocaleDateString('sk-SK') : '' %></span>
+              </a>
+              <% }); } else { %>
+              <div style="padding:16px;text-align:center;color:var(--text-subtle)">Nič naplánované</div>
+              <% } %>
+            </div>
+          </div>
+
+          <%# --- TOP TODAY --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-fire" style="color:oklch(0.62 0.21 25);opacity:0.7"></i> Najčítanejšie dnes</h3>
+            </div>
+            <div class="dash-card-body dash-card-body-flush">
+              <% if (s.topToday && s.topToday.length) { s.topToday.forEach(function(a,i){ %>
+              <div class="dash-mini-row">
+                <span class="dash-rank"><%= i+1 %></span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><%= a.title %></span>
+                <strong style="color:var(--accent);font-size:12px"><%= a.views %></strong>
+              </div>
+              <% }); } else { %>
+              <div style="padding:16px;text-align:center;color:var(--text-subtle)">Žiadne návštevy dnes</div>
+              <% } %>
+            </div>
+          </div>
+
+          <%# --- SEO HEALTH --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-search" style="color:oklch(0.72 0.17 155);opacity:0.7"></i> SEO zdravie</h3>
+            </div>
+            <div class="dash-card-body">
+              <% var seoPct = s.seoTotal > 0 ? Math.round((s.seoWithTitle / s.seoTotal) * 100) : 0; var descPct = s.seoTotal > 0 ? Math.round((s.seoWithDesc / s.seoTotal) * 100) : 0; %>
+              <div class="dash-seo-row">
+                <span>SEO titulky</span>
+                <div class="dash-seo-bar">
+                  <div class="dash-seo-fill" style="width:<%= seoPct %>%"></div>
+                </div>
+                <strong><%= seoPct %>%</strong>
+              </div>
+              <div class="dash-seo-row">
+                <span>Meta popisy</span>
+                <div class="dash-seo-bar">
+                  <div class="dash-seo-fill" style="width:<%= descPct %>%"></div>
+                </div>
+                <strong><%= descPct %>%</strong>
+              </div>
+              <div style="margin-top:10px;font-size:11px;color:var(--text-subtle)">
+                <% if (s.noImage.length) { %><span style="color:var(--r-bad)"><%= s.noImage.length %> bez obrázka</span> · <% } %>
+                <% if (s.noTags.length) { %><span style="color:var(--r-mid)"><%= s.noTags.length %> bez tagov</span> · <% } %>
+                <% if (s.noCategory.length) { %><span style="color:var(--r-mid)"><%= s.noCategory.length %> bez kategórie</span><% } %>
+              </div>
+            </div>
+          </div>
+
+          <%# --- SERVER --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-cpu" style="color:oklch(0.65 0.19 260);opacity:0.7"></i> Systém</h3>
+            </div>
+            <div class="dash-card-body">
+              <div class="dash-sys">
+                <div class="dash-sys-row"><span>Uptime</span><span class="dash-sys-val" style="color:var(--r-great)"><%= s.serverUptime %>h</span></div>
+                <div class="dash-sys-row"><span>Pamäť</span><span class="dash-sys-val"><%= s.serverMemory %> MB</span></div>
+                <div class="dash-sys-row"><span>Node.js</span><span class="dash-sys-val"><%= s.nodeVersion %></span></div>
+                <div class="dash-sys-row"><span>Sessions</span><span class="dash-sys-val"><%= s.activeSessions %></span></div>
+                <div class="dash-sys-row"><span>Úložisko</span><span class="dash-sys-val"><%= s.uploadStorage %></span></div>
+              </div>
+            </div>
+          </div>
+
+          <%# --- TOP PAGES --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-bar-chart" style="color:oklch(0.65 0.2 330);opacity:0.7"></i> Top stránky · 30d</h3>
+            </div>
+            <div class="dash-card-body dash-card-body-flush">
+              <% if (s.topPages && s.topPages.length) { s.topPages.slice(0,5).forEach(function(p,i){ %>
+              <div class="dash-mini-row">
+                <span class="dash-rank" style="background:oklch(0.65 0.2 330 / 0.12);color:oklch(0.65 0.2 330)"><%= i+1 %></span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:12px"><%= p.path %></span>
+                <strong style="color:var(--accent);font-size:12px"><%= fmt(p.views) %></strong>
+              </div>
+              <% }); } else { %>
+              <div style="padding:16px;text-align:center;color:var(--text-subtle)">Žiadne dáta</div>
+              <% } %>
+            </div>
+          </div>
+
+          <%# --- COMMENTS --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-chat-dots" style="color:oklch(0.7 0.15 60);opacity:0.7"></i> Komentáre</h3>
+              <a href="/admin/comments" class="dash-card-link">Spravovať →</a>
+            </div>
+            <div class="dash-card-body">
+              <div class="dash-today-grid">
+                <div><span class="dash-today-num"><%= s.newComments24h %></span><span class="dash-today-label">za 24h</span></div>
+                <div><span class="dash-today-num"><%= s.newCommentsWeek %></span><span class="dash-today-label">za 7 dní</span></div>
+              </div>
+            </div>
+          </div>
+
+          <%# --- BEST TIME --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-clock" style="color:oklch(0.72 0.17 155);opacity:0.7"></i> Najlepší čas</h3>
+            </div>
+            <div class="dash-card-body">
+              <div class="dash-today-grid">
+                <div>
+                  <span class="dash-today-num"><%= s.bestHourVal !== null ? s.bestHourVal + ':00' : '—' %></span>
+                  <span class="dash-today-label">najlepšia hodina</span>
+                </div>
+                <div>
+                  <span class="dash-today-num" style="font-size:20px"><%= s.bestDayName %></span>
+                  <span class="dash-today-label">najlepší deň</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <%# --- REFERRERS --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-box-arrow-in-right" style="color:oklch(0.7 0.15 60);opacity:0.7"></i> Odkiaľ prichádzajú</h3>
+            </div>
+            <div class="dash-card-body dash-card-body-flush">
+              <% if (s.topReferrers && s.topReferrers.length) { s.topReferrers.forEach(function(r,i){ %>
+              <div class="dash-mini-row">
+                <span class="dash-rank" style="background:oklch(0.7 0.15 60 / 0.12);color:oklch(0.7 0.15 60)"><%= i+1 %></span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px"><%= r.domain %></span>
+                <strong style="color:var(--accent);font-size:12px"><%= fmt(r.cnt) %></strong>
+              </div>
+              <% }); } else { %>
+              <div style="padding:16px;text-align:center;color:var(--text-subtle)">Väčšina návštev je priamych</div>
+              <% } %>
+            </div>
+          </div>
+
+          <%# --- TOP TAGS --- %>
+          <div class="dash-card">
+            <div class="dash-card-head">
+              <h3><i class="bi bi-tags" style="color:oklch(0.65 0.19 260);opacity:0.7"></i> Top tagy</h3>
+            </div>
+            <div class="dash-card-body">
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <% if (s.topTags && s.topTags.length) { s.topTags.slice(0,10).forEach(function(t){ %>
+                <span class="dash-tag">#<%= t.name %> <small><%= t.cnt %></small></span>
+                <% }); } %>
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
     </main>
   </div>
-
   <%- include('../partials/scripts') %>
-  <script src="/admin/static/js/admin-dashboard-index.js" defer></script>
+  <script src="/admin/static/js/admin-dashboard-chart.js" defer></script>
 </body>
 
 </html>
