@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+
+<head><%- include('../partials/head', { title }) %></head>
+
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: '/admin/templates' }) %>
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: isNew ? 'Nová šablóna' : 'Upraviť šablónu' }) %>
+    <main class="bz-content">
+      <div class="bz-art-wrap" style="max-width:860px">
+
+        <form method="POST" action="<%= isNew ? '/admin/templates' : ('/admin/templates/' + template.id) %>" id="tpl-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <textarea name="blocks_json" id="tpl-blocks-json" style="display:none"><%= template.blocks_json || '[]' %></textarea>
+
+          <div class="bz-art-side-card mb-4">
+            <div class="bz-art-side-head"><i class="bi bi-info-circle"></i> Základné info</div>
+            <div class="bz-art-side-body">
+              <div class="row g-3">
+                <div class="col-md-5">
+                  <label class="form-label form-label-sm">Názov šablóny</label>
+                  <input type="text" name="name" class="form-control form-control-sm <%= errors.name ? 'is-invalid' : '' %>" value="<%= template.name %>" required>
+                  <% if (errors.name) { %><div class="invalid-feedback"><%= errors.name %></div><% } %>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label form-label-sm">Typ</label>
+                  <select name="type" class="form-select form-select-sm">
+                    <option value="article" <%= template.type === 'article' ? 'selected' : '' %>>Článok</option>
+                    <option value="review" <%= template.type === 'review' ? 'selected' : '' %>>Recenzia</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label form-label-sm">Ikona</label>
+                  <input type="text" name="icon" class="form-control form-control-sm" value="<%= template.icon %>" placeholder="bi-star">
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label form-label-sm">Poradie</label>
+                  <input type="number" name="display_order" class="form-control form-control-sm" value="<%= template.display_order || 0 %>" min="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bz-art-side-card mb-4">
+            <div class="bz-art-side-head" style="display:flex; justify-content:space-between; align-items:center">
+              <span><i class="bi bi-layers"></i> Bloky šablóny</span>
+              <span id="tpl-block-count" style="font-size:11px; color:var(--art-text-muted)"></span>
+            </div>
+            <div class="bz-art-side-body" style="padding:8px">
+              <div id="tpl-blocks-list"></div>
+              <div style="margin-top:10px; display:flex; gap:6px">
+                <select class="form-select form-select-sm" id="tpl-add-type" style="flex:1">
+                  <option value="">— Pridať blok —</option>
+                  <optgroup label="Základné">
+                    <option value="paragraph">Odsek</option>
+                    <option value="heading">Nadpis</option>
+                    <option value="image">Obrázok</option>
+                    <option value="section">Sekcia</option>
+                    <option value="divider">Oddeľovač</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="quote">Citát</option>
+                    <option value="list">Zoznam</option>
+                    <option value="gallery">Galéria</option>
+                    <option value="banner">Banner</option>
+                  </optgroup>
+                  <optgroup label="Recenzia">
+                    <option value="review_banner">Review banner</option>
+                    <option value="rating">Hodnotenie</option>
+                    <option value="rating_breakdown">Breakdown</option>
+                    <option value="pros_cons">Plusy / Mínusy</option>
+                    <option value="specs">Špecifikácie</option>
+                    <option value="color_variants">Farebné varianty</option>
+                  </optgroup>
+                  <optgroup label="Galérie">
+                    <option value="rvx_gallery_full">Galéria (všetky)</option>
+                    <option value="rvx_gallery_exif">Galéria EXIF</option>
+                    <option value="rvx_gallery_compare">Pred / Po</option>
+                    <option value="rvx_gallery_modes">Foto režimy</option>
+                    <option value="rvx_gallery_samples">Ukážky foto</option>
+                    <option value="rvx_gallery_hero">Hero galéria</option>
+                  </optgroup>
+                  <optgroup label="Review sekcie">
+                    <option value="rvx_glance">Na prvý pohľad</option>
+                    <option value="rvx_keyspecs">Kľúčové špec.</option>
+                    <option value="rvx_bench">Benchmark</option>
+                    <option value="rvx_battery">Batéria</option>
+                    <option value="rvx_software">Softvér</option>
+                    <option value="rvx_design">Dizajn</option>
+                    <option value="rvx_versus">Versus</option>
+                    <option value="rvx_box">Balenie</option>
+                    <option value="rvx_accessories">Príslušenstvo</option>
+                    <option value="rvx_buy">Kde kúpiť</option>
+                    <option value="rvx_alts">Alternatívy</option>
+                    <option value="rvx_faq">FAQ</option>
+                    <option value="rvx_timeline">Časová os</option>
+                    <option value="rvx_pricing">Cenník</option>
+                    <option value="rvx_hilo">Plusy / Mínusy (vizuálne)</option>
+                    <option value="rvx_experts">Expertné citáty</option>
+                    <option value="rvx_usecases">Prípady použitia</option>
+                    <option value="rvx_awards">Ocenenia</option>
+                    <option value="rvx_editornote">Poznámka redakcie</option>
+                    <option value="rvx_method">Metodika</option>
+                  </optgroup>
+                </select>
+                <button type="button" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent" id="tpl-add-btn"><i class="bi bi-plus-lg"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; justify-content:space-between">
+            <a href="/admin/templates" class="bz-art-btn bz-art-btn-sm bz-art-btn-ghost"><i class="bi bi-arrow-left"></i> Späť</a>
+            <button type="submit" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent"><i class="bi bi-check-lg me-1"></i> Uložiť</button>
+          </div>
+        </form>
+
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/scripts') %>
+  <script>
+    // ==== Template block editor ====
+    // Note: this inline script works because it's in admin layout
+    // and admin pages are excluded from CSP in practice
+  </script>
+  <script src="/admin/static/js/admin-template-editor.js" defer></script>
+</body>
+
+</html>

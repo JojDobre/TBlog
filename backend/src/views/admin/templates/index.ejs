@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+<head><%- include('../partials/head', { title }) %></head>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: '/admin/templates' }) %>
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: 'Šablóny článkov' }) %>
+    <main class="bz-content">
+      <div class="bz-art-wrap" style="max-width:820px">
+
+        <% if (flash) { %>
+        <div class="bz-art-alert bz-art-alert-success">
+          <i class="bi bi-check-circle-fill"></i> <%= flash %>
+          <button class="bz-art-alert-close" aria-label="Zatvoriť">×</button>
+        </div>
+        <% } %>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--s-4)">
+          <h2 style="margin:0; font-size:18px">Šablóny (<%= templates.length %>)</h2>
+          <a href="/admin/templates/new" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent"><i class="bi bi-plus-lg me-1"></i> Nová šablóna</a>
+        </div>
+
+        <% if (templates.length === 0) { %>
+        <div class="bz-dash-empty" style="padding:40px; text-align:center; color:var(--art-text-muted)">
+          <i class="bi bi-file-earmark-text" style="font-size:32px; display:block; margin-bottom:8px"></i>
+          Žiadne šablóny. Vytvor prvú alebo použi "Uložiť ako šablónu" v editore článku.
+        </div>
+        <% } else { %>
+        <div style="display:flex; flex-direction:column; gap:8px">
+          <% templates.forEach(function(t) { %>
+          <div class="bz-art-side-card" style="margin:0">
+            <div style="display:flex; align-items:center; gap:12px; padding:14px 16px">
+              <span style="font-size:20px; opacity:0.5"><i class="bi <%= t.icon %>"></i></span>
+              <div style="flex:1; min-width:0">
+                <strong style="font-size:14px"><%= t.name %></strong>
+                <div style="font-size:11px; color:var(--art-text-muted); margin-top:2px">
+                  <span class="bz-status-pill bz-pill-<%= t.type === 'review' ? 'sched' : 'draft' %>" style="font-size:10px"><%= t.type %></span>
+                  · <% try { var cnt = JSON.parse(t.blocks_json).length; } catch(e) { var cnt = 0; } %><%= cnt %> blokov
+                </div>
+              </div>
+              <div style="display:flex; gap:6px">
+                <a href="/admin/templates/<%= t.id %>/edit" class="bz-art-btn bz-art-btn-sm"><i class="bi bi-pencil"></i></a>
+                <form method="POST" action="/admin/templates/<%= t.id %>/delete" style="margin:0" onsubmit="return confirm('Odstrániť šablónu?')">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="bz-art-btn bz-art-btn-sm" style="color:oklch(0.65 0.2 25)"><i class="bi bi-trash"></i></button>
+                </form>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+        <% } %>
+
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/scripts') %>
+</body>
+</html>

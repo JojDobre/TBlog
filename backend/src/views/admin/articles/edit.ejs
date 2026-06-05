@@ -302,6 +302,12 @@
                   </div>
 
                   <div>
+                    <label class="bz-art-field-label">Šablóna</label>
+                    <div data-template-selector></div>
+                    <div data-template-save style="margin-top:6px"></div>
+                  </div>
+
+                  <div>
                     <label for="type" class="bz-art-field-label">Typ obsahu</label>
                     <select class="form-select form-select-sm" id="type" name="type">
                       <option value="article" <%= article.type === 'article' ? 'selected' : '' %>>Klasický článok</option>
@@ -542,6 +548,7 @@
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js" defer></script>
   <script src="/admin/static/js/admin-taxonomy.js" defer></script>
   <script src="/admin/static/js/admin-media-picker.js" defer></script>
+  <script src="/admin/static/js/admin-article-templates.js" defer></script>
   <script src="/admin/static/js/admin-article-review-blocks.js" defer></script>
   <script src="/admin/static/js/admin-article-extra-blocks.js" defer></script>
   <script src="/admin/static/js/admin-article-banner-block.js" defer></script>

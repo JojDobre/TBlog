@@ -1150,4 +1150,17 @@
 
   renderAll();
   restoreCollapseState();
+
+  window.__bzArticleEditor = {
+    getBlocks: function () {
+      return blocks;
+    },
+    setBlocks: function (newBlocks) {
+      blocks = newBlocks;
+      renderAll();
+      refreshInserters();
+      restoreCollapseState();
+      syncHidden();
+    },
+  };
 })();
