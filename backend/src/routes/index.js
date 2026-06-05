@@ -521,12 +521,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       .where(function () {
         this.where('articles.status', 'published');
         // Allow admin preview of drafts
-        if (
-          req.query.preview === '1' &&
-          req.session &&
-          req.session.user &&
-          req.session.user.role === 'admin'
-        ) {
+        if (req.query.preview === '1' && req.user && req.user.role === 'admin') {
           this.orWhereIn('articles.status', ['draft', 'review', 'scheduled', 'archived']);
         }
       })
