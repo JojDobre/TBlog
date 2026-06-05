@@ -27,7 +27,8 @@ const SKIP_PREFIXES = ['/admin', '/api', '/uploads', '/static', '/health', '/.we
 const SKIP_EXACT = new Set(['/favicon.ico', '/robots.txt', '/sitemap.xml']);
 
 // Heuristika pre bot detekciu (rozšírime neskôr ak bude treba)
-const BOT_RE = /bot|crawler|spider|crawling|slurp|facebookexternalhit|whatsapp|telegrambot/i;
+const BOT_RE =
+  /bot|crawler|spider|crawling|slurp|facebookexternalhit|whatsapp|telegrambot|curl|axios|python|Go-http|req\/v|CMS-Checker|Bytespider|AhrefsBot|SemrushBot|DotBot|MJ12bot|YandexBot|PetalBot|Googlebot|Nexus 5X|HeadlessChrome/i;
 
 function shouldSkip(req) {
   if (req.method !== 'GET') return true;
@@ -39,6 +40,7 @@ function shouldSkip(req) {
   if (/\.[a-z0-9]{1,5}$/i.test(req.path)) return true;
 
   const ua = req.headers['user-agent'] || '';
+  if (!ua || ua.length < 20) return true; // prázdny alebo príliš krátky UA = bot
   if (BOT_RE.test(ua)) return true;
 
   return false;
