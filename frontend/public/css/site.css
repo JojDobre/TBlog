@@ -2296,15 +2296,20 @@ img {
 /* Prose */
 .article-prose,
 .article-content {
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: var(--text);
   letter-spacing: -0.005em;
   min-width: 0;
 }
 .article-prose p,
 .article-content > p {
   margin: 0 0 var(--s-5);
+}
+.article-prose > p,
+.article-content > p {
+  font-size: 17px;
+  color: var(--text-muted);
 }
 .article-prose h2,
 .article-content > h2 {

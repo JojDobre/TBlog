@@ -527,7 +527,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
           req.session.user &&
           req.session.user.role === 'admin'
         ) {
-          this.orWhereIn('articles.status', ['draft', 'review']);
+          this.orWhereIn('articles.status', ['draft', 'review', 'scheduled', 'archived']);
         }
       })
       .select(
