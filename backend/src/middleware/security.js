@@ -27,13 +27,25 @@ module.exports = function buildSecurity() {
       useDefaults: true,
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", JSDELIVR],
+        scriptSrc: [
+          "'self'",
+          JSDELIVR,
+          'https://www.googletagmanager.com',
+          'https://www.google-analytics.com',
+          'https://pagead2.googlesyndication.com',
+        ],
         scriptSrcAttr: ["'none'"], // žiadne `onclick="..."`
         styleSrc: ["'self'", "'unsafe-inline'", JSDELIVR, 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'data:', JSDELIVR, 'https://fonts.gstatic.com'],
         styleSrcAttr: ["'unsafe-inline'"], // style="..." atribúty (Bootstrap ich miestami používa)
         imgSrc: ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'"],
+        connectSrc: [
+          "'self'",
+          'https://www.google-analytics.com',
+          'https://analytics.google.com',
+          'https://www.googletagmanager.com',
+          'https://pagead2.googlesyndication.com',
+        ],
         frameSrc: ["'self'", YOUTUBE, YOUTUBE_NOCOOKIE],
         mediaSrc: ["'self'"],
         objectSrc: ["'none'"],
