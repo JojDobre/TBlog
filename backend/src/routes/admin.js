@@ -21,6 +21,7 @@ const log = require('../logger');
 
 const auth = require('../utils/auth');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { generateToken } = require('../middleware/csrf');
 const { loginLimiter } = require('../middleware/rate-limits');
 const config = require('../../../config');
 const bannerStatsUtil = require('../utils/banner-stats');
@@ -415,6 +416,50 @@ router.post('/settings', requireRole('admin'), async (req, res, next) => {
     // Clear cached settings
     if (global.__bzSettingsCache) global.__bzSettingsCache = null;
     res.redirect('/admin/settings?saved=1');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// =============================================================================
+// Navigation editor
+// =============================================================================
+router.get('/navigation', requireRole('admin'), async (req, res, next) => {
+  try {
+    const navLinks = await db('settings').where('key', 'nav_links').first();
+    const footerSections = await db('settings').where('key', 'footer_sections').first();
+    const footerTagline = await db('settings').where('key', 'footer_tagline').first();
+    const footerDesc = await db('settings').where('key', 'footer_description').first();
+    res.render('admin/navigation/index', {
+      title: 'Navigácia & Footer',
+      navLinks: navLinks ? navLinks.value : '[]',
+      footerSections: footerSections ? footerSections.value : '[]',
+      footerTagline: footerTagline ? footerTagline.value : '',
+      footerDescription: footerDesc ? footerDesc.value : '',
+      csrfToken: generateToken(req, res),
+      success: req.query.saved === '1',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/navigation', requireRole('admin'), async (req, res, next) => {
+  try {
+    await db('settings')
+      .where('key', 'nav_links')
+      .update({ value: req.body.nav_links || '[]' });
+    await db('settings')
+      .where('key', 'footer_sections')
+      .update({ value: req.body.footer_sections || '[]' });
+    await db('settings')
+      .where('key', 'footer_tagline')
+      .update({ value: req.body.footer_tagline || '' });
+    await db('settings')
+      .where('key', 'footer_description')
+      .update({ value: req.body.footer_description || '' });
+    if (global.__bzSettingsCache) global.__bzSettingsCache = null;
+    res.redirect('/admin/navigation?saved=1');
   } catch (err) {
     next(err);
   }

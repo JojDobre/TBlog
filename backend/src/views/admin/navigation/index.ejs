@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="sk" data-bs-theme="dark">
+<head><%- include('../partials/head', { title }) %></head>
+<body class="bz-admin-body bz-art-page">
+  <%- include('../partials/sidebar', { currentPath: '/admin/navigation' }) %>
+  <div class="bz-main">
+    <%- include('../partials/topbar', { pageTitle: 'Navigácia & Footer' }) %>
+    <main class="bz-content">
+      <div class="bz-art-wrap" style="max-width:860px">
+
+        <% if (success) { %>
+        <div class="bz-art-alert bz-art-alert-success">
+          <i class="bi bi-check-circle-fill"></i> Navigácia uložená.
+          <button class="bz-art-alert-close" aria-label="Zatvoriť">×</button>
+        </div>
+        <% } %>
+
+        <form method="POST" action="/admin/navigation" id="nav-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="nav_links" id="nav-links-json" value='<%= navLinks %>'>
+          <input type="hidden" name="footer_sections" id="footer-sections-json" value='<%= footerSections %>'>
+
+          <%# === NAVBAR === %>
+          <div class="bz-art-side-card mb-4">
+            <div class="bz-art-side-head"><i class="bi bi-list"></i> Navigácia (navbar)</div>
+            <div class="bz-art-side-body" style="padding:8px">
+              <div id="nav-list"></div>
+              <button type="button" class="bz-art-btn bz-art-btn-sm" style="width:100%;margin-top:8px" id="nav-add"><i class="bi bi-plus-lg me-1"></i> Pridať odkaz</button>
+            </div>
+          </div>
+
+          <%# === FOOTER SECTIONS === %>
+          <div class="bz-art-side-card mb-4">
+            <div class="bz-art-side-head"><i class="bi bi-layout-three-columns"></i> Footer sekcie</div>
+            <div class="bz-art-side-body" style="padding:8px">
+              <div id="footer-sections-list"></div>
+              <button type="button" class="bz-art-btn bz-art-btn-sm" style="width:100%;margin-top:8px" id="footer-section-add"><i class="bi bi-plus-lg me-1"></i> Pridať sekciu</button>
+            </div>
+          </div>
+
+          <%# === FOOTER TEXT === %>
+          <div class="bz-art-side-card mb-4">
+            <div class="bz-art-side-head"><i class="bi bi-type"></i> Footer texty</div>
+            <div class="bz-art-side-body">
+              <div class="mb-3">
+                <label class="form-label form-label-sm">Tagline</label>
+                <input type="text" name="footer_tagline" class="form-control form-control-sm" value="<%= footerTagline %>">
+              </div>
+              <div>
+                <label class="form-label form-label-sm">Popis</label>
+                <textarea name="footer_description" class="form-control form-control-sm" rows="3"><%= footerDescription %></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end">
+            <button type="submit" class="bz-art-btn bz-art-btn-sm bz-art-btn-accent"><i class="bi bi-check-lg me-1"></i> Uložiť</button>
+          </div>
+        </form>
+
+      </div>
+    </main>
+  </div>
+  <%- include('../partials/scripts') %>
+  <script src="/admin/static/js/admin-navigation.js" defer></script>
+</body>
+</html>

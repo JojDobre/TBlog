@@ -1,10 +1,12 @@
 <%
   const navLinks = [
+    ...(typeof siteSettings !== 'undefined' && siteSettings.nav_links ? JSON.parse(siteSettings.nav_links) : [
     { href: '/',          label: 'Domov' },
     { href: '/recenzie',  label: 'Recenzie' },
     { href: '/rebricky',  label: 'Rebríčky' },
     { href: '/navody',    label: 'Návody' },
     { href: '/kategorie', label: 'Kategórie' },
+    ]),
   ];
   if (typeof headerPages !== 'undefined' && headerPages.length > 0) {
     headerPages.forEach(function(pg) {

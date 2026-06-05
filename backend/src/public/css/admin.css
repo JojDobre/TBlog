@@ -3285,3 +3285,35 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+
+/* ---- Navigation editor ---- */
+.nav-edit-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.nav-edit-row input {
+  flex: 1;
+}
+.nav-edit-row-sm input {
+  font-size: 12px;
+}
+.nav-section-card {
+  border: 1px solid var(--art-border, #374151);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: var(--art-bg-inset, #111827);
+}
+.nav-section-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 10px 12px;
+  background: oklch(from var(--art-bg-inset, #111827) calc(l + 0.02) c h);
+  border-bottom: 1px solid var(--art-border, #374151);
+}
+.nav-section-links {
+  padding: 8px 12px;
+}
