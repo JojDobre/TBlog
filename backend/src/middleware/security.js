@@ -46,6 +46,7 @@ module.exports = function buildSecurity() {
           'https://analytics.google.com',
           'https://www.googletagmanager.com',
           'https://pagead2.googlesyndication.com',
+          'https://fundingchoicesmessages.google.com',
         ],
         frameSrc: ["'self'", YOUTUBE, YOUTUBE_NOCOOKIE],
         mediaSrc: ["'self'"],
