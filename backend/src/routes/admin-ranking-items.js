@@ -63,11 +63,16 @@ module.exports = function mountItemRoutes(router) {
         .first();
       const nextPos = (maxPos?.m ?? -1) + 1;
 
+      const coverMediaId = req.body.cover_media_id ? Number(req.body.cover_media_id) : null;
+      const customUrl = String(req.body.custom_url || '').trim().slice(0, 500) || null;
+
       const [itemId] = await db('ranking_items').insert({
         ranking_id: rankingId,
         article_id: articleId,
         custom_name: customName,
         custom_brand: customBrand,
+        cover_media_id: coverMediaId,
+        custom_url: customUrl,
         override_score: overrideScore,
         manual_position: nextPos,
         added_at: new Date(),
@@ -121,6 +126,10 @@ module.exports = function mountItemRoutes(router) {
         updates.custom_name = String(req.body.custom_name).trim() || null;
       if (req.body.custom_brand !== undefined)
         updates.custom_brand = String(req.body.custom_brand).trim() || null;
+      if (req.body.cover_media_id !== undefined)
+        updates.cover_media_id = req.body.cover_media_id ? Number(req.body.cover_media_id) : null;
+      if (req.body.custom_url !== undefined)
+        updates.custom_url = String(req.body.custom_url || '').trim().slice(0, 500) || null;
       if (req.body.override_score !== undefined) {
         updates.override_score =
           req.body.override_score !== '' ? parseFloat(req.body.override_score) : null;

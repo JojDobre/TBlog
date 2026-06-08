@@ -549,7 +549,7 @@ img {
 .ph img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   display: block;
 }
 .ph-1 {
@@ -3376,7 +3376,7 @@ img {
 .ritem-img img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
 }
 .ritem-body {
   min-width: 0;
@@ -3674,7 +3674,7 @@ img {
 .rtable-thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
 }
 .rtable-brand {
   display: block;
@@ -3705,6 +3705,7 @@ img {
   font-size: 12px;
   font-weight: 700;
   text-align: center;
+  text-wrap-mode: nowrap;
 }
 .rtable-score--great {
   background: oklch(0.72 0.17 155/0.15);
@@ -6423,4 +6424,171 @@ body.menu-open {
 .article-prose s,
 .article-content s {
   opacity: 0.6;
+}
+/* ---- Ranking group cells ---- */
+.rgroup-icons {
+  display: flex;
+  gap: 3px;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+.rgroup-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 4px;
+  cursor: default;
+  font-size: 10px;
+  color: var(--text-subtle);
+}
+.rgroup-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+.rgroup-info-num {
+  font-weight: 700;
+  font-size: 14px;
+}
+.rgroup-info-btn {
+  position: relative;
+  cursor: pointer;
+  color: var(--text-subtle);
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.rgroup-info-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.rgroup-info-num {
+  font-weight: 700;
+  font-size: 14px;
+}
+.rgroup-info-btn {
+  position: relative;
+  cursor: pointer;
+  color: var(--text-subtle);
+  font-size: 12px;
+}
+.rgroup-tooltip {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  min-width: 220px;
+  max-width: 320px;
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.5);
+  font-size: 12px;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+}
+.rgroup-tooltip strong {
+  display: block;
+  color: var(--text);
+  margin-top: 8px;
+  font-size: 13px;
+}
+.rgroup-tooltip strong:first-child {
+  margin-top: 0;
+}
+.rgroup-tooltip span {
+  display: block;
+  color: var(--text-muted);
+  padding-left: 10px;
+}
+.rgroup-tooltip-desc {
+  font-style: italic;
+  opacity: 0.7;
+}
+.rgroup-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rgroup-filter-chip:has(input:checked) {
+  background: oklch(from var(--accent) l c h / 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.rtable-th--group {
+  min-width: 80px;
+}
+
+/* ---- Custom scrollbar (dark theme) ---- */
+.rtable-wrap {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.35 0.01 240) transparent;
+}
+.rtable-wrap::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.rtable-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rtable-wrap::-webkit-scrollbar-thumb {
+  background: oklch(0.35 0.01 240);
+  border-radius: 4px;
+}
+.rtable-wrap::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.45 0.01 240);
+}
+
+/* Global dark scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.3 0.01 240) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: oklch(0.3 0.01 240);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.4 0.01 240);
+}
+
+/* Ranking methodology */
+.rtable-methodology {
+  margin-top: var(--s-8);
+  padding: var(--s-6);
+  background: oklch(from var(--bg-card) calc(l + 0.02) c h);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.rtable-methodology-title {
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+.rtable-methodology-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  white-space: pre-line;
 }

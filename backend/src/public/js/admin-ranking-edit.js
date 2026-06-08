@@ -20,6 +20,9 @@
     document.getElementById('crit-unit').value = '';
     document.getElementById('crit-filterable').checked = false;
     document.getElementById('crit-total').checked = false;
+    document.getElementById('crit-color-max').value = '';
+    document.getElementById('crit-color-ref').value = '';
+    document.getElementById('crit-color-fields').style.display = '';
     document.getElementById('crit-errors').style.display = 'none';
     document.getElementById('criterionModalTitle').textContent = 'Pridať kritérium';
   }
@@ -31,6 +34,17 @@
     document.getElementById('crit-unit').value = c.unit || '';
     document.getElementById('crit-filterable').checked = !!c.is_filterable;
     document.getElementById('crit-total').checked = !!c.is_total;
+    document.getElementById('crit-color-max').value = c.color_max || '';
+    document.getElementById('crit-color-ref').value = c.color_ref_criterion_id || '';
+    var ft = c.field_type;
+    document.getElementById('crit-color-fields').style.display = [
+      'score_1_10',
+      'decimal',
+      'integer',
+      'price',
+    ].includes(ft)
+      ? ''
+      : 'none';
     document.getElementById('crit-errors').style.display = 'none';
     document.getElementById('criterionModalTitle').textContent = 'Upraviť kritérium';
     new bootstrap.Modal(document.getElementById('criterionModal')).show();
@@ -53,6 +67,8 @@
         unit: document.getElementById('crit-unit').value,
         is_filterable: document.getElementById('crit-filterable').checked ? '1' : '0',
         is_total: document.getElementById('crit-total').checked ? '1' : '0',
+        color_max: document.getElementById('crit-color-max').value,
+        color_ref_criterion_id: document.getElementById('crit-color-ref').value,
       });
 
       const url = id
@@ -285,6 +301,8 @@
       modal.querySelector('#edit-custom-name').value = d.customName || '';
       modal.querySelector('#edit-custom-brand').value = d.customBrand || '';
       modal.querySelector('#edit-override-score').value = d.overrideScore || '';
+      modal.querySelector('#edit-cover-media').value = d.coverMedia || '';
+      modal.querySelector('#edit-custom-url').value = d.customUrl || '';
 
       // Criterion values from data attributes
       modal.querySelectorAll('[data-edit-crit]').forEach((input) => {

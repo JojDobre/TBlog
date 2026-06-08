@@ -80,6 +80,7 @@ function validateRanking(body) {
     String(body.seo_title || '')
       .trim()
       .slice(0, 255) || null;
+  const methodology = String(body.methodology || '').trim() || null;
   const seoDescription =
     String(body.seo_description || '')
       .trim()
@@ -102,6 +103,7 @@ function validateRanking(body) {
       max_age_months: maxAgeMonths,
       seo_title: seoTitle,
       seo_description: seoDescription,
+      methodology: methodology,
     },
     errors,
   };
@@ -118,13 +120,36 @@ function validateCriterion(body) {
   const isFilterable = body.is_filterable === '1' ? 1 : 0;
   const isTotal = body.is_total === '1' ? 1 : 0;
 
-  const validTypes = ['score_1_10', 'decimal', 'integer', 'price', 'date', 'text'];
+  const validTypes = [
+    'score_1_10',
+    'decimal',
+    'integer',
+    'price',
+    'date',
+    'text',
+    'icon_group',
+    'info_group',
+  ];
   if (!name || name.length < 1) errors.name = 'Názov je povinný.';
   if (name.length > 80) errors.name = 'Max 80 znakov.';
   if (!validTypes.includes(fieldType)) errors.field_type = 'Neplatný typ.';
 
+  const colorMax =
+    body.color_max !== undefined && body.color_max !== '' ? parseFloat(body.color_max) : null;
+  const colorRefCriterionId = body.color_ref_criterion_id
+    ? Number(body.color_ref_criterion_id)
+    : null;
+
   return {
-    value: { name, field_type: fieldType, unit, is_filterable: isFilterable, is_total: isTotal },
+    value: {
+      name,
+      field_type: fieldType,
+      unit,
+      is_filterable: isFilterable,
+      is_total: isTotal,
+      color_max: colorMax,
+      color_ref_criterion_id: colorRefCriterionId,
+    },
     errors,
   };
 }
@@ -229,6 +254,7 @@ router.post('/', async (req, res, next) => {
       max_age_months: value.max_age_months,
       seo_title: value.seo_title,
       seo_description: value.seo_description,
+      methodology: value.methodology,
     });
 
     log.info('ranking created', { id, slug: finalSlug, userId: req.user.id });
@@ -314,6 +340,27 @@ router.get('/:id/edit', async (req, res, next) => {
       });
     }
 
+    // Load option counts per item for icon_group/info_group display
+    const optionCounts = {};
+    if (items.length) {
+      const countRows = await db('ranking_item_options as rio')
+        .join('ranking_criterion_options as rco', 'rio.option_id', 'rco.id')
+        .whereIn(
+          'rio.ranking_item_id',
+          items.map((i) => i.id)
+        )
+        .select('rio.ranking_item_id', 'rco.criterion_id')
+        .count({ cnt: '*' })
+        .groupBy('rio.ranking_item_id', 'rco.criterion_id');
+      for (const r of countRows) {
+        if (!optionCounts[r.ranking_item_id]) optionCounts[r.ranking_item_id] = {};
+        optionCounts[r.ranking_item_id][r.criterion_id] = Number(r.cnt);
+      }
+      items.forEach((item) => {
+        item.optionCounts = optionCounts[item.id] || {};
+      });
+    }
+
     res.render('admin/rankings/edit', {
       title: 'Upraviť rebríček',
       currentPath: '/admin/rankings',
@@ -387,6 +434,7 @@ router.post('/:id', async (req, res, next) => {
         max_age_months: value.max_age_months,
         seo_title: value.seo_title,
         seo_description: value.seo_description,
+        methodology: value.methodology,
       });
 
     log.info('ranking updated', { id, slug: finalSlug, userId: req.user.id });
@@ -461,6 +509,8 @@ router.post('/:id/criteria', async (req, res, next) => {
       is_filterable: value.is_filterable,
       is_total: value.is_total,
       display_order: nextOrder,
+      color_max: value.color_max,
+      color_ref_criterion_id: value.color_ref_criterion_id,
     });
 
     const criterion = await db('ranking_criteria').where('id', insertedId).first();
@@ -498,6 +548,8 @@ router.post('/:id/criteria/:cid', async (req, res, next) => {
       unit: value.unit,
       is_filterable: value.is_filterable,
       is_total: value.is_total,
+      color_max: value.color_max,
+      color_ref_criterion_id: value.color_ref_criterion_id,
     });
 
     const criterion = await db('ranking_criteria').where('id', cid).first();
@@ -559,5 +611,142 @@ router.post('/:id/criteria/reorder', async (req, res, next) => {
 });
 
 require('./admin-ranking-items')(router);
+
+// =========================================================================
+// Criterion options (icon_group / info_group)
+// =========================================================================
+
+// LIST options for a criterion (JSON)
+router.get('/:id/criteria/:cid/options', async (req, res, next) => {
+  try {
+    const options = await db('ranking_criterion_options')
+      .where('criterion_id', req.params.cid)
+      .orderBy('display_order')
+      .orderBy('id');
+    // Load media for icons
+    const mediaIds = options.filter((o) => o.icon_media_id).map((o) => o.icon_media_id);
+    let mediaMap = {};
+    if (mediaIds.length) {
+      const rows = await db('media').whereIn('id', mediaIds).select('id', 'thumbnail_path');
+      rows.forEach((r) => {
+        mediaMap[r.id] = r;
+      });
+    }
+    res.json(
+      options.map((o) => ({
+        ...o,
+        icon_url:
+          o.icon_media_id && mediaMap[o.icon_media_id]
+            ? '/uploads/' + mediaMap[o.icon_media_id].thumbnail_path
+            : null,
+      }))
+    );
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ADD option
+router.post('/:id/criteria/:cid/options', async (req, res, next) => {
+  try {
+    const { label, description, icon_media_id, parent_id, is_filterable, display_order } = req.body;
+    if (!label || !label.trim()) return res.status(400).json({ error: 'Label je povinný.' });
+    const [id] = await db('ranking_criterion_options').insert({
+      criterion_id: Number(req.params.cid),
+      parent_id: parent_id ? Number(parent_id) : null,
+      label: label.trim(),
+      description: (description || '').trim() || null,
+      icon_media_id: icon_media_id ? Number(icon_media_id) : null,
+      is_filterable: is_filterable === '1' || is_filterable === true ? 1 : 0,
+      display_order: Number(display_order) || 0,
+    });
+    res.json({ ok: true, id });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// UPDATE option
+router.post('/:id/criteria/:cid/options/:oid', async (req, res, next) => {
+  try {
+    const { label, description, icon_media_id, parent_id, is_filterable, display_order } = req.body;
+    if (!label || !label.trim()) return res.status(400).json({ error: 'Label je povinný.' });
+    await db('ranking_criterion_options')
+      .where('id', req.params.oid)
+      .update({
+        parent_id: parent_id ? Number(parent_id) : null,
+        label: label.trim(),
+        description: (description || '').trim() || null,
+        icon_media_id: icon_media_id ? Number(icon_media_id) : null,
+        is_filterable: is_filterable === '1' || is_filterable === true ? 1 : 0,
+        display_order: Number(display_order) || 0,
+      });
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE option
+router.post('/:id/criteria/:cid/options/:oid/delete', async (req, res, next) => {
+  try {
+    await db('ranking_criterion_options').where('id', req.params.oid).del();
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// =========================================================================
+// Item options — assign options to products
+// =========================================================================
+
+// GET selected options for item + criterion
+router.get('/:id/items/:itemId/options/:cid', async (req, res, next) => {
+  try {
+    const selected = await db('ranking_item_options as rio')
+      .join('ranking_criterion_options as rco', 'rio.option_id', 'rco.id')
+      .where('rco.criterion_id', req.params.cid)
+      .where('rio.ranking_item_id', req.params.itemId)
+      .select('rio.option_id', 'rio.custom_value');
+    res.json(selected);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// SAVE selected options for item + criterion
+router.post('/:id/items/:itemId/options/:cid', async (req, res, next) => {
+  try {
+    const itemId = Number(req.params.itemId);
+    const criterionId = Number(req.params.cid);
+    // Get all option IDs for this criterion
+    const allOptIds = await db('ranking_criterion_options')
+      .where('criterion_id', criterionId)
+      .pluck('id');
+    // Delete existing
+    await db('ranking_item_options')
+      .where('ranking_item_id', itemId)
+      .whereIn('option_id', allOptIds)
+      .del();
+    // Insert new
+    let rawIds = req.body.option_ids;
+    if (!rawIds) rawIds = [];
+    else if (!Array.isArray(rawIds)) rawIds = [rawIds];
+    const selectedIds = rawIds.map(Number).filter((n) => n > 0);
+    if (selectedIds.length) {
+      await db('ranking_item_options').insert(
+        selectedIds.map((oid) => ({
+          ranking_item_id: itemId,
+          option_id: oid,
+          custom_value: null,
+        }))
+      );
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

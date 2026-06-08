@@ -30,6 +30,7 @@ async function loadRankingItems(rankingId, ranking) {
     .leftJoin('articles', 'ranking_items.article_id', 'articles.id')
     .leftJoin('media', 'articles.cover_media_id', 'media.id')
     .where('ranking_items.ranking_id', rankingId)
+    .leftJoin('media as item_media', 'ranking_items.cover_media_id', 'item_media.id')
     .select(
       'ranking_items.*',
       'articles.title as article_title',
@@ -38,7 +39,9 @@ async function loadRankingItems(rankingId, ranking) {
       'articles.excerpt as article_excerpt',
       'articles.published_at',
       'media.original_path as cover_full',
-      'media.thumbnail_path as cover_thumb'
+      'media.thumbnail_path as cover_thumb',
+      'item_media.thumbnail_path as item_cover_thumb',
+      'item_media.original_path as item_cover_full'
     );
 
   const itemIds = items.map((i) => i.id);
@@ -60,10 +63,12 @@ async function loadRankingItems(rankingId, ranking) {
     item.name = item.article_id ? item.article_title : item.custom_name;
     item.brand = item.custom_brand || '';
     item.slug = item.article_id ? item.article_slug : null;
+    item.url = item.article_id ? '/clanok/' + item.article_slug : item.custom_url || null;
     item.type = item.article_id ? item.article_type : 'product';
 
     // Cover obrázok
-    const imgPath = item.cover_thumb || item.cover_full || null;
+    const imgPath =
+      item.cover_thumb || item.cover_full || item.item_cover_thumb || item.item_cover_full || null;
     item.image = imgPath ? '/uploads/' + imgPath : null;
 
     // Cena z price kritéria
@@ -105,14 +110,38 @@ async function loadRankingItems(rankingId, ranking) {
 
     // Scores array pre frontend (label + val), vynechaj price
     item.scores = criteria
-      .filter((c) => c.field_type !== 'price' && c.field_type !== 'date')
+      .filter((c) => !['price', 'date', 'icon_group', 'info_group'].includes(c.field_type))
       .map((c) => {
         const val = item.values.find((v) => Number(v.criterion_id) === c.id);
+        var numVal = val && val.value_decimal !== null ? Number(val.value_decimal) : 0;
+        var colorClass = 'great';
+        if (c.color_ref_criterion_id) {
+          // Základ = hodnota iného kritéria pre tento produkt
+          var refVal = item.values.find(function (v) {
+            return Number(v.criterion_id) === Number(c.color_ref_criterion_id);
+          });
+          var total = refVal && refVal.value_decimal !== null ? Number(refVal.value_decimal) : 0;
+          if (total > 0) {
+            var ratio = numVal / total;
+            if (c.color_max) ratio = ratio * (total / c.color_max);
+            if (ratio >= 0.95) colorClass = 'great';
+            else if (ratio >= 0.85) colorClass = 'good';
+            else if (ratio >= 0.7) colorClass = 'mid';
+            else colorClass = 'low';
+          }
+        } else if (c.color_max) {
+          var r2 = c.color_max > 0 ? numVal / c.color_max : 0;
+          if (r2 >= 0.9) colorClass = 'great';
+          else if (r2 >= 0.75) colorClass = 'good';
+          else if (r2 >= 0.6) colorClass = 'mid';
+          else colorClass = 'low';
+        }
         return {
           label: c.name,
-          val: val && val.value_decimal !== null ? Number(val.value_decimal) : 0,
+          val: numVal,
           text: val && val.value_text ? val.value_text : null,
           unit: c.unit,
+          colorClass: colorClass,
         };
       });
   });
@@ -129,7 +158,64 @@ async function loadRankingItems(rankingId, ranking) {
     item.rank = idx + 1;
   });
 
-  return { items, criteria };
+  // Load icon_group / info_group data
+  const groupCriteria = criteria.filter(
+    (c) => c.field_type === 'icon_group' || c.field_type === 'info_group'
+  );
+  const groupData = {};
+
+  for (const gc of groupCriteria) {
+    const options = await db('ranking_criterion_options')
+      .leftJoin('media', 'ranking_criterion_options.icon_media_id', 'media.id')
+      .where('ranking_criterion_options.criterion_id', gc.id)
+      .select(
+        'ranking_criterion_options.*',
+        'media.thumbnail_path as icon_thumb',
+        'media.original_path as icon_path'
+      )
+      .orderBy('ranking_criterion_options.display_order');
+
+    groupData[gc.id] = {
+      criterion: gc,
+      options: options,
+      topLevel: options.filter((o) => !o.parent_id),
+      children: {},
+    };
+    // Build children map
+    options
+      .filter((o) => o.parent_id)
+      .forEach((o) => {
+        if (!groupData[gc.id].children[o.parent_id]) groupData[gc.id].children[o.parent_id] = [];
+        groupData[gc.id].children[o.parent_id].push(o);
+      });
+  }
+
+  // Load selected options per item
+  if (itemIds.length > 0 && groupCriteria.length > 0) {
+    const allOptionIds = [];
+    for (const gc of groupCriteria) {
+      groupData[gc.id].options.forEach((o) => allOptionIds.push(o.id));
+    }
+    if (allOptionIds.length > 0) {
+      const selectedRows = await db('ranking_item_options')
+        .whereIn('ranking_item_id', itemIds)
+        .whereIn('option_id', allOptionIds)
+        .select('ranking_item_id', 'option_id');
+      const selectedMap = new Map();
+      for (const r of selectedRows) {
+        if (!selectedMap.has(r.ranking_item_id)) selectedMap.set(r.ranking_item_id, new Set());
+        selectedMap.get(r.ranking_item_id).add(r.option_id);
+      }
+      items.forEach((item) => {
+        item.selectedOptions = selectedMap.get(item.id) || new Set();
+      });
+    }
+  }
+  items.forEach((item) => {
+    if (!item.selectedOptions) item.selectedOptions = new Set();
+  });
+
+  return { items, criteria, groupData };
 }
 
 function formatDateSk(date) {
@@ -172,7 +258,7 @@ router.get('/rebricky', async (req, res, next) => {
 
     const rankingGroups = [];
     for (const r of rankings) {
-      const { items, criteria } = await loadRankingItems(r.id, r);
+      const { items, criteria, groupData } = await loadRankingItems(r.id, r);
       const top3 = items.slice(0, 3);
 
       let category = '';
@@ -232,7 +318,7 @@ router.get('/rebricky/:slug', async (req, res, next) => {
       .first();
     if (!ranking) return next();
 
-    const { items, criteria } = await loadRankingItems(ranking.id, ranking);
+    const { items, criteria, groupData } = await loadRankingItems(ranking.id, ranking);
 
     let category = '';
     if (items.length > 0 && items[0].article_id) {
@@ -251,6 +337,7 @@ router.get('/rebricky/:slug', async (req, res, next) => {
       subtitle: ranking.description || '',
       category: category,
       updated: 'Aktualizované ' + formatDateSk(ranking.updated_at),
+      methodology: ranking.methodology || null,
     };
 
     const banners = await bannerLoader.getBannersForPositions(['ranking_top']);
@@ -260,6 +347,8 @@ router.get('/rebricky/:slug', async (req, res, next) => {
       currentPath: '/rebricky',
       ranking: templateRanking,
       items,
+      criteria,
+      groupData,
       banners,
     });
   } catch (err) {
@@ -279,7 +368,7 @@ router.get('/rebricky/:slug/tabulka', async (req, res, next) => {
       .first();
     if (!ranking) return next();
 
-    const { items, criteria } = await loadRankingItems(ranking.id, ranking);
+    const { items, criteria, groupData } = await loadRankingItems(ranking.id, ranking);
 
     const templateRanking = {
       slug: ranking.slug,
@@ -287,10 +376,11 @@ router.get('/rebricky/:slug/tabulka', async (req, res, next) => {
       subtitle: ranking.description || '',
       category: '',
       updated: 'Aktualizované ' + formatDateSk(ranking.updated_at),
+      methodology: ranking.methodology || null,
     };
 
     const scoreLabels = criteria
-      .filter((c) => c.field_type !== 'price' && c.field_type !== 'date')
+      .filter((c) => !['price', 'date', 'icon_group', 'info_group'].includes(c.field_type))
       .map((c) => c.name);
 
     const banners = await bannerLoader.getBannersForPositions(['ranking_top']);
@@ -300,6 +390,8 @@ router.get('/rebricky/:slug/tabulka', async (req, res, next) => {
       currentPath: '/rebricky',
       ranking: templateRanking,
       items,
+      criteria,
+      groupData,
       scoreLabels,
       banners,
     });

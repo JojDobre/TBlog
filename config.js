@@ -89,7 +89,7 @@ const config = {
     publicPath: '/uploads', // ako sa servuje cez Express static
     image: {
       maxSizeBytes: 50 * 1024 * 1024, // 50 MB
-      allowedMimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+      allowedMimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'],
       thumbnailWidth: 400,
       mediumWidth: 1200,
     },

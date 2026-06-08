@@ -17,7 +17,10 @@
     th.addEventListener('click', function () {
       var col = th.getAttribute('data-sort-col');
       if (currentCol === col) currentDir = currentDir === 'asc' ? 'desc' : 'asc';
-      else { currentCol = col; currentDir = 'asc'; }
+      else {
+        currentCol = col;
+        currentDir = 'asc';
+      }
 
       headers.forEach(function (h) {
         var icon = h.querySelector('.sort-icon');
@@ -26,13 +29,17 @@
 
       var rows = Array.from(tbody.querySelectorAll('tr'));
       rows.sort(function (a, b) {
-        var va = getCellValue(a, col), vb = getCellValue(b, col);
-        var result = (typeof va === 'number' && typeof vb === 'number')
-          ? va - vb
-          : String(va).localeCompare(String(vb), 'sk');
+        var va = getCellValue(a, col),
+          vb = getCellValue(b, col);
+        var result =
+          typeof va === 'number' && typeof vb === 'number'
+            ? va - vb
+            : String(va).localeCompare(String(vb), 'sk');
         return currentDir === 'desc' ? -result : result;
       });
-      rows.forEach(function (r) { tbody.appendChild(r); });
+      rows.forEach(function (r) {
+        tbody.appendChild(r);
+      });
     });
   });
 
@@ -62,8 +69,10 @@
   // ===========================================================================
 
   var activeBrand = 'all';
-  var priceMin = null, priceMax = null;
-  var dateMinVal = '', dateMaxVal = ''; // format: "YYYY-MM"
+  var priceMin = null,
+    priceMax = null;
+  var dateMinVal = '',
+    dateMaxVal = ''; // format: "YYYY-MM"
   var scoreMin = null;
   var critMins = {}; // { index: minValue }
 
@@ -113,7 +122,10 @@
           var cell = r.querySelector('.rtable-score-cell[data-crit-index="' + idx + '"]');
           if (cell) {
             var val = parseFloat(cell.querySelector('.rtable-score-val').textContent) || 0;
-            if (val < minVal) { show = false; break; }
+            if (val < minVal) {
+              show = false;
+              break;
+            }
           }
         }
       }
@@ -128,7 +140,8 @@
       if (!noResults) {
         noResults = document.createElement('div');
         noResults.id = 'rtable-no-results';
-        noResults.style.cssText = 'text-align:center; padding:32px; color:var(--text-muted); font-size:14px;';
+        noResults.style.cssText =
+          'text-align:center; padding:32px; color:var(--text-muted); font-size:14px;';
         noResults.textContent = 'Žiadne produkty nezodpovedajú filtrom.';
         table.parentNode.insertBefore(noResults, table.nextSibling);
       }
@@ -152,12 +165,32 @@
     if (m2) return m2[2] + '-' + m2[1];
     // Mesiac Rok (skrátený alebo plný)
     var monthMap = {
-      'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'máj': '05', 'maj': '05',
-      'jún': '06', 'jun': '06', 'júl': '07', 'jul': '07', 'aug': '08', 'sep': '09',
-      'okt': '10', 'nov': '11', 'dec': '12',
-      'január': '01', 'február': '02', 'marec': '03', 'apríl': '04',
-      'júni': '06', 'júli': '07', 'august': '08', 'september': '09',
-      'október': '10', 'november': '11', 'december': '12'
+      jan: '01',
+      feb: '02',
+      mar: '03',
+      apr: '04',
+      máj: '05',
+      maj: '05',
+      jún: '06',
+      jun: '06',
+      júl: '07',
+      jul: '07',
+      aug: '08',
+      sep: '09',
+      okt: '10',
+      nov: '11',
+      dec: '12',
+      január: '01',
+      február: '02',
+      marec: '03',
+      apríl: '04',
+      júni: '06',
+      júli: '07',
+      august: '08',
+      september: '09',
+      október: '10',
+      november: '11',
+      december: '12',
     };
     var m3 = str.match(/([a-záéíóúýčďľňřšťž]+)\s+(\d{4})/i);
     if (m3) {
@@ -166,7 +199,10 @@
       var mm = monthMap[key];
       if (!mm) {
         for (var mk in monthMap) {
-          if (mk.indexOf(key.slice(0, 3)) === 0) { mm = monthMap[mk]; break; }
+          if (mk.indexOf(key.slice(0, 3)) === 0) {
+            mm = monthMap[mk];
+            break;
+          }
         }
       }
       if (mm) return m3[2] + '-' + mm;
@@ -203,7 +239,8 @@
   }
   if (priceReset) {
     priceReset.addEventListener('click', function () {
-      priceMin = null; priceMax = null;
+      priceMin = null;
+      priceMax = null;
       document.querySelector('[data-price-min]').value = '';
       document.querySelector('[data-price-max]').value = '';
       applyFilters();
@@ -224,14 +261,15 @@
       if (yearMin && !monthMin) monthMin = '01';
       if (yearMax && !monthMax) monthMax = '12';
 
-      dateMinVal = (yearMin && monthMin) ? yearMin + '-' + monthMin : '';
-      dateMaxVal = (yearMax && monthMax) ? yearMax + '-' + monthMax : '';
+      dateMinVal = yearMin && monthMin ? yearMin + '-' + monthMin : '';
+      dateMaxVal = yearMax && monthMax ? yearMax + '-' + monthMax : '';
       applyFilters();
     });
   }
   if (dateReset) {
     dateReset.addEventListener('click', function () {
-      dateMinVal = ''; dateMaxVal = '';
+      dateMinVal = '';
+      dateMaxVal = '';
       document.querySelector('[data-date-month-min]').value = '';
       document.querySelector('[data-date-year-min]').value = '';
       document.querySelector('[data-date-month-max]').value = '';
@@ -274,8 +312,87 @@
   if (critReset) {
     critReset.addEventListener('click', function () {
       critMins = {};
-      document.querySelectorAll('.rtable-crit-min').forEach(function (input) { input.value = ''; });
+      document.querySelectorAll('.rtable-crit-min').forEach(function (input) {
+        input.value = '';
+      });
       applyFilters();
     });
   }
+
+  // === Group filters (icon_group / info_group) ===
+  document.querySelectorAll('[data-group-filter]').forEach(function (cb) {
+    cb.addEventListener('change', applyGroupFilters);
+  });
+
+  function applyGroupFilters() {
+    // Collect checked per criterion
+    var filters = {};
+    document.querySelectorAll('[data-group-filter]:checked').forEach(function (cb) {
+      var cid = cb.getAttribute('data-group-filter');
+      if (!filters[cid]) filters[cid] = [];
+      filters[cid].push(cb.value);
+    });
+
+    var rows = document.querySelectorAll('.rtable-row');
+    rows.forEach(function (row) {
+      var show = true;
+      for (var cid in filters) {
+        var cell = row.querySelector('[data-group-crit="' + cid + '"]');
+        if (!cell) {
+          show = false;
+          break;
+        }
+        var opts = (cell.getAttribute('data-group-opts') || '').split(',').filter(Boolean);
+        // AND: item must have ALL selected filter options
+        var hasAll = filters[cid].every(function (fid) {
+          return opts.includes(fid);
+        });
+        if (!hasAll) {
+          show = false;
+          break;
+        }
+      }
+      // Don't override other filters — just add/remove a class
+      if (!show) row.setAttribute('data-group-hidden', '1');
+      else row.removeAttribute('data-group-hidden');
+      // Combined visibility
+      row.style.display =
+        row.hasAttribute('data-group-hidden') || row.hasAttribute('data-filter-hidden')
+          ? 'none'
+          : '';
+    });
+  }
 })();
+
+// === Info group tooltip positioning ===
+document.querySelectorAll('.rgroup-info-btn').forEach(function (btn) {
+  var tip = btn.querySelector('.rgroup-tooltip');
+  if (!tip) return;
+
+  btn.addEventListener('mouseenter', function () {
+    var rect = btn.getBoundingClientRect();
+    tip.style.display = 'block';
+    // Position above the button
+    var tipH = tip.offsetHeight;
+    var top = rect.top - tipH - 8;
+    var left = rect.left + rect.width / 2 - tip.offsetWidth / 2;
+    // Keep in viewport
+    if (top < 8) top = rect.bottom + 8;
+    if (left < 8) left = 8;
+    if (left + tip.offsetWidth > window.innerWidth - 8)
+      left = window.innerWidth - tip.offsetWidth - 8;
+    tip.style.top = top + 'px';
+    tip.style.left = left + 'px';
+  });
+
+  btn.addEventListener('mouseleave', function () {
+    tip.style.display = 'none';
+  });
+
+  btn.addEventListener('focus', function () {
+    btn.dispatchEvent(new Event('mouseenter'));
+  });
+  btn.addEventListener('blur', function () {
+    btn.dispatchEvent(new Event('mouseleave'));
+  });
+});

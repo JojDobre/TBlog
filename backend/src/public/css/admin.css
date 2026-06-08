@@ -3317,3 +3317,47 @@
 .nav-section-links {
   padding: 8px 12px;
 }
+
+/* ---- Ranking options UI ---- */
+.opt-row {
+  border: 1px solid var(--art-border, #374151);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+.opt-row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.opt-sub-list {
+  border-top: 1px solid var(--art-border, #374151);
+  padding: 4px 12px 6px 36px;
+}
+.opt-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 12px;
+  color: var(--art-text-muted);
+}
+.item-opt-row {
+  border-bottom: 1px solid var(--art-border, #374151);
+  padding: 4px 0;
+}
+.item-opt-row:last-child {
+  border-bottom: none;
+}
+
+/* Inline group checkboxes in item modal */
+.rgroup-item-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding: 6px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}

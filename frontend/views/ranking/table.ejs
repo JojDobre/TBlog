@@ -49,17 +49,22 @@
       <div class="rtable-filters-wrap">
 
         <!-- Brand -->
+        <% var brands = [...new Set(items.map(i => i.brand).filter(Boolean))]; %>
+        <% if (brands.length > 1) { %>
         <div class="rtable-filters">
           <span class="rtable-filter-label">Značka:</span>
           <button class="btn btn-sm btn-primary" data-filter="all">Všetky</button>
-          <% var brands = [...new Set(items.map(i => i.brand).filter(Boolean))]; %>
           <% brands.forEach(b => { %>
           <button class="btn btn-sm" data-filter="<%= b %>"><%= b %></button>
           <% }) %>
         </div>
+        <% } %>
 
         <!-- Price -->
+        <% var hasPrice = items.some(i => i.price && i.price !== ''); var hasDate = items.some(i => i.date && i.date !== ''); %>
+        <% if (hasPrice || hasDate) { %>
         <div class="rtable-filters" style="margin-top:8px;">
+          <% if (hasPrice) { %>
           <span class="rtable-filter-label">Cena:</span>
           <div class="rtable-range-group">
             <input type="number" class="rtable-range-input" data-price-min placeholder="Od €" min="0" step="50">
@@ -68,12 +73,12 @@
             <button class="btn btn-sm" data-price-apply>Použiť</button>
             <button class="btn btn-sm btn-ghost" data-price-reset>×</button>
           </div>
+          <% } %>
 
-          <!-- Date — separate month + year -->
-          <span class="rtable-filter-label" style="margin-left:24px;">Vydané:</span>
+          <% if (hasDate) { %>
+          <span class="rtable-filter-label" <%= hasPrice ? ' style="margin-left:24px;"' : '' %>>Vydané:</span>
           <div class="rtable-range-group">
             <%
-              // Zbieraj roky z dát
               var dateYears = new Set();
               items.forEach(function(p) {
                 if (p.date) {
@@ -85,53 +90,36 @@
             %>
             <select class="rtable-range-input" data-date-month-min style="width:80px;">
               <option value="">Mes.</option>
-              <option value="01">Jan</option>
-              <option value="02">Feb</option>
-              <option value="03">Mar</option>
-              <option value="04">Apr</option>
-              <option value="05">Máj</option>
-              <option value="06">Jún</option>
-              <option value="07">Júl</option>
-              <option value="08">Aug</option>
-              <option value="09">Sep</option>
-              <option value="10">Okt</option>
-              <option value="11">Nov</option>
-              <option value="12">Dec</option>
+              <% for (var m=1;m<=12;m++) { var ms=String(m).padStart(2,'0'); var ml=['Jan','Feb','Mar','Apr','Máj','Jún','Júl','Aug','Sep','Okt','Nov','Dec'][m-1]; %>
+              <option value="<%= ms %>"><%= ml %></option>
+              <% } %>
             </select>
             <select class="rtable-range-input" data-date-year-min style="width:80px;">
               <option value="">Rok</option>
-              <% sortedYears.forEach(function(y) { %>
-              <option value="<%= y %>"><%= y %></option>
-              <% }) %>
+              <% sortedYears.forEach(function(y) { %><option value="<%= y %>"><%= y %></option><% }) %>
             </select>
             <span class="rtable-range-sep">–</span>
             <select class="rtable-range-input" data-date-month-max style="width:80px;">
               <option value="">Mes.</option>
-              <option value="01">Jan</option>
-              <option value="02">Feb</option>
-              <option value="03">Mar</option>
-              <option value="04">Apr</option>
-              <option value="05">Máj</option>
-              <option value="06">Jún</option>
-              <option value="07">Júl</option>
-              <option value="08">Aug</option>
-              <option value="09">Sep</option>
-              <option value="10">Okt</option>
-              <option value="11">Nov</option>
-              <option value="12">Dec</option>
+              <% for (var m2=1;m2<=12;m2++) { var ms2=String(m2).padStart(2,'0'); var ml2=['Jan','Feb','Mar','Apr','Máj','Jún','Júl','Aug','Sep','Okt','Nov','Dec'][m2-1]; %>
+              <option value="<%= ms2 %>"><%= ml2 %></option>
+              <% } %>
             </select>
             <select class="rtable-range-input" data-date-year-max style="width:80px;">
               <option value="">Rok</option>
-              <% sortedYears.forEach(function(y) { %>
-              <option value="<%= y %>"><%= y %></option>
-              <% }) %>
+              <% sortedYears.forEach(function(y) { %><option value="<%= y %>"><%= y %></option><% }) %>
             </select>
             <button class="btn btn-sm" data-date-apply>Použiť</button>
             <button class="btn btn-sm btn-ghost" data-date-reset>×</button>
           </div>
+          <% } %>
         </div>
+        <% } %>
 
-        <!-- Score + Criteria -->
+
+
+        <% var hasScores = items.some(i => i.score !== null); %>
+        <% if (hasScores) { %>
         <div class="rtable-filters" style="margin-top:8px;">
           <span class="rtable-filter-label">Min. skóre:</span>
           <div class="rtable-range-group">
@@ -156,6 +144,27 @@
           </div>
         </div>
         <% } %>
+        <% } %>
+
+        <%# === Group filters (icon_group / info_group) === %>
+        <% if (typeof groupData !== 'undefined') { Object.values(groupData).forEach(function(gd) {
+          var filterableOpts = gd.topLevel.filter(function(o) { return o.is_filterable; });
+          if (filterableOpts.length) { %>
+        <div class="rtable-filters" style="margin-top:8px;">
+          <span class="rtable-filter-label"><%= gd.criterion.name %>:</span>
+          <div class="rtable-range-group" style="flex-wrap:wrap;gap:4px">
+            <% filterableOpts.forEach(function(opt) { %>
+            <label class="rgroup-filter-chip">
+              <input type="checkbox" data-group-filter="<%= gd.criterion.id %>" value="<%= opt.id %>" style="display:none">
+              <% if (gd.criterion.field_type === 'icon_group' && opt.icon_path) { %>
+              <img src="/uploads/<%= opt.icon_path %>" alt="" style="width:16px;height:16px">
+              <% } %>
+              <span><%= opt.label %></span>
+            </label>
+            <% }); %>
+          </div>
+        </div>
+        <% } }); } %>
       </div>
 
       <!-- ============================================================
@@ -167,16 +176,23 @@
             <tr>
               <th class="rtable-th rtable-th--rank" data-sort-col="rank"># <span class="sort-icon">↕</span></th>
               <th class="rtable-th rtable-th--name" data-sort-col="name">Produkt <span class="sort-icon">↕</span></th>
-              <% scoreLabels.forEach(function(label) { %>
-              <th class="rtable-th rtable-th--score" data-sort-col="<%= label %>"><%= label %> <span class="sort-icon">↕</span></th>
-              <% }) %>
-              <th class="rtable-th rtable-th--total" data-sort-col="score">Skóre <span class="sort-icon">↕</span></th>
+              <% var scoreIdx = 0; criteria.forEach(function(c) {
+                if (c.field_type === 'price') { %>
               <th class="rtable-th rtable-th--price" data-sort-col="price">Cena <span class="sort-icon">↕</span></th>
+              <% } else if (c.field_type === 'date') { %>
               <th class="rtable-th rtable-th--date" data-sort-col="date">Vydané <span class="sort-icon">↕</span></th>
+              <% } else if (c.field_type === 'icon_group' || c.field_type === 'info_group') { %>
+              <th class="rtable-th rtable-th--group"><%= c.name %></th>
+              <% } else { %>
+              <th class="rtable-th rtable-th--score" data-sort-col="<%= c.name %>"><%= c.name %> <span class="sort-icon">↕</span></th>
+              <% } }) %>
+              <th class="rtable-th rtable-th--total" data-sort-col="score">Skóre <span class="sort-icon">↕</span></th>
             </tr>
           </thead>
           <tbody>
-            <% items.forEach(function(p) { %>
+            <% items.forEach(function(p) {
+              var si = 0; // score index
+            %>
             <tr class="rtable-row" data-brand="<%= p.brand %>" data-date="<%= p.date %>" data-price-raw="<%= p.price ? parseFloat(String(p.price).replace(/[^\d.,]/g,'').replace(',','.')) || '' : '' %>">
               <td class="rtable-rank"><span class="rtable-rank-num"><%= String(p.rank).padStart(2, '0') %></span></td>
               <td class="rtable-name-cell">
@@ -194,32 +210,93 @@
                   </div>
                 </div>
               </td>
-              <% p.scores.forEach(function(s, si) { %>
-              <td class="rtable-score-cell" data-crit-index="<%= si %>">
-                <span class="rtable-score-val rtable-score--<%= s.val >= 9 ? 'great' : s.val >= 7.5 ? 'good' : s.val >= 6 ? 'mid' : 'low' %>">
-                  <%= s.text || s.val.toFixed(1) %>
+              <% criteria.forEach(function(c) {
+                if (c.field_type === 'price') { %>
+              <td class="rtable-price-cell"><%= p.price %></td>
+              <% } else if (c.field_type === 'date') { %>
+              <td class="rtable-date-cell"><%= p.date || '—' %></td>
+              <% } else if (c.field_type === 'icon_group' || c.field_type === 'info_group') {
+                  var gd = typeof groupData !== 'undefined' ? groupData[c.id] : null;
+                  var selected = p.selectedOptions || new Set();
+                  var selectedOpts = gd ? gd.topLevel.filter(function(o) { return selected.has(o.id); }) : [];
+                %>
+              <td class="rtable-group-cell" data-group-crit="<%= c.id %>" data-group-opts="<%= selectedOpts.map(function(o){return o.id}).join(',') %>">
+                <% if (c.field_type === 'icon_group') { %>
+                <div class="rgroup-icons">
+                  <% selectedOpts.forEach(function(opt) { %>
+                  <span class="rgroup-icon" title="<%= opt.label %>">
+                    <% if (opt.icon_thumb || opt.icon_path) { %><img src="/uploads/<%= opt.icon_thumb || opt.icon_path %>" alt="<%= opt.label %>"><% } else { %><%= opt.label.substring(0,2) %><% } %>
+                  </span>
+                  <% }); if (!selectedOpts.length) { %><span style="color:var(--text-subtle)">—</span><% } %>
+                </div>
+                <% } else { %>
+                <% if (selectedOpts.length) { %>
+                <span class="rgroup-info-wrap">
+                  <span class="rgroup-info-num"><%= selectedOpts.length %></span>
+                  <span class="rgroup-info-btn" tabindex="0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 16v-4M12 8h.01" />
+                    </svg>
+                    <span class="rgroup-tooltip">
+                      <% selectedOpts.forEach(function(opt) { %>
+                      <strong><%= opt.label %></strong>
+                      <% if (opt.description) { %><span class="rgroup-tooltip-desc"><%= opt.description %></span><% } %>
+                      <% var children = gd ? (gd.children[opt.id] || []).filter(function(ch){ return selected.has(ch.id); }) : []; %>
+                      <% children.forEach(function(ch) { %><span>— <%= ch.label %><% if (ch.description) { %> <em>(<%= ch.description %>)</em><% } %></span><% }); %>
+                      <% }); %>
+                    </span>
+                  </span>
+                </span>
+                <% } else { %><span style="color:var(--text-subtle)">—</span><% } %>
+                <% } %>
+              </td>
+              <% } else {
+                  var s = p.scores[si]; si++;
+                  if (s) { %>
+              <td class="rtable-score-cell" data-crit-index="<%= si - 1 %>">
+                <span class="rtable-score-val rtable-score--<%= s.colorClass || (s.val >= 9 ? 'great' : s.val >= 7.5 ? 'good' : s.val >= 6 ? 'mid' : 'low') %>">
+                  <%= s.text || s.val.toFixed(1) %><% if (s.unit) { %> <small style="opacity:0.5"><%= s.unit %></small><% } %>
                 </span>
               </td>
-              <% }) %>
+              <% } } }) %>
               <td class="rtable-total-cell">
-                <span class="rtable-total"><%= p.score.toFixed(1) %></span>
+                <span class="rtable-total"><%= p.score !== null ? p.score.toFixed(1) : '—' %></span>
               </td>
-              <td class="rtable-price-cell"><%= p.price %></td>
-              <td class="rtable-date-cell"><%= p.date || '—' %></td>
             </tr>
             <% }) %>
           </tbody>
         </table>
       </div>
 
-      <!-- Legend -->
+      <!-- Legend — only if score criteria exist -->
+      <% if (typeof ranking !== 'undefined' && ranking.methodology) { %>
+      <div class="rtable-methodology">
+        <h3 class="rtable-methodology-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg> Metodika</h3>
+        <div class="rtable-methodology-text"><%= ranking.methodology %></div>
+      </div>
+      <% } %>
+      <% var hasColorCriteria = criteria.some(function(c) { return c.color_max || c.color_ref_criterion_id; });
+         var hasScoreCriteria = criteria.some(function(c) { return ['score_1_10','decimal','integer'].includes(c.field_type); }); %>
+      <% if (hasScoreCriteria) { %>
       <div class="rtable-legend">
-        <span class="rtable-legend-title">Legenda skóre:</span>
+        <span class="rtable-legend-title">Legenda:</span>
+        <% if (hasColorCriteria) { %>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--great">95%+</span> Výborné</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--good">85%+</span> Dobré</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--mid">70%+</span> Priemerné</span>
+        <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--low">&lt;70%</span> Slabé</span>
+        <% } else { %>
         <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--great">9+</span> Výborné</span>
         <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--good">7.5+</span> Dobré</span>
         <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--mid">6+</span> Priemerné</span>
         <span class="rtable-legend-item"><span class="rtable-score-val rtable-score--low">&lt;6</span> Slabé</span>
+        <% } %>
       </div>
+      <% } %>
 
       <% if (typeof banners !== 'undefined' && banners.ranking_top) { %>
       <%- include('../partials/banner-slot', { banner: banners.ranking_top }) %>
