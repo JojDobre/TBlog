@@ -61,7 +61,7 @@
           var isFirst = p.rank === 1;
           var rankClass = p.rank === 1 ? 'podium-rank--gold' : 'podium-rank--silver';
         %>
-        <% if (p.url) { %><a href="<%= p.url %>" <%= p.url && p.url.startsWith('http') ? ' target="_blank" rel="noopener"' : '' %> class="podium-card card card-link <%= isFirst ? 'podium-card--first' : '' %>"><% } else { %><div class="podium-card card card-link <%= isFirst ? 'podium-card--first' : '' %>"><% } %>
+        <% if (p.url) { %><a href="<%= p.url %>" <%- p.url && p.url.startsWith('http') ? ' target="_blank" rel="noopener"' : '' %> class="podium-card card card-link <%= isFirst ? 'podium-card--first' : '' %>"><% } else { %><div class="podium-card card card-link <%= isFirst ? 'podium-card--first' : '' %>"><% } %>
             <div class="ph ph-<%= (p.rank % 9) + 1 %>" style="aspect-ratio:<%= isFirst ? '4/3' : '1/1' %>;">
               <% if (p.image) { %><img src="<%= p.image %>" alt="<%= p.name %>" loading="lazy"><% } %>
             </div>
@@ -109,7 +109,7 @@
     <h3 class="h-4" style="margin:var(--s-12) 0 24px;">Zvyšok rebríčka</h3>
     <div class="rlist">
       <% items.slice(3, 10).forEach(p => { %>
-      <% if (p.url) { %><a href="<%= p.url %>" <%= p.url && p.url.startsWith('http') ? ' target="_blank" rel="noopener"' : '' %> class="ritem" style="text-decoration:none; color:inherit;"><% } else { %><div class="ritem"><% } %>
+      <% if (p.url) { %><a href="<%= p.url %>" <%- p.url && p.url.startsWith('http') ? ' target="_blank" rel="noopener"' : '' %> class="ritem" style="text-decoration:none; color:inherit;"><% } else { %><div class="ritem"><% } %>
           <div class="ritem-rank">
             <span class="rank-num"><%= String(p.rank).padStart(2, '0') %></span>
           </div>
@@ -152,7 +152,7 @@
     <h3 class="h-4" style="margin:var(--s-10) 0 16px;">Honorable mentions</h3>
     <div class="rlist-compact">
       <% items.slice(10).forEach(p => { %>
-      <% if (p.url) { %><a href="<%= p.url %>" <%= p.url && p.url.startsWith('http') ? ' target="_blank" rel="noopener"' : '' %> class="ritem-compact" style="text-decoration:none; color:inherit;"><% } else { %><div class="ritem-compact"><% } %>
+      <% if (p.url) { %><a href="<%= p.url %>" <%- p.url && p.url.startsWith('http') ? ' target="_blank" rel="noopener"' : '' %> class="ritem-compact" style="text-decoration:none; color:inherit;"><% } else { %><div class="ritem-compact"><% } %>
           <span class="ritem-compact-rank"><%= String(p.rank).padStart(2, '0') %></span>
           <div class="ritem-compact-body">
             <span class="ritem-compact-brand"><%= p.brand %></span>
