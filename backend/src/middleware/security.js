@@ -29,6 +29,7 @@ module.exports = function buildSecurity() {
         defaultSrc: ["'self'"],
         scriptSrc: [
           "'self'",
+          "'unsafe-inline'",
           JSDELIVR,
           'https://www.googletagmanager.com',
           'https://www.google-analytics.com',
