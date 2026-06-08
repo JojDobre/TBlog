@@ -100,31 +100,28 @@
       </div>
       <% } %>
 
-      <!-- Related -->
+      <!-- Related reviews -->
       <% if (relatedArticles.length > 0) { %>
-      <div class="sec-head">
+      <div class="sec-head" style="margin-top:var(--s-section)">
         <div class="sec-head-l">
-          <span class="eyebrow">Súvisiace</span>
-          <h2>Mohlo by ťa zaujímať</h2>
+          <span class="eyebrow">Súvisiace recenzie</span>
+          <h2>Prečítaj si aj tieto</h2>
         </div>
       </div>
-      <div class="grid-4">
+      <div class="rvx-related">
         <% relatedArticles.forEach(r => { %>
-        <a href="/clanok/<%= r.slug %>" class="card card-link minimal-review">
-          <div class="ph" style="aspect-ratio:1; position:relative;">
+        <a href="/clanok/<%= r.slug %>" class="rvx-rel-card" style="text-decoration:none;color:inherit;">
+          <div class="ph ph-<%= (r.id % 9) + 1 %> rvx-rel-img">
             <% if (r.cover_medium || r.cover_thumb) { %>
-            <img src="/uploads/<%= r.cover_medium || r.cover_thumb %>" alt="<%= r.title %>" loading="lazy">
-            <% } else { %>
-            <div class="ph ph-<%= (r.id % 9) + 1 %>" style="position:absolute;inset:0;aspect-ratio:auto;"></div>
+            <img src="/uploads/<%= r.cover_medium || r.cover_thumb %>" alt="<%= r.title %>" loading="lazy" style="width:100%;height:100%;object-fit:cover;">
             <% } %>
-            <div class="minimal-review-overlay">
-              <!-- <span class="minimal-review-label">Skóre</span> -->
-              <!--<span class="minimal-review-num"><%= r.view_count ? (r.view_count >= 1000 ? (r.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : r.view_count) : '—' %></span>-->
-              <h4 class="minimal-review-title"><%= r.title %></h4>
-              <span class="minimal-review-date">
-                <%= r.published_at ? new Date(r.published_at).toLocaleDateString('sk-SK') : '' %>
-              </span>
-            </div>
+            <span class="rvx-rel-cat"><%= r.published_at ? new Date(r.published_at).toLocaleDateString('sk-SK') : 'Recenzia' %></span>
+          </div>
+          <div class="rvx-rel-body">
+            <h4><%= r.title %></h4>
+            <% if (r.reviewScore) { %>
+            <span class="rvx-rel-score"><%= r.reviewScore.toFixed(1) %></span>
+            <% } %>
           </div>
         </a>
         <% }) %>

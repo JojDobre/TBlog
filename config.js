@@ -90,7 +90,7 @@ const config = {
     image: {
       maxSizeBytes: 50 * 1024 * 1024, // 50 MB
       allowedMimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'],
-      thumbnailWidth: 400,
+      thumbnailWidth: 600,
       mediumWidth: 1200,
     },
     video: {

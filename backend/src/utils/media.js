@@ -86,7 +86,7 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
     await sharp(originalAbs)
       .rotate()
       .resize(config.uploads.image.thumbnailWidth, null, { withoutEnlargement: true })
-      .jpeg({ quality: 80, progressive: true })
+      .jpeg({ quality: 88, progressive: true })
       .toFile(thumbnailAbs);
   } catch (err) {
     log.error('thumbnail generation failed', { err: err.message });

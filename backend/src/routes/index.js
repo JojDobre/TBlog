@@ -660,10 +660,11 @@ router.get('/clanok/:slug', async (req, res, next) => {
         'ra.published_at',
         'ra.view_count',
         'rm.thumbnail_path as cover_thumb',
-        'rm.medium_path as cover_medium'
+        'rm.medium_path as cover_medium',
+        'ra.content as ra_content'
       )
       .orderBy('article_related.display_order', 'asc')
-      .limit(5);
+      .limit(4);
 
     // Ak nemá manuálne related, doplň auto (rovnaká kategória)
     if (relatedArticles.length === 0 && catRow) {
@@ -682,13 +683,28 @@ router.get('/clanok/:slug', async (req, res, next) => {
           'ra.published_at',
           'ra.view_count',
           'rm.thumbnail_path as cover_thumb',
-          'rm.medium_path as cover_medium'
+          'rm.medium_path as cover_medium',
+          'ra.content as ra_content'
         )
         .orderBy('ra.published_at', 'desc')
-        .limit(5);
+        .limit(4);
       relatedArticles.push(...auto);
     }
 
+    // Extract review scores for related articles
+    relatedArticles.forEach((r) => {
+      r.reviewScore = null;
+      if (r.ra_content) {
+        try {
+          var blocks = typeof r.ra_content === 'string' ? JSON.parse(r.ra_content) : r.ra_content;
+          if (Array.isArray(blocks)) {
+            var ratingBlock = blocks.find((b) => b.type === 'rating' && b.total_score);
+            if (ratingBlock) r.reviewScore = Number(ratingBlock.total_score);
+          }
+        } catch (e) {}
+      }
+      delete r.ra_content; // don't send full content to template
+    });
     // Read time estimate from content
     let wordCount = 0;
     for (const b of content) {

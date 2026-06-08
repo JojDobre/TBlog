@@ -1248,7 +1248,7 @@
 /* Related reviews */
 .rvx-related {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--s-3);
 }
 .rvx-rel-card {
@@ -1387,6 +1387,36 @@
   .rvx-alts,
   .rvx-design {
     grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 1024px) {
+    .rvx-related {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  @media (max-width: 890px) {
+    .rvx-related {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .rvx-rel-img {
+      aspect-ratio: 4/3;
+    }
+    .rvx-rel-body {
+      padding: 10px 12px;
+    }
+    .rvx-rel-body h4 {
+      font-size: 12px;
+    }
+    .rvx-rel-score {
+      font-size: 11px;
+      padding: 2px 6px;
+    }
+  }
+  @media (max-width: 480px) {
+    .rvx-related {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-2);
+    }
   }
   .rvx-pricing {
     grid-template-columns: 1fr;

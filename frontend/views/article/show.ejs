@@ -63,8 +63,8 @@
 
       <!-- Author bar -->
       <div class="article-authorbar">
-        <% if (user && user.avatar_path) { %>
-        <span class="avatar article-avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+        <% if (article.author_avatar) { %>
+        <span class="avatar article-avatar"><img src="/uploads/<%= article.author_avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
         <% } else { %>
         <span class="avatar article-avatar"><%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
         <% } %>
@@ -140,8 +140,8 @@
               Autor
             </h3>
             <div class="sidebar-author">
-              <% if (user && user.avatar_path) { %>
-              <span class="avatar sidebar-author-avatar"><img src="/uploads/<%= user.avatar_path %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
+              <% if (article.author_avatar) { %>
+              <span class="avatar sidebar-author-avatar"><img src="/uploads/<%= article.author_avatar %>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></span>
               <% } else { %>
               <span class="avatar sidebar-author-avatar"><%= (article.author_name || 'BZ').split(' ').map(s => s[0]).slice(0,2).join('') %></span>
               <% } %>
