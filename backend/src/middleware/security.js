@@ -34,6 +34,8 @@ module.exports = function buildSecurity() {
           'https://www.googletagmanager.com',
           'https://www.google-analytics.com',
           'https://pagead2.googlesyndication.com',
+          'https://fundingchoicesmessages.google.com',
+          'https://www.gstatic.com',
         ],
         scriptSrcAttr: ["'none'"], // žiadne `onclick="..."`
         styleSrc: ["'self'", "'unsafe-inline'", JSDELIVR, 'https://fonts.googleapis.com'],
