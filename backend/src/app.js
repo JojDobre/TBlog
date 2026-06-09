@@ -184,11 +184,6 @@ function createApp() {
           .select('title', 'slug')
           .orderBy('title');
         _headerPagesCacheAt = now;
-        console.log('NAV CACHE:', {
-          header: _headerPagesCache.length,
-          footer: _footerPagesCache.length,
-          footerPages: _footerPagesCache,
-        });
       }
       res.locals.headerPages = _headerPagesCache;
       res.locals.footerPages = _footerPagesCache || [];

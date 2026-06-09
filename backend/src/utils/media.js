@@ -79,14 +79,14 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
     return { id, originalPath: originalRelative, thumbnailPath: originalRelative };
   }
 
-  // 4) Generate thumbnail (400px JPEG)
-  const thumbnailName = uuid + '.jpg';
+  // 4) Generate thumbnail (400px WebP — menší súbor, zachová priehľadnosť)
+  const thumbnailName = uuid + '.webp';
   const thumbnailAbs = path.join(THUMBNAILS_DIR, thumbnailName);
   try {
     await sharp(originalAbs)
       .rotate()
       .resize(config.uploads.image.thumbnailWidth, null, { withoutEnlargement: true })
-      .jpeg({ quality: 88, progressive: true })
+      .webp({ quality: 88 })
       .toFile(thumbnailAbs);
   } catch (err) {
     log.error('thumbnail generation failed', { err: err.message });

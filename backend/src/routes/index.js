@@ -322,7 +322,6 @@ router.get('/kategorie/:slug', async (req, res, next) => {
       .limit(10);
 
     const banners = await bannerLoader.getBannersForPositions(['category_top']);
-    console.log('CATEGORY BANNERS:', banners);
 
     res.render('listing/index', {
       title: cat.name,

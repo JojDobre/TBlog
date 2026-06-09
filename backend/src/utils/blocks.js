@@ -62,16 +62,6 @@ function sanitizeHtml(html) {
   return DOMPurify.sanitize(String(html || ''), HTML_SANITIZE_OPTS);
 }
 
-function sanitizeHtml(html) {
-  const clean = DOMPurify.sanitize(String(html || ''), SANITIZE_OPTS);
-  // pridaj rel/noopener na externé odkazy (DOMPurify ich nepridáva sám)
-  return clean.replace(
-    /<a\s+href="https?:\/\//gi,
-    '<a target="_blank" rel="noopener noreferrer" href="$&'.replace('href="$&', '') +
-      'href="https://'
-  );
-}
-
 const BLOCK_TYPES = [
   'paragraph',
   'heading',
