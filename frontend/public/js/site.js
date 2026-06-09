@@ -23,12 +23,12 @@
 
   function goTo(idx) {
     slides[current].classList.remove('hero-slide--active');
-    dots[current].classList.remove('active');
+    if (dots[current]) dots[current].classList.remove('active');
 
     current = ((idx % slides.length) + slides.length) % slides.length;
 
     slides[current].classList.add('hero-slide--active');
-    dots[current].classList.add('active');
+    if (dots[current]) dots[current].classList.add('active');
   }
 
   function next() {

@@ -20,6 +20,7 @@
 
 const db = require('../db');
 const log = require('../logger');
+const { safeExternalUrl } = require('../utils/url');
 
 module.exports = function mountItemRoutes(router) {
   // =========================================================================
@@ -64,16 +65,7 @@ module.exports = function mountItemRoutes(router) {
       const nextPos = (maxPos?.m ?? -1) + 1;
 
       const coverMediaId = req.body.cover_media_id ? Number(req.body.cover_media_id) : null;
-      let customUrl =
-        String(req.body.custom_url || '')
-          .trim()
-          .slice(0, 500) || null;
-      // Strip markdown format [text](url) → url
-      if (customUrl) {
-        const mdMatch = customUrl.match(/\]\((https?:\/\/[^)]+)\)/);
-        if (mdMatch) customUrl = mdMatch[1];
-        if (customUrl && !customUrl.startsWith('http')) customUrl = 'https://' + customUrl;
-      }
+      const customUrl = safeExternalUrl(req.body.custom_url);
 
       const [itemId] = await db('ranking_items').insert({
         ranking_id: rankingId,
@@ -138,10 +130,7 @@ module.exports = function mountItemRoutes(router) {
       if (req.body.cover_media_id !== undefined)
         updates.cover_media_id = req.body.cover_media_id ? Number(req.body.cover_media_id) : null;
       if (req.body.custom_url !== undefined)
-        updates.custom_url =
-          String(req.body.custom_url || '')
-            .trim()
-            .slice(0, 500) || null;
+        updates.custom_url = safeExternalUrl(req.body.custom_url);
       if (req.body.override_score !== undefined) {
         updates.override_score =
           req.body.override_score !== '' ? parseFloat(req.body.override_score) : null;

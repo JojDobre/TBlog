@@ -14,6 +14,64 @@
 
 'use strict';
 
+// --- HTML sanitizácia (DOMPurify + jsdom) ---------------------------------
+// Singleton: jsdom window + DOMPurify sa vytvoria raz pri načítaní modulu.
+const { JSDOM } = require('jsdom');
+const createDOMPurify = require('dompurify');
+const DOMPurify = createDOMPurify(new JSDOM('').window);
+
+// Externé odkazy automaticky dostanú target="_blank" + rel="noopener".
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  if (node.tagName === 'A') {
+    const href = node.getAttribute('href') || '';
+    if (/^https?:\/\//i.test(href)) {
+      node.setAttribute('target', '_blank');
+      node.setAttribute('rel', 'noopener noreferrer');
+    }
+  }
+});
+
+const HTML_SANITIZE_OPTS = {
+  ALLOWED_TAGS: [
+    'p',
+    'br',
+    'strong',
+    'em',
+    'b',
+    'i',
+    'u',
+    's',
+    'a',
+    'ul',
+    'ol',
+    'li',
+    'blockquote',
+    'h2',
+    'h3',
+    'h4',
+    'code',
+    'pre',
+    'span',
+  ],
+  ALLOWED_ATTR: ['href', 'target', 'rel'],
+  // povolené href schémy: http(s), mailto, relatívne — NIE javascript:/data:
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+};
+
+function sanitizeHtml(html) {
+  return DOMPurify.sanitize(String(html || ''), HTML_SANITIZE_OPTS);
+}
+
+function sanitizeHtml(html) {
+  const clean = DOMPurify.sanitize(String(html || ''), SANITIZE_OPTS);
+  // pridaj rel/noopener na externé odkazy (DOMPurify ich nepridáva sám)
+  return clean.replace(
+    /<a\s+href="https?:\/\//gi,
+    '<a target="_blank" rel="noopener noreferrer" href="$&'.replace('href="$&', '') +
+      'href="https://'
+  );
+}
+
 const BLOCK_TYPES = [
   'paragraph',
   'heading',
@@ -114,11 +172,7 @@ function sanitizeBlocks(raw) {
         const block = { type: 'paragraph', text };
         if (format === 'html') {
           block.format = 'html';
-          // Sanitize HTML — allow only safe tags
-          block.text = text
-            .replace(/<script[\s>][\s\S]*?<\/script>/gi, '')
-            .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
-            .replace(/javascript\s*:/gi, '');
+          block.text = sanitizeHtml(text);
         }
         blocks.push(block);
         break;

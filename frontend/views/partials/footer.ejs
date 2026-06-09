@@ -1,49 +1,47 @@
 <footer class="footer">
   <div class="container">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <div class="footer-brand">
-            <div>
-              <%- include('logo', { size: 'md' }) %>
-              <div class="footer-tagline"><%= (typeof siteSettings !== 'undefined' && siteSettings.footer_tagline) ? siteSettings.footer_tagline : 'tech bez kompromisu' %></div>
-            </div>
-          </div>
-          <p class="footer-desc">
-            <%= (typeof siteSettings !== 'undefined' && siteSettings.footer_description) ? siteSettings.footer_description : 'Nezávislý tech magazín.' %>
-          </p>
-          <div class="footer-actions">
-            <div class="btn btn-sm"><a href="/newsletter"><strong>Newsletter</strong></a></div>
-            <div class="btn btn-sm"><a href="/rss"><strong>RSS</strong></a></div>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="footer-brand">
+          <div>
+            <%- include('logo', { size: 'md' }) %>
+            <div class="footer-tagline"><%= (typeof siteSettings !== 'undefined' && siteSettings.footer_tagline) ? siteSettings.footer_tagline : 'tech bez kompromisu' %></div>
           </div>
         </div>
-        <% var footerSecs = [];
+        <p class="footer-desc">
+          <%= (typeof siteSettings !== 'undefined' && siteSettings.footer_description) ? siteSettings.footer_description : 'Nezávislý tech magazín.' %>
+        </p>
+        <div class="footer-actions">
+          <div class="btn btn-sm"><a href="/newsletter"><strong>Newsletter</strong></a></div>
+          <div class="btn btn-sm"><a href="/rss"><strong>RSS</strong></a></div>
+        </div>
+      </div>
+      <% var footerSecs = [];
          try { footerSecs = typeof siteSettings !== 'undefined' && siteSettings.footer_sections ? JSON.parse(siteSettings.footer_sections) : []; } catch(e) { footerSecs = []; }
          if (footerSecs.length) { footerSecs.forEach(function(sec) { %>
-        <div class="footer-col">
-          <h6><%= sec.title %></h6>
-          <% (sec.links || []).forEach(function(link) { %>
-          <a href="<%= link.href %>"><%= link.label %></a>
-          <% }) %>
-        </div>
-        <% }); } else { %>
-        <div class="footer-col">
-          <h6>Sekcie</h6>
-          <a href="/recenzie">Recenzie</a>
-          <a href="/rebricky">Rebríčky</a>
-          <a href="/kategorie">Kategórie</a>
-        </div>
-        <div class="footer-col">
-          <h6>Magazín</h6>
-          <a href="/o-nas">O nás</a>
-          <a href="/kontakt">Kontakt</a>
-        </div>
-        <% } %>
+      <div class="footer-col">
+        <h6><%= sec.title %></h6>
+        <% (sec.links || []).forEach(function(link) { %>
+        <a href="<%= link.href %>"><%= link.label %></a>
+        <% }) %>
       </div>
-      <div class="footer-bottom">
-        <span>© <%= new Date().getFullYear() %> <%= appName %> · Všetky práva vyhradené</span>
-        <span>SK · v1.0</span>
+      <% }); } else { %>
+      <div class="footer-col">
+        <h6>Sekcie</h6>
+        <a href="/recenzie">Recenzie</a>
+        <a href="/rebricky">Rebríčky</a>
+        <a href="/kategorie">Kategórie</a>
       </div>
+      <div class="footer-col">
+        <h6>Magazín</h6>
+        <a href="/o-nas">O nás</a>
+        <a href="/kontakt">Kontakt</a>
+      </div>
+      <% } %>
+    </div>
+    <div class="footer-bottom">
+      <span>© <%= new Date().getFullYear() %> <%= appName %> · Všetky práva vyhradené</span>
+      <span>SK · v1.0</span>
     </div>
   </div>
   <%- include('../partials/cookie-consent') %>

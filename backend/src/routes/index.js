@@ -38,6 +38,8 @@ const newsletterRouter = require('./newsletter');
 const authRouter = require('./auth');
 const profileRouter = require('./profile');
 const healthRouter = require('./health');
+const { apiLimiter } = require('../middleware/rate-limits');
+const rateLimit = require('express-rate-limit');
 const config = require('../../../config');
 const db = require('../db');
 const log = require('../logger');
@@ -174,7 +176,7 @@ router.get('/hladaj', async (req, res, next) => {
 const PER_PAGE_PUBLIC = 13;
 
 async function buildListing(queryBuilder, { page, sort, type }) {
-  const p = Math.max(1, parseInt(page, 11) || 1);
+  const p = Math.max(1, parseInt(page, 10) || 1);
   const offset = (p - 1) * PER_PAGE_PUBLIC;
 
   if (type === 'article' || type === 'review') queryBuilder.where('articles.type', type);
@@ -638,7 +640,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       .join('categories', 'article_categories.category_id', 'categories.id')
       .where('article_categories.article_id', article.id)
       .where('article_categories.is_primary', 1)
-      .select('categories.name', 'categories.slug')
+      .select('categories.id', 'categories.name', 'categories.slug')
       .first();
 
     // Tags
@@ -671,9 +673,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       const auto = await db('article_categories')
         .join('articles as ra', 'article_categories.article_id', 'ra.id')
         .leftJoin('media as rm', 'ra.cover_media_id', 'rm.id')
-        .where('article_categories.category_id', function () {
-          this.select('id').from('categories').where('slug', catRow.slug).first();
-        })
+        .where('article_categories.category_id', catRow.id)
         .where('ra.status', 'published')
         .where('ra.id', '!=', article.id)
         .select(
@@ -1243,10 +1243,23 @@ router.get('/sitemap.xml', async (req, res, next) => {
   }
 });
 
+// Rate limit pre kontaktný formulár — re-renderuje stránku s chybou (nie JSON)
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hodina
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  handler: (req, res, next) => {
+    return renderStaticPage(req, res, next, 'kontakt', {
+      flashError: 'Príliš veľa odoslaní. Skús to znova o hodinu.',
+    });
+  },
+});
+
 // ---------------------------------------------------------------------------
 // CONTACT FORM — POST /kontakt
 // ---------------------------------------------------------------------------
-router.post('/kontakt', async (req, res, next) => {
+router.post('/kontakt', contactLimiter, async (req, res, next) => {
   try {
     const name = String(req.body.name || '')
       .trim()
