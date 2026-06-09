@@ -2357,6 +2357,20 @@ img {
 .article-content li {
   margin-bottom: var(--s-2);
 }
+
+.article-prose li,
+.article-content li {
+  color: var(--text-muted);
+}
+
+.article-prose li[data-list='bullet'],
+.article-content li[data-list='bullet'] {
+  list-style-type: disc;
+}
+.article-prose li[data-list='ordered'],
+.article-content li[data-list='ordered'] {
+  list-style-type: decimal;
+}
 .article-prose figure,
 .article-content > figure {
   margin: var(--s-8) 0;
@@ -4799,6 +4813,20 @@ img {
 .cs-text p:last-child {
   margin-bottom: 0;
 }
+
+/* Quill zoznamy: <ol> sa používa pre odrážky aj číslovanie, rozlíšené data-list */
+.cs-text ol,
+.cs-text ul {
+  margin: 0 0 var(--s-4);
+  padding-left: 1.4em;
+}
+.cs-text li[data-list='bullet'] {
+  list-style-type: disc;
+}
+.cs-text li[data-list='ordered'] {
+  list-style-type: decimal;
+}
+
 .cs-divider {
   height: 1px;
   background: var(--border);
@@ -5061,6 +5089,29 @@ img {
 .cs-grid-media:hover img {
   transform: scale(1.02);
 }
+
+/* Limit výšky obrázkov v sekciách — zabráni neprirodzenému roztiahnutiu */
+.cs-media img,
+.cs-split-media img,
+.cs-grid-media img {
+  max-height: 600px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: var(--r-xl);
+}
+
+.article-prose figure img,
+.article-content > figure img {
+  max-height: 600px;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+}
+
 .cs-grid-figcaption {
   grid-column: 1/-1;
   grid-row: 3;
@@ -6588,4 +6639,15 @@ body.menu-open {
   line-height: 1.7;
   color: var(--text-muted);
   white-space: pre-line;
+}
+
+/* Quill zarovnanie textu v section/paragraph blokoch */
+.ql-align-center {
+  text-align: center;
+}
+.ql-align-right {
+  text-align: right;
+}
+.ql-align-justify {
+  text-align: justify;
 }

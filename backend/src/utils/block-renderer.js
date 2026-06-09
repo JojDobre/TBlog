@@ -173,13 +173,15 @@ function renderSingle(b, mediaMap, opts) {
 
       // Helper: render text paragraphs
       const textHtml = b.text
-        ? '<div class="cs-text">' +
-          b.text
-            .split(/\n\n+/)
-            .filter(Boolean)
-            .map((par) => '<p>' + inlineFormat(par).replace(/\n/g, '<br>') + '</p>')
-            .join('') +
-          '</div>'
+        ? b.format === 'html'
+          ? '<div class="cs-text">' + b.text + '</div>'
+          : '<div class="cs-text">' +
+            b.text
+              .split(/\n\n+/)
+              .filter(Boolean)
+              .map((par) => '<p>' + inlineFormat(par).replace(/\n/g, '<br>') + '</p>')
+              .join('') +
+            '</div>'
         : '';
 
       if (b.layout === 'grid') {

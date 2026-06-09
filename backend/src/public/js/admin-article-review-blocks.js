@@ -88,7 +88,7 @@
       '<input type="text" class="form-control form-control-sm mb-2" data-field="number" placeholder="Číslo sekcie (voliteľné, napr. 01)" maxlength="10">' +
       '<input type="text" class="form-control form-control-sm mb-2" data-field="eyebrow" placeholder="Eyebrow (voliteľný, napr. Kapitola 1)" maxlength="120">' +
       '<input type="text" class="form-control form-control-sm mb-2" data-field="title" placeholder="Titulok sekcie (voliteľný)" maxlength="255">' +
-      '<textarea class="form-control mb-2" rows="4" data-field="text" placeholder="Text sekcie..."></textarea>' +
+      '<div data-quill-editor class="bz-quill-wrap mb-2"></div>' +
       '<div class="row g-2">' +
       '<div class="col-md-4">' +
       '<div data-image-preview class="bz-image-preview">' +

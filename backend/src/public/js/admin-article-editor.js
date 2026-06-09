@@ -617,11 +617,12 @@
         placeholder: 'Text odseku…',
         modules: {
           toolbar: [
-            [{ header: [2, 3, false] }],
+            [{ header: [2, 3, 4, false] }],
             ['bold', 'italic', 'underline', 'strike'],
             [{ color: [] }, { background: [] }],
             [{ list: 'ordered' }, { list: 'bullet' }],
-            ['link', 'clean'],
+            [{ align: [] }],
+            ['blockquote', 'link', 'clean'],
           ],
         },
       });
@@ -669,6 +670,7 @@
    */
   function setupNestedBlock(node, type) {
     if (type === 'paragraph') setupParagraph(node);
+    else if (type === 'section') setupParagraph(node);
     else if (type === 'gallery') setupGallery(node);
     else if (type === 'list') setupList(node);
     else if (window.__bzReviewBlocks && window.__bzReviewBlocks.setup) {

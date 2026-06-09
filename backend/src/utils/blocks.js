@@ -21,13 +21,23 @@ const createDOMPurify = require('dompurify');
 const DOMPurify = createDOMPurify(new JSDOM('').window);
 
 // Externé odkazy automaticky dostanú target="_blank" + rel="noopener".
+// Quill: ponechaj len bezpečné style (color/background-color) a ql-align triedy.
 DOMPurify.addHook('afterSanitizeAttributes', (node) => {
-  if (node.tagName === 'A') {
-    const href = node.getAttribute('href') || '';
-    if (/^https?:\/\//i.test(href)) {
-      node.setAttribute('target', '_blank');
-      node.setAttribute('rel', 'noopener noreferrer');
-    }
+  if (node.hasAttribute && node.hasAttribute('style')) {
+    const style = node.getAttribute('style');
+    const m = style.match(
+      /(?:^|;)\s*(color|background-color)\s*:\s*(rgb\([^)]+\)|#[0-9a-fA-F]{3,6}|[a-z]+)/gi
+    );
+    const safe = m ? m.map((s) => s.replace(/^;/, '').trim()) : [];
+    if (safe.length) node.setAttribute('style', safe.join('; '));
+    else node.removeAttribute('style');
+  }
+  if (node.hasAttribute && node.hasAttribute('class')) {
+    const keep = (node.getAttribute('class').match(/ql-align-(center|right|justify)/g) || []).join(
+      ' '
+    );
+    if (keep) node.setAttribute('class', keep);
+    else node.removeAttribute('class');
   }
 });
 
@@ -53,7 +63,7 @@ const HTML_SANITIZE_OPTS = {
     'pre',
     'span',
   ],
-  ALLOWED_ATTR: ['href', 'target', 'rel'],
+  ALLOWED_ATTR: ['href', 'target', 'rel', 'style', 'class', 'data-list'],
   // povolené href schémy: http(s), mailto, relatívne — NIE javascript:/data:
   ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
 };
@@ -270,7 +280,12 @@ function sanitizeBlocks(raw) {
         out.title = String(b.title || '')
           .slice(0, 255)
           .trim();
-        out.text = String(b.text || '').slice(0, MAX_PARAGRAPH_LEN);
+        if (b.format === 'html') {
+          out.format = 'html';
+          out.text = sanitizeHtml(String(b.text || '').slice(0, MAX_PARAGRAPH_LEN));
+        } else {
+          out.text = String(b.text || '').slice(0, MAX_PARAGRAPH_LEN);
+        }
         out.caption = String(b.caption || '')
           .slice(0, MAX_CAPTION_LEN)
           .trim();
