@@ -13,15 +13,15 @@
 
       <nav class="article-breadcrumb">
         <a href="/">Domov</a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <span class="bc-sep"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg></span>
         <a href="/rebricky">Rebríčky</a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <span class="bc-sep"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg></span>
         <a href="/rebricky/<%= ranking.slug %>"><%= ranking.title %></a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <span class="bc-sep"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg></span>
         <span class="bc-current">Tabuľka</span>
@@ -34,7 +34,7 @@
         </div>
         <div style="display:flex; gap:8px;">
           <a href="/rebricky/<%= ranking.slug %>" class="btn btn-sm">← Späť na rebríček</a>
-          <button class="btn btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <button class="btn btn-sm"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
               <circle cx="18" cy="19" r="3" />
@@ -234,7 +234,7 @@
                 <span class="rgroup-info-wrap">
                   <span class="rgroup-info-num"><%= selectedOpts.length %></span>
                   <span class="rgroup-info-btn" tabindex="0">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <circle cx="12" cy="12" r="10" />
                       <path d="M12 16v-4M12 8h.01" />
                     </svg>
@@ -272,7 +272,7 @@
       <!-- Legend — only if score criteria exist -->
       <% if (typeof ranking !== 'undefined' && ranking.methodology) { %>
       <div class="rtable-methodology">
-        <h3 class="rtable-methodology-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <h3 class="rtable-methodology-title"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg> Metodika</h3>

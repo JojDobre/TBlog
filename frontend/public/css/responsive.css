@@ -800,11 +800,31 @@
   }
 }
 
+/* --- Podium: 3 vedľa seba od 1260px, menšie --- */
+@media (max-width: 1260px) {
+  .podium {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    align-items: end;
+    margin-bottom: var(--s-12);
+  }
+  .podium-card--first {
+    transform: none;
+  }
+
+  .podium-rank--gold {
+    font-size: 86px;
+  }
+  .podium-rank--silver {
+    font-size: 64px;
+  }
+}
+
 /* --- Podium: 3 vedľa seba od 1100px, menšie --- */
 @media (max-width: 1100px) {
   .podium {
     gap: 16px;
-    grid-template-columns: 1fr 1fr 1fr;
   }
   .podium-rank {
     font-size: 48px;
@@ -841,32 +861,38 @@
 /* --- Podium: po jednom od 860px --- */
 @media (max-width: 860px) {
   .podium {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 12px;
-    max-width: 420px;
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .podium-img {
+    aspect-ratio: 7/6;
   }
   .podium-card {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 0.6fr 1fr;
     align-items: center;
   }
   .podium-card--first {
     transform: none;
+    order: -1;
   }
   .podium-rank {
-    font-size: 36px;
+    font-size: 42px;
   }
   .podium-rank--gold {
-    font-size: 42px;
+    font-size: 50px;
   }
   .podium-body {
     padding: var(--s-3);
   }
   .podium-name {
-    font-size: 14px;
+    font-size: 18px;
   }
   .podium-score-num {
-    font-size: 22px;
+    font-size: 26px;
   }
   .browse-cats {
     overflow-x: auto;
@@ -878,10 +904,22 @@
     white-space: nowrap;
     flex-shrink: 0;
   }
+  .ritem-scores {
+    display: none;
+  }
 }
 
 /* --- Podium + ranking mobile --- */
 @media (max-width: 540px) {
+  .podium-card {
+    grid-template-columns: 1fr;
+  }
+  .podium-img {
+    aspect-ratio: 3/1;
+  }
+  .podium-scores {
+    display: none;
+  }
   .ritem {
     grid-template-columns: 40px 60px 1fr auto;
     gap: 8px;

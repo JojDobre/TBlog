@@ -3,13 +3,6 @@
    Založené na prototype v Claude Design.
    ========================================================================== */
 
-@font-face {
-  font-family: 'Proxima Nova';
-  src: url('../fonts/ProximaBlack.ttf') format('typeface');
-  font-weight: 700;
-  font-style: normal;
-}
-
 /* --- Tokens ------------------------------------------------------------ */
 :root {
   --s-1: 4px;
@@ -35,7 +28,6 @@
   --font-display: 'Inter Tight', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter Tight', 'Inter', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --font-logo: 'Proxima Nova', sans-serif;
 
   --accent: oklch(0.72 0.17 155);
   --accent-hover: oklch(0.78 0.17 155);
@@ -3186,14 +3178,23 @@ img {
 /* =========================== PODIUM ================================= */
 .podium {
   display: grid;
-  grid-template-columns: 1fr 1.3fr 1fr;
+  grid-template-columns: 1fr 1.1fr 1fr;
   gap: 24px;
-  align-items: end;
+  align-items: stretch;
   margin-bottom: var(--s-12);
 }
 .podium-card {
   padding: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.podium-img {
+  aspect-ratio: 8/9;
+}
+.podium-img img {
+  object-fit: contain;
+  object-position: center;
 }
 .podium-card--first {
   transform: translateY(-12px);
@@ -3204,12 +3205,15 @@ img {
 }
 .podium-body {
   padding: var(--s-6);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .podium-top {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
   margin-bottom: 16px;
+  align-items: center;
 }
 .podium-rank {
   font-family: var(--font-display);
@@ -3228,15 +3232,17 @@ img {
   -webkit-text-fill-color: transparent;
   padding-bottom: 0.1em;
   margin-bottom: -0.1em;
+  padding-right: 0.2em;
 }
 .podium-rank--silver {
-  font-size: 64px;
+  font-size: 74px;
   background: linear-gradient(180deg, oklch(0.7 0.01 240) 0%, oklch(0.4 0.01 240) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   padding-bottom: 0.1em;
   margin-bottom: -0.1em;
+  padding-right: 0.2em;
 }
 .podium-score-big {
   display: flex;
@@ -3266,6 +3272,7 @@ img {
   text-transform: uppercase;
   color: var(--text-subtle);
   font-weight: 500;
+  margin-top: auto;
 }
 .podium-name {
   font-family: var(--font-display);
@@ -3311,16 +3318,6 @@ img {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
-}
-@media (max-width: 1100px) {
-  .podium {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .podium-card--first {
-    transform: none;
-    order: -1;
-  }
 }
 
 /* =========================== TOP 4-10 LIST ========================== */
@@ -3376,7 +3373,7 @@ img {
 .ritem-img img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: contain;
 }
 .ritem-body {
   min-width: 0;
@@ -6592,4 +6589,3 @@ body.menu-open {
   color: var(--text-muted);
   white-space: pre-line;
 }
-

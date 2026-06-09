@@ -42,7 +42,7 @@
     <% if (td.cta_label && td.cta_url) { %>
     <a href="<%= td.cta_url %>" class="btn btn-lg" style="background:oklch(1 0 0); color:oklch(0.18 0.01 240);" target="_blank" rel="noopener">
       <%= td.cta_label %>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M7 17L17 7M8 7h9v9" />
       </svg>
     </a>
@@ -98,7 +98,7 @@
   <div style="position:relative; z-index:1; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
     <% if (td.badge_text) { %>
     <span class="promo-badge">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M7 17L17 7M8 7h9v9" />
       </svg>
       <%= td.badge_text %>
@@ -140,7 +140,7 @@
   </div>
   <div class="newsletter-form">
     <div class="search" style="min-width:0; height:52px; border-radius:var(--r-lg);">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="8" r="4" />
         <path d="M4 21a8 8 0 0 1 16 0" />
       </svg>
@@ -148,7 +148,7 @@
     </div>
     <button class="btn btn-accent btn-lg" style="justify-content:center; width:100%;">
       <%= td.cta_label || 'Prihlásiť sa' %>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5 12h14M13 5l7 7-7 7" />
       </svg>
     </button>

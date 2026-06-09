@@ -17,12 +17,12 @@
       <!-- Breadcrumb -->
       <nav class="article-breadcrumb">
         <a href="/">Domov</a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <span class="bc-sep"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg></span>
         <% if (listingParentLabel) { %>
         <a href="<%= listingParentHref %>"><%= listingParentLabel %></a>
-        <span class="bc-sep"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <span class="bc-sep"><svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg></span>
         <% } %>
@@ -59,7 +59,7 @@
         </div>
         <div class="filterbar-spacer"></div>
         <a href="<%= baseUrl %>?sort=<%= currentSort === 'newest' ? 'popular' : 'newest' %><%= currentType ? '&type=' + currentType : '' %>" class="btn btn-sm btn-ghost">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h13M3 12h9M3 18h5M17 8l3-3 3 3M20 5v14M20 19l3-3" />
           </svg>
           <%= currentSort === 'popular' ? 'Najčítanejšie' : 'Najnovšie' %>
@@ -78,7 +78,7 @@
       <a href="/clanok/<%= feat.slug %>" class="listing-featured card card-link">
         <div class="listing-featured-content">
           <span class="tag tag-accent" style="align-self:flex-start;">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <svg aria-hidden="true" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-2 1-3 1-3s-3 2-3 6a6 6 0 0 0 12 0c0-6-6-11-6-11z" />
             </svg>
             Najčítanejšie
@@ -146,7 +146,7 @@
       <% } else { %>
       <div class="listing-empty">
         <div class="comments-empty-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
             <rect x="4" y="4" width="16" height="16" rx="2" />
             <path d="M8 9h8M8 13h8M8 17h5" />
           </svg>
