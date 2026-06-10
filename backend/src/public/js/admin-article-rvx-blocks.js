@@ -105,7 +105,7 @@
   }
 
   // Generic list setup for items [{field1,field2,...}]
-  function setupItems(node, fields, emptyItem) {
+  function setupItems(node, fields, emptyItem, opts) {
     bindMeta(node);
     var listEl = node.querySelector('[data-rvx-items]'),
       addBtn = node.querySelector('[data-rvx-add]');
@@ -238,7 +238,99 @@
       SY();
       render();
     });
+
+    // Media upload / multi-pick (len ak blok má media pole)
+    if (opts && opts.mediaKey) {
+      setupItemsMedia(node, emptyItem, opts.mediaKey, addBtn, render);
+    }
+
     render();
+  }
+
+  // Pridá tlačidlá "Nahrať viac" a "Pridať viac" k blokom s media poľom
+  function setupItemsMedia(node, emptyItem, mediaKey, addBtn, render) {
+    if (node.querySelector('[data-rvx-media-bar]')) return; // už pridané
+
+    var bar = document.createElement('div');
+    bar.setAttribute('data-rvx-media-bar', '');
+    bar.className = 'd-flex gap-2 mt-2';
+    bar.innerHTML =
+      '<button type="button" class="bz-art-btn bz-art-btn-sm" data-rvx-upload>' +
+      '<i class="bi bi-upload"></i> Nahrať viac</button>' +
+      '<button type="button" class="bz-art-btn bz-art-btn-sm" data-rvx-pick-multi>' +
+      '<i class="bi bi-images"></i> Pridať viac</button>' +
+      '<input type="file" accept="image/*" multiple data-rvx-file class="d-none">' +
+      '<span class="text-muted small align-self-center" data-rvx-upload-status></span>';
+    // vlož za "Pridať" tlačidlo
+    addBtn.parentNode.insertBefore(bar, addBtn.nextSibling);
+
+    var fileInput = bar.querySelector('[data-rvx-file]');
+    var statusEl = bar.querySelector('[data-rvx-upload-status]');
+
+    function addMediaItems(ids) {
+      var ci = CI(node),
+        b = BR();
+      if (!b || !b[ci]) return;
+      if (!Array.isArray(b[ci].items)) b[ci].items = [];
+      ids.forEach(function (id) {
+        var item = JSON.parse(JSON.stringify(emptyItem));
+        item[mediaKey] = id;
+        b[ci].items.push(item);
+      });
+      SY();
+      render();
+    }
+
+    bar.querySelector('[data-rvx-upload]').addEventListener('click', function () {
+      fileInput.click();
+    });
+    fileInput.addEventListener('change', function () {
+      var files = fileInput.files;
+      if (!files || !files.length) return;
+      var csrfEl = document.querySelector('[name="_csrf"]');
+      var fd = new FormData();
+      for (var i = 0; i < files.length; i++) fd.append('files', files[i]);
+      fd.append('_csrf', csrfEl ? csrfEl.value : '');
+      if (statusEl) statusEl.textContent = 'Nahrávam…';
+      fetch('/admin/articles/media-upload', {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: fd,
+      })
+        .then(function (r) {
+          return r.json().then(function (d) {
+            if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
+            return d;
+          });
+        })
+        .then(function (d) {
+          addMediaItems(
+            (d.uploaded || []).map(function (u) {
+              return u.id;
+            })
+          );
+          if (statusEl) statusEl.textContent = d.errors && d.errors.length ? 'Časť zlyhala' : '';
+        })
+        .catch(function (e) {
+          if (statusEl) statusEl.textContent = 'Chyba: ' + e.message;
+        });
+      fileInput.value = '';
+    });
+
+    var pickBtn = bar.querySelector('[data-rvx-pick-multi]');
+    if (window.bzMediaPicker && window.bzMediaPicker.openMulti) {
+      pickBtn.addEventListener('click', function () {
+        window.bzMediaPicker.openMulti(function (items) {
+          addMediaItems(
+            items.map(function (it) {
+              return it.id;
+            })
+          );
+        });
+      });
+    } else {
+      pickBtn.style.display = 'none';
+    }
   }
 
   // Generic list for string arrays
@@ -581,7 +673,8 @@
               { key: 'media_id', ph: 'Media ID', type: 'number', style: 'max-width:100px' },
               { key: 'caption', ph: 'Popis', style: 'flex:1' },
             ],
-            { media_id: null, caption: '' }
+            { media_id: null, caption: '' },
+            { mediaKey: 'media_id' }
           );
           break;
         case 'rvx_gallery_exif':
@@ -595,7 +688,8 @@
               { key: 'iso', ph: 'ISO', style: 'max-width:60px' },
               { key: 'shutter', ph: 'Shutter', style: 'max-width:80px' },
             ],
-            { media_id: null, title: '', focal: '', aperture: '', iso: '', shutter: '' }
+            { media_id: null, title: '', focal: '', aperture: '', iso: '', shutter: '' },
+            { mediaKey: 'media_id' }
           );
           break;
         case 'rvx_gallery_compare':
@@ -626,7 +720,8 @@
               { key: 'title', ph: 'Režim' },
               { key: 'desc', ph: 'Popis', style: 'flex:1' },
             ],
-            { media_id: null, title: '', desc: '', icon: 'image' }
+            { media_id: null, title: '', desc: '', icon: 'image' },
+            { mediaKey: 'media_id' }
           );
           break;
         case 'rvx_gallery_samples':
@@ -637,7 +732,8 @@
               { key: 'caption', ph: 'Popis', style: 'flex:1' },
               { key: 'settings', ph: 'Nastavenia (f/1.8, ISO 200...)', style: 'flex:1' },
             ],
-            { media_id: null, caption: '', settings: '' }
+            { media_id: null, caption: '', settings: '' },
+            { mediaKey: 'media_id' }
           );
           break;
         case 'rvx_gallery_hero':
@@ -647,7 +743,8 @@
               { key: 'media_id', ph: 'Media ID', type: 'number', style: 'max-width:90px' },
               { key: 'caption', ph: 'Popis', style: 'flex:1' },
             ],
-            { media_id: null, caption: '' }
+            { media_id: null, caption: '' },
+            { mediaKey: 'media_id' }
           );
           break;
         // Buyers + HiLo (multi-list)
@@ -898,7 +995,9 @@
     bindMeta(node);
     var listEl = node.querySelector('[data-rvx-items]'),
       addBtn = node.querySelector('[data-rvx-add]');
-    if (!listEl || !addBtn) return;
+    if (!listEl) return;
+    // Generations nepoužíva generické "Pridať" tlačidlo (má vlastné "Pridať riadok")
+    if (addBtn) addBtn.remove();
     function render() {
       var ci = CI(node);
       if (ci === -1) return;

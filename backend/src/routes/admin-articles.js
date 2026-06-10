@@ -21,10 +21,31 @@ const blocks = require('../utils/blocks');
 const revisions = require('../utils/revisions');
 const mediaUsages = require('../utils/media-usages');
 const { loadArticleRankings, saveArticleRankings } = require('../utils/article-rankings');
+const multer = require('multer');
+const fs = require('fs/promises');
+const path = require('path');
+const config = require('../../../config');
+const media = require('../utils/media');
+const { validateRequest } = require('../middleware/csrf');
 
 const router = express.Router();
 router.use(requireAuth());
 router.use(requireRole('admin', 'editor'));
+
+// Multer pre upload priamo z media pickera (JSON odpoveď)
+const PICKER_TEMP_DIR = path.join(config.paths.uploads, 'temp');
+fs.mkdir(PICKER_TEMP_DIR, { recursive: true }).catch(() => {});
+const pickerUpload = multer({
+  dest: PICKER_TEMP_DIR,
+  limits: {
+    fileSize: config.uploads.image.maxSizeBytes,
+    files: 20,
+  },
+  fileFilter: (req, file, cb) => {
+    if (config.uploads.image.allowedMimes.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Nepodporovaný typ: ' + file.originalname));
+  },
+});
 
 // ---------------------------------------------------------------------------
 // API endpoints
@@ -43,6 +64,41 @@ router.get('/media-thumb/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// POST /media-upload — upload z pickera, vracia JSON s nahranými obrázkami
+router.post('/media-upload', (req, res) => {
+  pickerUpload.array('files', 20)(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Chyba pri nahrávaní.' });
+    }
+    if (!validateRequest(req)) {
+      if (req.files) for (const f of req.files) await fs.unlink(f.path).catch(() => {});
+      return res.status(403).json({ error: 'Neplatný CSRF token.' });
+    }
+    const files = req.files || [];
+    if (files.length === 0) {
+      return res.status(400).json({ error: 'Žiadny súbor.' });
+    }
+    const uploaded = [];
+    const errors = [];
+    for (const file of files) {
+      try {
+        const result = await media.processImageUpload({
+          file,
+          uploaderId: req.user.id,
+          altText: null,
+          caption: null,
+        });
+        uploaded.push({ id: result.id, thumbnail_path: result.thumbnailPath });
+      } catch (e) {
+        await fs.unlink(file.path).catch(() => {});
+        errors.push(`${file.originalname}: ${e.message}`);
+      }
+    }
+    log.info('picker upload', { count: uploaded.length, userId: req.user.id });
+    return res.json({ uploaded, errors });
+  });
 });
 
 router.get('/media-picker', async (req, res, next) => {

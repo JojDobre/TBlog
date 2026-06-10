@@ -488,7 +488,95 @@
       renderItems();
     });
 
+    // Multi-upload: nahrá súbory a pridá ich ako items
+    var uploadBtn = node.querySelector('[data-gallery-upload]');
+    var fileInput = node.querySelector('[data-gallery-file]');
+    var statusEl = node.querySelector('[data-gallery-upload-status]');
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', function () {
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', function () {
+        var files = fileInput.files;
+        if (!files || !files.length) return;
+        uploadGalleryFiles(node, files, statusEl, renderItems);
+        fileInput.value = '';
+      });
+    }
+
+    // Pridať viac z knižnice (multi-select picker)
+    var pickMultiBtn = node.querySelector('[data-gallery-pick-multi]');
+    if (pickMultiBtn && window.bzMediaPicker && window.bzMediaPicker.openMulti) {
+      pickMultiBtn.addEventListener('click', function () {
+        window.bzMediaPicker.openMulti(function (items) {
+          var idx = currentIndex(node);
+          if (idx === -1) return;
+          if (!Array.isArray(blocks[idx].items)) blocks[idx].items = [];
+          items.forEach(function (it) {
+            if (blocks[idx].items.length >= 30) return;
+            blocks[idx].items.push({ media_id: it.id, caption: '' });
+          });
+          syncHidden();
+          renderItems();
+        });
+      });
+    }
+
     renderItems();
+  }
+
+  function uploadGalleryFiles(node, files, statusEl, renderItems) {
+    var csrfEl = document.querySelector('[name="_csrf"]');
+    var csrf = csrfEl ? csrfEl.value : '';
+    var fd = new FormData();
+    for (var i = 0; i < files.length; i++) fd.append('files', files[i]);
+    fd.append('_csrf', csrf);
+
+    if (statusEl) {
+      statusEl.classList.remove('d-none', 'alert-danger');
+      statusEl.classList.add('alert-info');
+      statusEl.textContent = 'Nahrávam ' + files.length + ' súbor(ov)…';
+    }
+
+    fetch('/admin/articles/media-upload', {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: fd,
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
+          return data;
+        });
+      })
+      .then(function (data) {
+        var uploaded = data.uploaded || [];
+        var idx = currentIndex(node);
+        if (idx === -1) return;
+        if (!Array.isArray(blocks[idx].items)) blocks[idx].items = [];
+        uploaded.forEach(function (u) {
+          if (blocks[idx].items.length >= 30) return;
+          blocks[idx].items.push({ media_id: u.id, caption: '' });
+        });
+        syncHidden();
+        renderItems();
+        if (statusEl) {
+          if (data.errors && data.errors.length) {
+            statusEl.classList.remove('alert-info');
+            statusEl.classList.add('alert-danger');
+            statusEl.textContent = 'Časť zlyhala: ' + data.errors.join('; ');
+          } else {
+            statusEl.classList.add('d-none');
+          }
+        }
+      })
+      .catch(function (err) {
+        if (statusEl) {
+          statusEl.classList.remove('d-none', 'alert-info');
+          statusEl.classList.add('alert-danger');
+          statusEl.textContent = 'Nahrávanie zlyhalo: ' + err.message;
+        }
+      });
   }
 
   // ---- List handlers ----
@@ -668,16 +756,45 @@
   /**
    * Zavolá setup pre nested-item bloky. MUSÍ sa volať AFTER appendChild.
    */
+  var REVIEW_TYPES = [
+    'section',
+    'pros_cons',
+    'specs',
+    'rating',
+    'rating_breakdown',
+    'color_variants',
+    'review_banner',
+  ];
+  var RVX1_TYPES = ['rvx_glance', 'rvx_keyspecs', 'rvx_quickstrip', 'rvx_connect'];
+
   function setupNestedBlock(node, type) {
-    if (type === 'paragraph') setupParagraph(node);
-    else if (type === 'section') setupParagraph(node);
-    else if (type === 'gallery') setupGallery(node);
-    else if (type === 'list') setupList(node);
-    else if (window.__bzReviewBlocks && window.__bzReviewBlocks.setup) {
-      window.__bzReviewBlocks.setup(node, type);
+    if (type === 'paragraph' || type === 'section') {
+      setupParagraph(node);
     }
-    if (window.__bzRvxBlocks1 && window.__bzRvxBlocks1.setup) {
-      window.__bzRvxBlocks1.setup(node, type);
+    if (type === 'gallery') {
+      setupGallery(node);
+      return;
+    }
+    if (type === 'list') {
+      setupList(node);
+      return;
+    }
+    if (
+      REVIEW_TYPES.indexOf(type) !== -1 &&
+      window.__bzReviewBlocks &&
+      window.__bzReviewBlocks.setup
+    ) {
+      window.__bzReviewBlocks.setup(node, type);
+      // section používa aj Quill (setupParagraph vyššie) aj review setup — nevracaj
+      if (type !== 'section') return;
+    }
+    if (RVX1_TYPES.indexOf(type) !== -1) {
+      if (window.__bzRvxBlocks1 && window.__bzRvxBlocks1.setup) {
+        window.__bzRvxBlocks1.setup(node, type);
+      } else if (window.__bzRvxBlocks && window.__bzRvxBlocks.setup) {
+        window.__bzRvxBlocks.setup(node, type);
+      }
+      return;
     }
     if (window.__bzRvxBlocks && window.__bzRvxBlocks.setup) {
       window.__bzRvxBlocks.setup(node, type);

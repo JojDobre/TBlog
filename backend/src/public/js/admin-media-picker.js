@@ -35,14 +35,19 @@
       '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvoriť"></button>' +
       '</div>' +
       '<div class="modal-body">' +
-      '<div class="bz-picker-toolbar mb-3">' +
+      '<div class="bz-picker-toolbar mb-3 d-flex gap-2">' +
       '<div class="input-group">' +
       '<span class="input-group-text"><i class="bi bi-search"></i></span>' +
       '<input type="search" class="form-control" data-picker-search ' +
       'placeholder="Hľadať podľa názvu, alt textu alebo popisu...">' +
       '<button type="button" class="btn btn-outline-secondary" data-picker-search-btn>Hľadať</button>' +
       '</div>' +
+      '<button type="button" class="btn btn-primary flex-shrink-0" data-picker-upload-btn>' +
+      '<i class="bi bi-upload me-1"></i>Nahrať' +
+      '</button>' +
+      '<input type="file" accept="image/*" multiple data-picker-file class="d-none">' +
       '</div>' +
+      '<div class="alert alert-info d-none" data-picker-upload-status></div>' +
       '<div class="bz-picker-grid" data-picker-grid></div>' +
       '<div class="bz-picker-empty d-none text-center text-muted py-5" data-picker-empty>' +
       '<i class="bi bi-image fs-1 d-block mb-2 text-body-tertiary"></i>' +
@@ -59,8 +64,11 @@
       '</div>' +
       '<div class="modal-footer">' +
       '<small class="text-muted me-auto" data-picker-stats></small>' +
-      '<a href="/admin/media" target="_blank" class="btn btn-sm btn-outline-primary">' +
-      '<i class="bi bi-upload me-1"></i>Nahrať nové</a>' +
+      '<span class="bz-picker-multibar d-none align-items-center gap-2" data-picker-multibar>' +
+      '<span class="text-muted small" data-picker-multicount>0 označených</span>' +
+      '<button type="button" class="btn btn-sm btn-success" data-picker-multi-confirm>' +
+      '<i class="bi bi-check-lg me-1"></i>Vybrať označené</button>' +
+      '</span>' +
       '<button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Zrušiť</button>' +
       '</div>' +
       '</div>' +
@@ -77,6 +85,9 @@
   var targetInput = null;
   var currentQuery = '';
   var currentPage = 1;
+  var multiMode = false;
+  var multiCallback = null;
+  var multiSelected = {}; // { id: item }
 
   // =========================================================================
   // 3. Render
@@ -120,8 +131,22 @@
         (dimensions ? ' · ' + dimensions : '') +
         '</div>' +
         '</div>';
+      if (multiMode && multiSelected[item.id]) {
+        card.classList.add('bz-picker-card--selected');
+      }
       card.addEventListener('click', function () {
-        selectItem(item);
+        if (multiMode) {
+          if (multiSelected[item.id]) {
+            delete multiSelected[item.id];
+            card.classList.remove('bz-picker-card--selected');
+          } else {
+            multiSelected[item.id] = item;
+            card.classList.add('bz-picker-card--selected');
+          }
+          updateMultiBar();
+        } else {
+          selectItem(item);
+        }
       });
       grid.appendChild(card);
     });
@@ -273,27 +298,142 @@
       .catch(function () {});
   }
 
-  // =========================================================================
-  // 6. Open API
-  // =========================================================================
-  function open(input) {
-    targetInput = input;
+  function doUpload(files, statusEl) {
+    var csrfEl = document.querySelector('[name="_csrf"]');
+    var csrf = csrfEl ? csrfEl.value : '';
+    var fd = new FormData();
+    for (var i = 0; i < files.length; i++) fd.append('files', files[i]);
+    fd.append('_csrf', csrf);
+
+    if (statusEl) {
+      statusEl.classList.remove('d-none', 'alert-danger');
+      statusEl.classList.add('alert-info');
+      statusEl.textContent = 'Nahrávam ' + files.length + ' súbor(ov)…';
+    }
+
+    fetch('/admin/articles/media-upload', {
+      method: 'POST',
+      credentials: 'same-origin',
+      body: fd,
+    })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
+          return data;
+        });
+      })
+      .then(function (data) {
+        var uploaded = data.uploaded || [];
+        if (statusEl) {
+          if (data.errors && data.errors.length) {
+            statusEl.classList.remove('alert-info');
+            statusEl.classList.add('alert-danger');
+            statusEl.textContent = 'Časť zlyhala: ' + data.errors.join('; ');
+          } else {
+            statusEl.classList.add('d-none');
+          }
+        }
+        if (uploaded.length === 1) {
+          // jeden obrázok → rovno vyber a zatvor
+          selectItem({ id: uploaded[0].id, thumbnail_path: uploaded[0].thumbnail_path });
+        } else if (uploaded.length > 1) {
+          // viac → refresh gridu, nech si vyberie
+          load(1, '');
+        }
+      })
+      .catch(function (err) {
+        if (statusEl) {
+          statusEl.classList.remove('d-none', 'alert-info');
+          statusEl.classList.add('alert-danger');
+          statusEl.textContent = 'Nahrávanie zlyhalo: ' + err.message;
+        }
+      });
+  }
+
+  function updateMultiBar() {
+    if (!modalEl) return;
+    var bar = modalEl.querySelector('[data-picker-multibar]');
+    var count = Object.keys(multiSelected).length;
+    if (bar) {
+      bar.classList.toggle('d-none', !multiMode);
+      bar.classList.toggle('d-flex', multiMode);
+      var lbl = bar.querySelector('[data-picker-multicount]');
+      if (lbl) lbl.textContent = count + ' označených';
+    }
+  }
+
+  function openMulti(callback) {
+    multiMode = true;
+    multiCallback = callback;
+    multiSelected = {};
+    targetInput = null;
     if (!modalEl) {
       modalEl = buildModal();
       bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-      var searchInput = modalEl.querySelector('[data-picker-search]');
-      var searchBtn = modalEl.querySelector('[data-picker-search-btn]');
-      var doSearch = function () {
-        load(1, searchInput.value.trim());
-      };
-      searchBtn.addEventListener('click', doSearch);
-      searchInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          doSearch();
-        }
+      attachPickerListeners();
+    }
+    modalEl.querySelector('[data-picker-search]').value = '';
+    updateMultiBar();
+    bsModal.show();
+    load(1, '');
+  }
+
+  // =========================================================================
+  // 6. Open API
+  // =========================================================================
+  function attachPickerListeners() {
+    var searchInput = modalEl.querySelector('[data-picker-search]');
+    var searchBtn = modalEl.querySelector('[data-picker-search-btn]');
+    var doSearch = function () {
+      load(1, searchInput.value.trim());
+    };
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doSearch();
+      }
+    });
+
+    // Upload priamo z pickera
+    var uploadBtn = modalEl.querySelector('[data-picker-upload-btn]');
+    var fileInput = modalEl.querySelector('[data-picker-file]');
+    var statusEl = modalEl.querySelector('[data-picker-upload-status]');
+    if (uploadBtn && fileInput) {
+      uploadBtn.addEventListener('click', function () {
+        fileInput.click();
+      });
+      fileInput.addEventListener('change', function () {
+        var files = fileInput.files;
+        if (!files || !files.length) return;
+        doUpload(files, statusEl);
+        fileInput.value = '';
       });
     }
+
+    // Multi-select: tlačidlo "Vybrať označené"
+    var confirmBtn = modalEl.querySelector('[data-picker-multi-confirm]');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', function () {
+        var items = Object.keys(multiSelected).map(function (k) {
+          return multiSelected[k];
+        });
+        if (multiCallback) multiCallback(items);
+        bsModal.hide();
+      });
+    }
+  }
+
+  function open(input) {
+    targetInput = input;
+    multiMode = false;
+    multiCallback = null;
+    if (!modalEl) {
+      modalEl = buildModal();
+      bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      attachPickerListeners();
+    }
+    updateMultiBar();
     modalEl.querySelector('[data-picker-search]').value = '';
     bsModal.show();
     load(1, '');
@@ -420,5 +560,5 @@
     });
   }
 
-  window.bzMediaPicker = { open: open, scan: scanAll };
+  window.bzMediaPicker = { open: open, openMulti: openMulti, scan: scanAll };
 })();

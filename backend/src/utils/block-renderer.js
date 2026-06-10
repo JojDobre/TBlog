@@ -377,11 +377,18 @@ function renderSingle(b, mediaMap, opts) {
           const hex = esc(v.hex || '#000000');
           // Determine text color based on luminance (simple heuristic)
           const textColor = isLightColor(v.hex) ? 'oklch(0.2 0 0)' : 'oklch(1 0 0)';
+          const vMedia = v.media_id ? mediaMap.get(v.media_id) : null;
           p.push(
-            `<article class="rv-color-card" style="--swatch:${hex}; --swatch-text:${textColor};">`
+            `<article class="rv-color-card${vMedia ? ' rv-color-card--img' : ''}" style="--swatch:${hex}; --swatch-text:${textColor};">`
           );
           p.push('<div class="rv-color-swatch">');
-          p.push('<div class="rv-color-phone"></div>');
+          if (vMedia) {
+            p.push(
+              `<img class="rv-color-img" src="/uploads/${esc(vMedia.medium_path || vMedia.original_path || vMedia.thumbnail_path)}" alt="${esc(v.name)}" loading="lazy">`
+            );
+          } else {
+            p.push('<div class="rv-color-phone"></div>');
+          }
           if (v.code) p.push(`<span class="rv-color-code">${esc(v.code)}</span>`);
           p.push('</div>');
           p.push('<div class="rv-color-meta">');

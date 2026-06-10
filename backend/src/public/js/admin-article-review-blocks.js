@@ -328,7 +328,8 @@
   function currentIndex(node) {
     var container = document.querySelector('[data-blocks-container]');
     if (!container) return -1;
-    return Array.prototype.indexOf.call(container.children, node);
+    var blocks = Array.prototype.slice.call(container.querySelectorAll('[data-block-type]'));
+    return blocks.indexOf(node);
   }
 
   /**
@@ -393,7 +394,7 @@
           '" placeholder="' +
           placeholder +
           '" maxlength="500">' +
-          '<button type="button" class="btn btn-sm btn-outline-danger" title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
+          '<button type="button" class="btn btn-sm btn-outline-danger" data-vdel title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
         var input = row.querySelector('input');
         input.addEventListener('input', function () {
           var ci2 = currentIndex(node);
@@ -632,7 +633,11 @@
           '<input type="text" class="form-control form-control-sm" data-vt value="' +
           escAttr(v.note || '') +
           '" placeholder="Poznámka" maxlength="100" style="flex:0.8;">' +
-          '<button type="button" class="btn btn-sm btn-outline-danger" title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
+          '<input type="number" class="form-control form-control-sm" data-vm value="' +
+          escAttr(v.media_id || '') +
+          '" placeholder="ID" min="1" style="flex:0 0 70px;">' +
+          '<button type="button" class="btn btn-sm btn-outline-primary" data-vm-pick title="Vybrať z knižnice"><i class="bi bi-images"></i></button>' +
+          '<button type="button" class="btn btn-sm btn-outline-danger" data-vdel title="Odstrániť"><i class="bi bi-x-lg"></i></button>';
         el.querySelector('[data-vn]').addEventListener('input', function () {
           var ci2 = currentIndex(node);
           if (ci2 === -1) return;
@@ -665,16 +670,25 @@
           b[ci2].variants[i].hex = this.value;
           syncFromRef();
         });
-        el.querySelector('[data-vm]').addEventListener('input', function () {
-          var ci2 = currentIndex(node);
-          if (ci2 === -1) return;
-          var b = getBlocksRef();
-          if (!b || !b[ci2]) return;
-          var n = Number(this.value);
-          b[ci2].variants[i].media_id = Number.isInteger(n) && n > 0 ? n : null;
-          syncFromRef();
-        });
-        el.querySelector('button').addEventListener('click', function () {
+        var vmInput = el.querySelector('[data-vm]');
+        if (vmInput) {
+          vmInput.addEventListener('input', function () {
+            var ci2 = currentIndex(node);
+            if (ci2 === -1) return;
+            var b = getBlocksRef();
+            if (!b || !b[ci2]) return;
+            var n = Number(this.value);
+            b[ci2].variants[i].media_id = Number.isInteger(n) && n > 0 ? n : null;
+            syncFromRef();
+          });
+          var vmPick = el.querySelector('[data-vm-pick]');
+          if (vmPick && window.bzMediaPicker) {
+            vmPick.addEventListener('click', function () {
+              window.bzMediaPicker.open(vmInput);
+            });
+          }
+        }
+        el.querySelector('[data-vdel]').addEventListener('click', function () {
           var ci2 = currentIndex(node);
           if (ci2 === -1) return;
           var b = getBlocksRef();

@@ -81,7 +81,15 @@
       '<button type="button" class="btn btn-sm btn-outline-primary" data-gallery-add>' +
       '<i class="bi bi-plus-lg me-1"></i>Pridať obrázok' +
       '</button>' +
+      '<button type="button" class="btn btn-sm btn-primary" data-gallery-upload>' +
+      '<i class="bi bi-upload me-1"></i>Nahrať viac' +
+      '</button>' +
+      '<button type="button" class="btn btn-sm btn-outline-primary" data-gallery-pick-multi>' +
+      '<i class="bi bi-images me-1"></i>Pridať viac' +
+      '</button>' +
+      '<input type="file" accept="image/*" multiple data-gallery-file class="d-none">' +
       '</div>' +
+      '<div class="alert alert-info d-none mt-2 py-1 px-2 small" data-gallery-upload-status></div>' +
       '<div class="form-text small mt-1">Max 30 obrázkov v galérii.</div>' +
       '</div>'
   );
