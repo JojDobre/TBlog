@@ -577,7 +577,7 @@ img {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin: var(--s-section) 0 0;
+  margin: var(--s-section) 0 var(--s-4);
   gap: var(--s-6);
 }
 .sec-head-l {
