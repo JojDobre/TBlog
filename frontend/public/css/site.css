@@ -2307,7 +2307,7 @@ img {
 .article-content > h2 {
   font-family: var(--font-display);
   font-size: 28px;
-  margin: var(--s-10) 0 var(--s-4);
+  margin: 0 0 var(--s-5);
   letter-spacing: -0.025em;
   font-weight: 700;
   scroll-margin-top: 100px;
