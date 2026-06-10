@@ -4562,6 +4562,7 @@ img {
   -webkit-text-fill-color: transparent;
   padding-bottom: 0.1em;
   margin-bottom: -0.1em;
+  padding-right: 0.1em;
 }
 .verdict-stars {
   display: flex;
@@ -4834,6 +4835,8 @@ img {
 }
 
 /* --- Title variants --------------------------------------------------- */
+.article-content .cs-title,
+.article-prose .cs-title,
 .cs-title {
   font-family: var(--font-display);
   font-size: 32px;
