@@ -2327,10 +2327,11 @@ img {
   padding: 0 0 0 var(--s-6);
   border-left: 3px solid var(--accent);
   font-family: var(--font-display);
-  font-size: 22px;
-  line-height: 1.4;
-  letter-spacing: -0.02em;
   font-weight: 500;
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  letter-spacing: -0.005em;
 }
 .article-prose blockquote p,
 .article-content > blockquote p {
