@@ -24,9 +24,13 @@ package-lock.json.bak
 uploads/originals/*
 uploads/thumbnails/*
 uploads/videos/*
+uploads/medium/*
+uploads/temp/*
 !uploads/originals/.gitkeep
 !uploads/thumbnails/.gitkeep
 !uploads/videos/.gitkeep
+!uploads/medium/.gitkeep
+!uploads/temp/.gitkeep
 
 # =============================================================================
 # Logs
