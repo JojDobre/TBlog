@@ -15,7 +15,7 @@
   overflow: hidden;
   border-radius: var(--r-lg);
   cursor: pointer;
-  max-height: 400px;
+  max-height: 200px;
 }
 .rv-gal-grid-item img {
   width: 100%;
