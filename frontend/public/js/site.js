@@ -441,9 +441,15 @@ document.addEventListener('click', function (e) {
     });
   }
 
+  // Položka môže byť string (legacy) alebo { m: mediumSrc, f: fullSrc }
+  function norm(x) {
+    if (typeof x === 'string') return { m: x, f: x };
+    return { m: x.m || x.f, f: x.f || x.m };
+  }
+
   function open(images, startIdx) {
     create();
-    imgs = images;
+    imgs = images.map(norm);
     idx = startIdx || 0;
     show();
     document.body.style.overflow = 'hidden';
@@ -468,7 +474,18 @@ document.addEventListener('click', function (e) {
 
   function show() {
     if (!lightbox || !imgs.length) return;
-    lightbox.querySelector('.rv-lightbox-img').src = imgs[idx];
+    var entry = imgs[idx];
+    var imgEl = lightbox.querySelector('.rv-lightbox-img');
+    // Medium sa zobrazí okamžite (už je v cache zo stránky) …
+    imgEl.src = entry.m;
+    // … a plná kvalita sa donačíta na pozadí a vymení
+    if (entry.f && entry.f !== entry.m) {
+      var pre = new Image();
+      pre.onload = function () {
+        if (imgs[idx] === entry) imgEl.src = entry.f;
+      };
+      pre.src = entry.f;
+    }
     lightbox.querySelector('.rv-lightbox-counter').textContent = idx + 1 + ' / ' + imgs.length;
     lightbox.querySelector('.rv-lightbox-prev').style.display = imgs.length > 1 ? '' : 'none';
     lightbox.querySelector('.rv-lightbox-next').style.display = imgs.length > 1 ? '' : 'none';
@@ -499,7 +516,10 @@ document.addEventListener('click', function (e) {
     allItems.forEach(function (el, i) {
       var img = el.querySelector('img');
       if (img) {
-        images.push(img.src);
+        images.push({
+          m: img.currentSrc || img.src,
+          f: img.getAttribute('data-full') || img.src,
+        });
         if (el === item) startIdx2 = i;
       }
     });

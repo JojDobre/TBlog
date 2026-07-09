@@ -38,6 +38,26 @@ function slugify(text) {
 }
 
 /**
+ * Inline zobrazenie obrázka: medium (max 1200px WebP) → original → thumbnail.
+ * Medium výrazne zrýchľuje načítanie stránky; original sa načíta až v lightboxe.
+ */
+function imgSrc(media) {
+  return '/uploads/' + esc(media.medium_path || media.original_path || media.thumbnail_path);
+}
+
+/** Plná kvalita pre lightbox (data-full atribút). */
+function fullSrc(media) {
+  return '/uploads/' + esc(media.original_path || media.medium_path || media.thumbnail_path);
+}
+
+/** width/height atribúty proti layout shiftu pri lazy loadingu. */
+function dimAttrs(media) {
+  return media && media.width && media.height
+    ? ` width="${media.width}" height="${media.height}"`
+    : '';
+}
+
+/**
  * Renderuje pole blokov na HTML string.
  * Všetky bloky idú na plnú šírku kontajnera.
  */
@@ -88,9 +108,9 @@ function renderSingle(b, mediaMap, opts) {
     case 'image': {
       const media = mediaMap.get(b.media_id);
       if (media) {
-        p.push('<figure>');
+        p.push('<figure data-rvx-lightbox>');
         p.push(
-          `<img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="${esc(b.alt || '')}" loading="lazy">`
+          `<img src="${imgSrc(media)}" data-full="${fullSrc(media)}" alt="${esc(b.alt || '')}"${dimAttrs(media)} loading="lazy">`
         );
         if (b.caption) p.push(`<figcaption>${esc(b.caption)}</figcaption>`);
         p.push('</figure>');
@@ -129,9 +149,9 @@ function renderSingle(b, mediaMap, opts) {
         for (const item of b.items) {
           const media = mediaMap.get(item.media_id);
           if (!media) continue;
-          p.push('<figure class="article-gallery-item">');
+          p.push('<figure class="article-gallery-item" data-rvx-lightbox>');
           p.push(
-            `<img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="" loading="lazy">`
+            `<img src="${imgSrc(media)}" data-full="${fullSrc(media)}" alt=""${dimAttrs(media)} loading="lazy">`
           );
           if (item.caption) p.push(`<figcaption>${esc(item.caption)}</figcaption>`);
           p.push('</figure>');
@@ -201,7 +221,7 @@ function renderSingle(b, mediaMap, opts) {
             p.push('</figure>');
           } else {
             p.push(
-              `<figure class="cs-grid-media"><img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="" loading="lazy"></figure>`
+              `<figure class="cs-grid-media"><img src="${imgSrc(media)}" alt="" loading="lazy"></figure>`
             );
           }
           if (b.caption)
@@ -226,9 +246,7 @@ function renderSingle(b, mediaMap, opts) {
             if (isVideo) {
               p.push(videoLinkHtml(media, b.video_url));
             } else {
-              p.push(
-                `<img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="" loading="lazy">`
-              );
+              p.push(`<img src="${imgSrc(media)}" alt="" loading="lazy">`);
             }
             p.push('<div class="cs-tilt-shine"></div></div></figure>');
           } else {
@@ -236,9 +254,7 @@ function renderSingle(b, mediaMap, opts) {
             if (isVideo) {
               p.push(videoLinkHtml(media, b.video_url));
             } else {
-              p.push(
-                `<img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="" loading="lazy">`
-              );
+              p.push(`<img src="${imgSrc(media)}" alt="" loading="lazy">`);
             }
             p.push('</figure>');
           }
@@ -258,7 +274,7 @@ function renderSingle(b, mediaMap, opts) {
             p.push('</figure>');
           } else {
             p.push(
-              `<figure class="cs-media"><img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="${esc(b.caption || '')}" loading="lazy"></figure>`
+              `<figure class="cs-media"><img src="${imgSrc(media)}" alt="${esc(b.caption || '')}" loading="lazy"></figure>`
             );
           }
           if (b.caption) p.push(`<figcaption>${esc(b.caption)}</figcaption>`);
@@ -408,9 +424,7 @@ function renderSingle(b, mediaMap, opts) {
         '<div class="review-banner' +
           widthCls +
           '"' +
-          (bgMedia
-            ? ` style="background-image:url(/uploads/${esc(bgMedia.original_path || bgMedia.thumbnail_path)})"`
-            : '') +
+          (bgMedia ? ` style="background-image:url(${imgSrc(bgMedia)})"` : '') +
           '>'
       );
       if (b.title) p.push(`<h2 class="review-banner-title">${esc(b.title)}</h2>`);
@@ -432,10 +446,7 @@ function renderSingle(b, mediaMap, opts) {
         p.push('<div class="review-banner-slider">');
         for (const mid of b.slider_media_ids) {
           const sm = mid ? mediaMap.get(mid) : null;
-          if (sm)
-            p.push(
-              `<img src="/uploads/${esc(sm.original_path || sm.thumbnail_path)}" alt="" loading="lazy">`
-            );
+          if (sm) p.push(`<img src="${imgSrc(sm)}" alt="" loading="lazy">`);
         }
         p.push('</div>');
       }
@@ -565,7 +576,7 @@ function renderSingle(b, mediaMap, opts) {
       const allSrcs = [];
       for (const it of b.items) {
         const m = mediaMap.get(it.media_id);
-        if (m) allSrcs.push('/uploads/' + (m.original_path || m.thumbnail_path));
+        if (m) allSrcs.push({ m: imgSrc(m), f: fullSrc(m) });
       }
       const extra = allSrcs.length - MAX_VISIBLE;
       p.push(`<div class="rv-gal-grid" data-rvx-gallery-all='${JSON.stringify(allSrcs)}'>`);
@@ -574,7 +585,7 @@ function renderSingle(b, mediaMap, opts) {
         const isLast = i === visible.length - 1 && extra > 0;
         const it = b.items[i];
         p.push(
-          `<figure class="rv-gal-grid-item" data-rvx-lightbox-grid="${i}"><img src="${esc(src)}" alt="${esc((it && it.caption) || '')}" loading="lazy">`
+          `<figure class="rv-gal-grid-item" data-rvx-lightbox-grid="${i}"><img src="${src.m}" alt="${esc((it && it.caption) || '')}" loading="lazy">`
         );
         if (it && it.caption) p.push(`<figcaption>${esc(it.caption)}</figcaption>`);
         if (isLast) p.push(`<div class="rv-gal-grid-more"><span>+${extra}</span></div>`);
@@ -596,10 +607,10 @@ function renderSingle(b, mediaMap, opts) {
       b.items.forEach((it, i) => {
         const m = mediaMap.get(it.media_id);
         if (!m) return;
-        const src = `/uploads/${esc(m.original_path || m.thumbnail_path)}`;
+        const src = imgSrc(m);
         const hasBody = it.title || it.focal || it.aperture || it.iso || it.shutter;
         p.push(
-          `<div class="rv-gal-card${hasBody ? '' : ' rv-gal-card--nopad'}" data-rvx-lightbox><div class="rv-gal-card-img"><img src="${src}" alt="" loading="lazy"><span class="rv-gal-num">${String(i + 1).padStart(2, '0')}</span></div>`
+          `<div class="rv-gal-card${hasBody ? '' : ' rv-gal-card--nopad'}" data-rvx-lightbox><div class="rv-gal-card-img"><img src="${src}" data-full="${fullSrc(m)}" alt="" loading="lazy"><span class="rv-gal-num">${String(i + 1).padStart(2, '0')}</span></div>`
         );
         if (hasBody) {
           p.push('<div class="rv-gal-card-body">');
@@ -637,7 +648,7 @@ function renderSingle(b, mediaMap, opts) {
         const bl = esc(it.before_label || 'PRED'),
           al = esc(it.after_label || 'PO');
         p.push(
-          `<div class="rv-gal-cmp-card"><div class="rv-gal-cmp-frame" data-rvx-compare><img class="rv-gal-cmp-before" src="/uploads/${esc(bm.original_path || bm.thumbnail_path)}" alt="${bl}"><img class="rv-gal-cmp-after" src="/uploads/${esc(am.original_path || am.thumbnail_path)}" alt="${al}"><span class="rv-gal-cmp-tag rv-gal-cmp-tag-l">${bl}</span><span class="rv-gal-cmp-tag rv-gal-cmp-tag-r">${al}</span><div class="rv-gal-cmp-handle"><div class="rv-gal-cmp-handle-knob">⇔</div></div></div>`
+          `<div class="rv-gal-cmp-card"><div class="rv-gal-cmp-frame" data-rvx-compare><img class="rv-gal-cmp-before" src="${imgSrc(bm)}" alt="${bl}"><img class="rv-gal-cmp-after" src="${imgSrc(am)}" alt="${al}"><span class="rv-gal-cmp-tag rv-gal-cmp-tag-l">${bl}</span><span class="rv-gal-cmp-tag rv-gal-cmp-tag-r">${al}</span><div class="rv-gal-cmp-handle"><div class="rv-gal-cmp-handle-knob">⇔</div></div></div>`
         );
         if (it.label) p.push(`<span class="rv-gal-cmp-label">${esc(it.label)}</span>`);
         p.push('</div>');
@@ -658,9 +669,9 @@ function renderSingle(b, mediaMap, opts) {
       for (const it of b.items) {
         const m = mediaMap.get(it.media_id);
         if (!m) continue;
-        const src = `/uploads/${esc(m.original_path || m.thumbnail_path)}`;
+        const src = imgSrc(m);
         p.push(
-          `<div class="rv-gal-mode" data-rvx-lightbox><img class="rv-gal-mode-img" src="${src}" alt="" loading="lazy"><div class="rv-gal-mode-overlay"><div class="rv-gal-mode-icon">${rvxIcon(it.icon || 'image')}</div><div><h4>${esc(it.title)}</h4>`
+          `<div class="rv-gal-mode" data-rvx-lightbox><img class="rv-gal-mode-img" src="${src}" data-full="${fullSrc(m)}" alt="" loading="lazy"><div class="rv-gal-mode-overlay"><div class="rv-gal-mode-icon">${rvxIcon(it.icon || 'image')}</div><div><h4>${esc(it.title)}</h4>`
         );
         if (it.desc) p.push(`<span>${esc(it.desc)}</span>`);
         p.push('</div></div></div>');
@@ -681,9 +692,9 @@ function renderSingle(b, mediaMap, opts) {
       b.items.forEach((it, i) => {
         const m = mediaMap.get(it.media_id);
         if (!m) return;
-        const src = `/uploads/${esc(m.original_path || m.thumbnail_path)}`;
+        const src = imgSrc(m);
         p.push(
-          `<figure class="rv-gal-sample" data-rvx-lightbox><img src="${src}" alt="" loading="lazy">`
+          `<figure class="rv-gal-sample" data-rvx-lightbox><img src="${src}" data-full="${fullSrc(m)}" alt="" loading="lazy">`
         );
         if (it.caption || it.settings) {
           p.push('<figcaption>');
@@ -709,9 +720,9 @@ function renderSingle(b, mediaMap, opts) {
       b.items.forEach((it, i) => {
         const m = mediaMap.get(it.media_id);
         if (!m) return;
-        const src = `/uploads/${esc(m.original_path || m.thumbnail_path)}`;
+        const src = imgSrc(m);
         p.push(
-          `<figure class="rv-gal-hero-item${i === 0 ? ' rv-gal-hero-main' : ''}" data-rvx-lightbox><img src="${src}" alt="" loading="lazy">`
+          `<figure class="rv-gal-hero-item${i === 0 ? ' rv-gal-hero-main' : ''}" data-rvx-lightbox><img src="${src}" data-full="${fullSrc(m)}" alt="" loading="lazy">`
         );
         if (it.caption) p.push(`<figcaption>${esc(it.caption)}</figcaption>`);
         p.push('</figure>');
@@ -1499,7 +1510,7 @@ function renderBannerHtml(b) {
 function videoLinkHtml(media, videoUrl) {
   return (
     `<a href="${esc(videoUrl)}" target="_blank" rel="noopener" class="cs-video-link">` +
-    `<img src="/uploads/${esc(media.original_path || media.thumbnail_path)}" alt="" loading="lazy">` +
+    `<img src="${imgSrc(media)}" alt="" loading="lazy">` +
     '<div class="cs-play-btn"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>' +
     '</a>'
   );
