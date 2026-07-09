@@ -526,3 +526,42 @@ document.addEventListener('click', function (e) {
     if (images.length) open(images, startIdx2);
   });
 })();
+
+// === Agresívnejšie prednačítanie lazy obrázkov ===
+// Natívne loading="lazy" načítava len ~1-2 obrazovky dopredu. Tento observer
+// prepne obrázky na eager už ~3 obrazovky pred viewportom, takže pri scrollovaní
+// sú už načítané.
+(function () {
+  if (typeof IntersectionObserver === 'undefined') return;
+
+  var margin = Math.round(window.innerHeight * 5) + 'px';
+  var io = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var img = entry.target;
+        img.loading = 'eager';
+        io.unobserve(img);
+      });
+    },
+    { rootMargin: margin + ' 0px ' + margin + ' 0px' }
+  );
+
+  function scan(root) {
+    (root || document).querySelectorAll('img[loading="lazy"]').forEach(function (img) {
+      io.observe(img);
+    });
+  }
+
+  scan(document);
+
+  // Obrázky pridané dynamicky (napr. komentáre, notifikácie)
+  var mo = new MutationObserver(function (mutations) {
+    mutations.forEach(function (m) {
+      m.addedNodes.forEach(function (node) {
+        if (node.nodeType === 1) scan(node);
+      });
+    });
+  });
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
