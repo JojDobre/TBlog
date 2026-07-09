@@ -115,6 +115,29 @@
       '</div>'
   );
 
+  ensureTemplate(
+    'full_gallery',
+    '' +
+      '<div class="bz-block" data-block-type="full_gallery">' +
+      '<div class="bz-block-header">' +
+      '<span class="bz-block-label"><i class="bi bi-grid-3x3-gap me-1"></i>Celková galéria</span>' +
+      '<div class="bz-block-actions"></div>' +
+      '</div>' +
+      '<div class="row g-2 mb-2">' +
+      '<div class="col-md-4">' +
+      '<input type="text" class="form-control form-control-sm" data-field="eyebrow" ' +
+      'placeholder="Eyebrow (voliteľný)" maxlength="80">' +
+      '</div>' +
+      '<div class="col-md-8">' +
+      '<input type="text" class="form-control form-control-sm" data-field="title" ' +
+      'placeholder="Nadpis (napr. Galéria)" maxlength="255">' +
+      '</div>' +
+      '</div>' +
+      '<div class="form-text small">Automaticky zobrazí všetky obrázky článku ' +
+      '(obrázok, galéria, sekcie, rvx galérie, farebné varianty…). Netreba nič pridávať.</div>' +
+      '</div>'
+  );
+
   // -------------------------------------------------------------------------
   // 2. Toolbar buttons
   // -------------------------------------------------------------------------
@@ -133,6 +156,7 @@
   addToolbarButton('youtube', 'bi-youtube', 'YouTube');
   addToolbarButton('quote', 'bi-chat-quote', 'Citát');
   addToolbarButton('gallery', 'bi-images', 'Galéria');
+  addToolbarButton('full_gallery', 'bi-grid-3x3-gap', 'Celková galéria');
   addToolbarButton('list', 'bi-list-ul', 'Zoznam');
 
   // -------------------------------------------------------------------------

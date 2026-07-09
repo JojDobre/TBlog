@@ -61,14 +61,68 @@ function dimAttrs(media) {
  * Renderuje pole blokov na HTML string.
  * Všetky bloky idú na plnú šírku kontajnera.
  */
+
+/**
+ * Pozbiera všetky obrázky článku (image, gallery, section, color_variants,
+ * review_banner, rvx galérie…) v poradí výskytu, bez duplicít. SVG sa vynecháva.
+ * Používa blok full_gallery.
+ */
+function collectArticleImages(blocks, mediaMap) {
+  const seen = new Set();
+  const out = [];
+  function add(mid, caption) {
+    if (!mid || seen.has(mid)) return;
+    const media = mediaMap.get(mid);
+    if (!media) return;
+    if (media.mime === 'image/svg+xml') return;
+    seen.add(mid);
+    out.push({ media, caption: caption || media.caption || '' });
+  }
+  for (const b of blocks) {
+    if (!b || !b.type) continue;
+    switch (b.type) {
+      case 'image':
+        add(b.media_id, b.caption);
+        break;
+      case 'section':
+        if (!b.video_url) add(b.media_id, b.caption);
+        break;
+      case 'gallery':
+      case 'rvx_gallery_full':
+      case 'rvx_gallery_exif':
+      case 'rvx_gallery_modes':
+      case 'rvx_gallery_samples':
+      case 'rvx_gallery_hero':
+        if (Array.isArray(b.items))
+          for (const it of b.items) add(it.media_id, it.caption || it.title);
+        break;
+      case 'rvx_gallery_compare':
+        if (Array.isArray(b.items))
+          for (const it of b.items) {
+            add(it.before_media_id, it.before_label);
+            add(it.after_media_id, it.after_label);
+          }
+        break;
+      case 'color_variants':
+        if (Array.isArray(b.variants)) for (const v of b.variants) add(v.media_id, v.name);
+        break;
+      case 'review_banner':
+        if (Array.isArray(b.slider_media_ids)) for (const mid of b.slider_media_ids) add(mid, '');
+        break;
+    }
+  }
+  return out;
+}
+
 function renderBlocks(blocks, opts = {}) {
   if (!Array.isArray(blocks)) return '';
   const mediaMap = opts.mediaMap || new Map();
+  const articleImages = collectArticleImages(blocks, mediaMap);
   const output = [];
 
   for (const b of blocks) {
     if (!b || !b.type) continue;
-    const html = renderSingle(b, mediaMap, opts);
+    const html = renderSingle(b, mediaMap, opts, articleImages);
     if (html) output.push(html);
   }
 
@@ -78,7 +132,7 @@ function renderBlocks(blocks, opts = {}) {
 // =========================================================================
 // Single block renderer
 // =========================================================================
-function renderSingle(b, mediaMap, opts) {
+function renderSingle(b, mediaMap, opts, articleImages) {
   const p = [];
 
   switch (b.type) {
@@ -168,6 +222,36 @@ function renderSingle(b, mediaMap, opts) {
         p.push(`</${tag}>`);
       }
       break;
+
+    case 'full_gallery': {
+      const imgsAll = articleImages || [];
+      if (imgsAll.length === 0) break;
+      if (b.eyebrow || b.title) {
+        p.push(
+          '<div class="sec-head" style="margin-top:var(--s-section)"><div class="sec-head-l">'
+        );
+        if (b.eyebrow) p.push(`<span class="eyebrow">${esc(b.eyebrow)}</span>`);
+        if (b.title) p.push(`<h2>${esc(b.title)}</h2>`);
+        p.push('</div></div>');
+      }
+      const MAX_VISIBLE = 9;
+      const allSrcs = imgsAll.map((x) => ({ m: imgSrc(x.media), f: fullSrc(x.media) }));
+      const extra = allSrcs.length - MAX_VISIBLE;
+      p.push(`<div class="rv-gal-grid" data-rvx-gallery-all='${JSON.stringify(allSrcs)}'>`);
+      const visible = allSrcs.slice(0, MAX_VISIBLE);
+      visible.forEach((src, i) => {
+        const isLast = i === visible.length - 1 && extra > 0;
+        const cap = imgsAll[i].caption || '';
+        p.push(
+          `<figure class="rv-gal-grid-item" data-rvx-lightbox-grid="${i}"><img src="${src.m}" alt="${esc(cap)}" loading="lazy">`
+        );
+        if (cap) p.push(`<figcaption>${esc(cap)}</figcaption>`);
+        if (isLast) p.push(`<div class="rv-gal-grid-more"><span>+${extra}</span></div>`);
+        p.push('</figure>');
+      });
+      p.push('</div>');
+      break;
+    }
 
     // ---- WIDE BLOCKS ----
 

@@ -80,6 +80,7 @@ const BLOCK_TYPES = [
   'youtube',
   'quote',
   'gallery',
+  'full_gallery',
   'list',
   'section',
   'pros_cons',
@@ -200,6 +201,14 @@ function sanitizeBlocks(raw) {
       }
       case 'divider': {
         blocks.push({ type: 'divider' });
+        break;
+      }
+      case 'full_gallery': {
+        // Automatická galéria všetkých obrázkov článku — nemá vlastné items
+        const block = { type: 'full_gallery' };
+        if (b.eyebrow) block.eyebrow = String(b.eyebrow).slice(0, 80).trim();
+        if (b.title) block.title = String(b.title).slice(0, 255).trim();
+        blocks.push(block);
         break;
       }
       case 'youtube': {

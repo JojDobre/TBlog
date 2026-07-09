@@ -62,6 +62,8 @@
         return { type: 'quote', text: '', author: '' };
       case 'gallery':
         return { type: 'gallery', items: [] };
+      case 'full_gallery':
+        return { type: 'full_gallery', eyebrow: '', title: 'Galéria' };
       case 'list':
         return { type: 'list', ordered: false, items: [''] };
       case 'banner':

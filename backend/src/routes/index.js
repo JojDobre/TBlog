@@ -613,7 +613,17 @@ router.get('/clanok/:slug', async (req, res, next) => {
     if (mediaIds.length > 0) {
       const rows = await db('media')
         .whereIn('id', [...new Set(mediaIds)])
-        .select('id', 'thumbnail_path', 'original_path');
+        .select(
+          'id',
+          'thumbnail_path',
+          'original_path',
+          'medium_path',
+          'width',
+          'height',
+          'mime',
+          'caption',
+          'alt_text'
+        );
       mediaMap = new Map(rows.map((r) => [r.id, r]));
     }
 
