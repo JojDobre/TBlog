@@ -55,6 +55,8 @@ function createApp() {
 
   // 2. View engine
   app.set('view engine', 'ejs');
+  // renderBannerHtml pre banner-slot.ejs — fallback pre šablóny, ktoré partial nepokrýva
+  app.locals.renderBannerHtml = require('./utils/block-renderer').renderBannerHtml;
   app.set('views', [config.paths.frontendViews, config.paths.adminViews]);
 
   // 3. Compression

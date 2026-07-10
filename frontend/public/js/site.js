@@ -406,7 +406,7 @@ document.addEventListener('click', function (e) {
     lightbox = document.createElement('div');
     lightbox.className = 'rv-lightbox';
     lightbox.innerHTML =
-      '<img class="rv-lightbox-img" src=""><button class="rv-lightbox-close" aria-label="Zavrieť">✕</button><button class="rv-lightbox-nav rv-lightbox-prev" aria-label="Predchádzajúci">‹</button><button class="rv-lightbox-nav rv-lightbox-next" aria-label="Ďalší">›</button><span class="rv-lightbox-counter"></span>';
+      '<img class="rv-lightbox-img" src=""><div class="rv-lightbox-caption"></div><a class="rv-lightbox-open" href="#" target="_blank" rel="noopener" title="Otvoriť v plnej veľkosti" aria-label="Otvoriť v plnej veľkosti">⛶</a><button class="rv-lightbox-close" aria-label="Zavrieť">✕</button><button class="rv-lightbox-nav rv-lightbox-prev" aria-label="Predchádzajúci">‹</button><button class="rv-lightbox-nav rv-lightbox-next" aria-label="Ďalší">›</button><span class="rv-lightbox-counter"></span>';
     document.body.appendChild(lightbox);
     lightbox.querySelector('.rv-lightbox-close').addEventListener('click', close);
     lightbox.querySelector('.rv-lightbox-prev').addEventListener('click', function () {
@@ -443,8 +443,8 @@ document.addEventListener('click', function (e) {
 
   // Položka môže byť string (legacy) alebo { m: mediumSrc, f: fullSrc }
   function norm(x) {
-    if (typeof x === 'string') return { m: x, f: x };
-    return { m: x.m || x.f, f: x.f || x.m };
+    if (typeof x === 'string') return { m: x, f: x, c: '' };
+    return { m: x.m || x.f, f: x.f || x.m, c: x.c || '' };
   }
 
   function open(images, startIdx) {
@@ -486,6 +486,11 @@ document.addEventListener('click', function (e) {
       };
       pre.src = entry.f;
     }
+    // Popis obrázka + odkaz na plnú veľkosť
+    var capBox = lightbox.querySelector('.rv-lightbox-caption');
+    capBox.textContent = entry.c || '';
+    capBox.style.display = entry.c ? '' : 'none';
+    lightbox.querySelector('.rv-lightbox-open').href = entry.f;
     lightbox.querySelector('.rv-lightbox-counter').textContent = idx + 1 + ' / ' + imgs.length;
     lightbox.querySelector('.rv-lightbox-prev').style.display = imgs.length > 1 ? '' : 'none';
     lightbox.querySelector('.rv-lightbox-next').style.display = imgs.length > 1 ? '' : 'none';
@@ -516,9 +521,11 @@ document.addEventListener('click', function (e) {
     allItems.forEach(function (el, i) {
       var img = el.querySelector('img');
       if (img) {
+        var capEl = el.querySelector('figcaption');
         images.push({
           m: img.currentSrc || img.src,
           f: img.getAttribute('data-full') || img.src,
+          c: (capEl && capEl.textContent) || img.alt || '',
         });
         if (el === item) startIdx2 = i;
       }
@@ -534,7 +541,7 @@ document.addEventListener('click', function (e) {
 (function () {
   if (typeof IntersectionObserver === 'undefined') return;
 
-  var margin = Math.round(window.innerHeight * 5) + 'px';
+  var margin = Math.round(window.innerHeight * 3) + 'px';
   var io = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (entry) {

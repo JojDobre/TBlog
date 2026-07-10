@@ -66,6 +66,8 @@ router.use('/api/messages', apiMessagesRouter);
 router.use('/api/notifications', apiNotificationsRouter);
 router.use('/api/comments', apiCommentsRouter);
 router.use('/api/banners', apiBannersRouter);
+// Neutrálny alias — /api/banners blokujú adblocky
+router.use('/api/pulse', apiBannersRouter);
 router.use('/api/bookmarks', apiBookmarksRouter);
 
 router.use('/health', healthRouter);

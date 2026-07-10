@@ -158,6 +158,10 @@
   </div>
 </section>
 
+<% } else if (type === 'template') { %>
+<%/* ===== OSTATNÉ ŠABLÓNY — fallback na server-side renderer (pull-quote, discord, countdown…) ===== */ %>
+<%- renderBannerHtml(banner) %>
+
 <% } else if (type === 'custom') { %>
 <%/* ===== CUSTOM HTML ===== */ %>
 <div class="promo-banner" style="padding:0; overflow:hidden;" data-banner-id="<%= banner.id %>">

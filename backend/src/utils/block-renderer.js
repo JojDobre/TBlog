@@ -235,9 +235,15 @@ function renderSingle(b, mediaMap, opts, articleImages) {
         p.push('</div></div>');
       }
       const MAX_VISIBLE = 9;
-      const allSrcs = imgsAll.map((x) => ({ m: imgSrc(x.media), f: fullSrc(x.media) }));
+      const allSrcs = imgsAll.map((x) => ({
+        m: imgSrc(x.media),
+        f: fullSrc(x.media),
+        c: x.caption || '',
+      }));
       const extra = allSrcs.length - MAX_VISIBLE;
-      p.push(`<div class="rv-gal-grid" data-rvx-gallery-all='${JSON.stringify(allSrcs)}'>`);
+      p.push(
+        `<div class="rv-gal-grid" data-rvx-gallery-all='${JSON.stringify(allSrcs).replace(/'/g, '&#39;')}'>`
+      );
       const visible = allSrcs.slice(0, MAX_VISIBLE);
       visible.forEach((src, i) => {
         const isLast = i === visible.length - 1 && extra > 0;
@@ -660,10 +666,12 @@ function renderSingle(b, mediaMap, opts, articleImages) {
       const allSrcs = [];
       for (const it of b.items) {
         const m = mediaMap.get(it.media_id);
-        if (m) allSrcs.push({ m: imgSrc(m), f: fullSrc(m) });
+        if (m) allSrcs.push({ m: imgSrc(m), f: fullSrc(m), c: it.caption || '' });
       }
       const extra = allSrcs.length - MAX_VISIBLE;
-      p.push(`<div class="rv-gal-grid" data-rvx-gallery-all='${JSON.stringify(allSrcs)}'>`);
+      p.push(
+        `<div class="rv-gal-grid" data-rvx-gallery-all='${JSON.stringify(allSrcs).replace(/'/g, '&#39;')}'>`
+      );
       const visible = allSrcs.slice(0, MAX_VISIBLE);
       visible.forEach((src, i) => {
         const isLast = i === visible.length - 1 && extra > 0;
@@ -1648,4 +1656,4 @@ function extractToc(blocks) {
     }));
 }
 
-module.exports = { renderBlocks, extractToc, esc };
+module.exports = { renderBlocks, extractToc, esc, renderBannerHtml };

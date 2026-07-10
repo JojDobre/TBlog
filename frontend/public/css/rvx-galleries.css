@@ -328,7 +328,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--s-3);
-  max-height: 300px;
+  /* max-height odstránený — kontajner pretekal a hero galéria sa kreslila cez ukážky foto */
 }
 .rv-gal-sample {
   margin: 0;
@@ -550,5 +550,67 @@
   }
   .rv-gal-hero {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* === Lightbox: popis obrázka + otvorenie plnej veľkosti === */
+.rv-lightbox-caption {
+  position: absolute;
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 84vw;
+  padding: 6px 14px;
+  border-radius: var(--r-lg);
+  background: oklch(0 0 0 / 0.55);
+  color: oklch(1 0 0 / 0.9);
+  font-size: 13px;
+  text-align: center;
+}
+.rv-lightbox-open {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: oklch(1 0 0 / 0.1);
+  color: oklch(1 0 0);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.rv-lightbox-open:hover {
+  background: oklch(1 0 0 / 0.2);
+  color: oklch(1 0 0);
+}
+
+/* === Mobil: štvorcové karty bez spodných medzier (galéria+, hero) === */
+@media (max-width: 600px) {
+  .rv-gal-grid {
+    grid-auto-rows: auto;
+  }
+  .rv-gal-grid-item {
+    aspect-ratio: 1 / 1;
+    max-height: none;
+  }
+  .rv-gal-grid-item img {
+    height: 100%;
+  }
+  .rv-gal-grid-item:nth-child(1) {
+    aspect-ratio: 16 / 9;
+  }
+  .rv-gal-hero-item {
+    aspect-ratio: 1 / 1;
+    max-height: none;
+  }
+  .rv-gal-hero-item img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .rv-gal-hero-main {
+    aspect-ratio: 16 / 9;
   }
 }

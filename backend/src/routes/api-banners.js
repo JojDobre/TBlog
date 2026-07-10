@@ -30,7 +30,8 @@ function hashIp(ip) {
 // POST /track — fire-and-forget tracking
 // ---------------------------------------------------------------------------
 
-router.post('/track', async (req, res) => {
+// '/e' je neutrálny alias — '/track' blokujú adblocky (ERR_BLOCKED_BY_CLIENT)
+router.post(['/track', '/e'], async (req, res) => {
   try {
     const bannerId = Number(req.body.banner_id);
     const eventType = req.body.event_type;
