@@ -543,6 +543,7 @@ router.post('/', async (req, res, next) => {
         is_featured: value.is_featured,
         allow_comments: value.allow_comments,
         content: JSON.stringify(cleanBlocks),
+        read_time_min: blocks.estimateReadTimeMin(cleanBlocks),
         search_text: searchText,
         seo_title: value.seo_title,
         seo_description: value.seo_description,
@@ -753,6 +754,7 @@ router.post('/:id', async (req, res, next) => {
           is_featured: value.is_featured,
           allow_comments: value.allow_comments,
           content: JSON.stringify(cleanBlocks),
+          read_time_min: blocks.estimateReadTimeMin(cleanBlocks),
           search_text: searchText,
           seo_title: value.seo_title,
           seo_description: value.seo_description,
@@ -820,6 +822,7 @@ router.post('/:id/revisions/:revisionId/restore', async (req, res, next) => {
         .update({
           title: rev.title,
           content: JSON.stringify(cleanBlocks),
+          read_time_min: blocks.estimateReadTimeMin(cleanBlocks),
           excerpt: rev.excerpt,
           search_text: searchText,
         });
@@ -931,6 +934,7 @@ router.post('/:id/autosave', async (req, res) => {
         is_featured: value.is_featured,
         allow_comments: value.allow_comments,
         content: JSON.stringify(cleanBlocks),
+        read_time_min: blocks.estimateReadTimeMin(cleanBlocks),
         search_text: searchText,
         seo_title: value.seo_title,
         seo_description: value.seo_description,

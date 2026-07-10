@@ -52,11 +52,21 @@
 
       <!-- Filter bar -->
       <div class="filterbar">
+        <% if (!(typeof hideTypeFilter !== 'undefined' && hideTypeFilter)) { %>
         <div class="filterbar-types">
           <a href="<%= baseUrl %>" class="btn btn-sm <%= !currentType ? 'btn-primary' : '' %>">Všetky</a>
           <a href="<%= baseUrl %>?type=article" class="btn btn-sm <%= currentType === 'article' ? 'btn-primary' : '' %>">Články</a>
           <a href="<%= baseUrl %>?type=review" class="btn btn-sm <%= currentType === 'review' ? 'btn-primary' : '' %>">Recenzie</a>
         </div>
+        <% } %>
+        <% if (typeof filterTags !== 'undefined' && filterTags.length > 0) { %>
+        <div class="filterbar-tags">
+          <a href="<%= baseUrl %>" class="tag <%= !currentTag ? 'tag-accent' : '' %>">Všetky</a>
+          <% filterTags.forEach(t => { %>
+          <a href="<%= baseUrl %>?tag=<%= t.slug %>" class="tag <%= (typeof currentTag !== 'undefined' && currentTag === t.slug) ? 'tag-accent' : '' %>">#<%= t.name %></a>
+          <% }) %>
+        </div>
+        <% } %>
         <div class="filterbar-spacer"></div>
         <a href="<%= baseUrl %>?sort=<%= currentSort === 'newest' ? 'popular' : 'newest' %><%= currentType ? '&type=' + currentType : '' %>" class="btn btn-sm btn-ghost">
           <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
@@ -117,7 +127,7 @@
           <div class="acard-body">
             <div class="acard-meta">
               <span class="tag tag-accent" style="padding:2px 8px; font-size:11px;">
-                <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                <%= a.type === 'review' ? 'Recenzia' : 'Článok' %>
               </span>
               <span class="dot"></span>
               <span><%= a.readTime %></span>

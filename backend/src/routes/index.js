@@ -121,6 +121,7 @@ router.get('/hladaj', async (req, res, next) => {
           'articles.type',
           'articles.published_at',
           'articles.view_count',
+          'articles.read_time_min',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb',
@@ -201,6 +202,7 @@ async function buildListing(queryBuilder, { page, sort, type }) {
       'articles.type',
       'articles.published_at',
       'articles.view_count',
+      'articles.read_time_min',
       'users.nickname as author_name',
       'author_media.thumbnail_path as author_avatar',
       'media.thumbnail_path as cover_thumb',
@@ -225,10 +227,23 @@ async function buildListing(queryBuilder, { page, sort, type }) {
     }
   }
 
+  // Prvá rubrika každého článku (pre tagy na kartách)
+  let rubMap = new Map();
+  if (ids.length > 0) {
+    const rRows = await db('article_rubrics')
+      .join('rubrics', 'article_rubrics.rubric_id', 'rubrics.id')
+      .whereIn('article_rubrics.article_id', ids)
+      .select('article_rubrics.article_id', 'rubrics.name', 'rubrics.slug');
+    for (const r of rRows) {
+      if (!rubMap.has(r.article_id)) rubMap.set(r.article_id, { name: r.name, slug: r.slug });
+    }
+  }
+
   const articles = rows.map((a) => ({
     ...a,
     tags: tagMap.get(a.id) || [],
-    readTime: Math.max(3, Math.round((a.excerpt || '').split(/\s+/).length / 40)) + ' min',
+    rubric: rubMap.get(a.id) || null,
+    readTime: (a.read_time_min || 3) + ' min',
     viewsFormatted:
       a.view_count >= 1000
         ? (a.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
@@ -387,12 +402,33 @@ router.get('/rubrika/:slug', async (req, res, next) => {
     const rub = await db('rubrics').where('slug', req.params.slug).first();
     if (!rub) return next();
 
+    const isRecenzie = rub.slug === 'recenzie';
     const sort = req.query.sort || 'newest';
-    const type = req.query.type || null;
+    const type = isRecenzie ? null : req.query.type || null;
+    const currentTag = req.query.tag || null;
     const qb = db('articles')
       .join('article_rubrics', 'articles.id', 'article_rubrics.article_id')
       .where('article_rubrics.rubric_id', rub.id)
       .where('articles.status', 'published');
+    if (currentTag) {
+      qb.join('article_tags as ftag', 'articles.id', 'ftag.article_id')
+        .join('tags as ft', 'ftag.tag_id', 'ft.id')
+        .where('ft.slug', currentTag);
+    }
+
+    // Tagy (značky) použité v článkoch rubriky — filter pre rubriku recenzie
+    let filterTags = [];
+    if (isRecenzie) {
+      filterTags = await db('article_tags')
+        .join('tags', 'article_tags.tag_id', 'tags.id')
+        .join('article_rubrics', 'article_tags.article_id', 'article_rubrics.article_id')
+        .join('articles', 'article_tags.article_id', 'articles.id')
+        .where('article_rubrics.rubric_id', rub.id)
+        .where('articles.status', 'published')
+        .groupBy('tags.id', 'tags.name', 'tags.slug')
+        .select('tags.name', 'tags.slug')
+        .orderBy('tags.name');
+    }
 
     const { articles, total, totalPages, currentPage } = await buildListing(qb, {
       page: req.query.page,
@@ -417,6 +453,9 @@ router.get('/rubrika/:slug', async (req, res, next) => {
       currentSort: sort,
       currentType: type,
       relatedTags: [],
+      hideTypeFilter: isRecenzie,
+      filterTags,
+      currentTag,
     });
   } catch (err) {
     next(err);
@@ -679,12 +718,11 @@ router.get('/clanok/:slug', async (req, res, next) => {
       .orderBy('article_related.display_order', 'asc')
       .limit(4);
 
-    // Ak nemá manuálne related, doplň auto (rovnaká kategória)
-    if (relatedArticles.length === 0 && catRow) {
-      const auto = await db('article_categories')
-        .join('articles as ra', 'article_categories.article_id', 'ra.id')
+    // Ak nemá manuálne related, doplň auto podľa typu:
+    // recenzia → iné recenzie; článok → články z rovnakej rubriky (fallback: kategória)
+    if (relatedArticles.length === 0) {
+      const autoQ = db('articles as ra')
         .leftJoin('media as rm', 'ra.cover_media_id', 'rm.id')
-        .where('article_categories.category_id', catRow.id)
         .where('ra.status', 'published')
         .where('ra.id', '!=', article.id)
         .select(
@@ -699,7 +737,23 @@ router.get('/clanok/:slug', async (req, res, next) => {
         )
         .orderBy('ra.published_at', 'desc')
         .limit(4);
-      relatedArticles.push(...auto);
+
+      if (article.type === 'review') {
+        autoQ.where('ra.type', 'review');
+      } else {
+        const rubRow = await db('article_rubrics').where('article_id', article.id).first();
+        if (rubRow) {
+          autoQ
+            .join('article_rubrics as arr', 'ra.id', 'arr.article_id')
+            .where('arr.rubric_id', rubRow.rubric_id)
+            .where('ra.type', '!=', 'review');
+        } else if (catRow) {
+          autoQ
+            .join('article_categories as acx', 'ra.id', 'acx.article_id')
+            .where('acx.category_id', catRow.id);
+        }
+      }
+      relatedArticles.push(...(await autoQ));
     }
 
     // Extract review scores for related articles
@@ -724,7 +778,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
         for (const it of b.items) wordCount += String(it).split(/\s+/).length;
       }
     }
-    const readTime = Math.max(3, Math.round(wordCount / 200)) + ' min';
+    const readTime = (article.read_time_min || Math.max(1, Math.round(wordCount / 200))) + ' min';
     const viewsFormatted =
       article.view_count >= 1000
         ? (article.view_count / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
@@ -851,6 +905,7 @@ router.get('/', async (req, res, next) => {
           'articles.type',
           'articles.published_at',
           'articles.view_count',
+          'articles.read_time_min',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb',
@@ -874,6 +929,7 @@ router.get('/', async (req, res, next) => {
           'articles.type',
           'articles.published_at',
           'articles.view_count',
+          'articles.read_time_min',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb',
@@ -899,6 +955,7 @@ router.get('/', async (req, res, next) => {
           'articles.type',
           'articles.published_at',
           'articles.view_count',
+          'articles.read_time_min',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb',
@@ -924,6 +981,7 @@ router.get('/', async (req, res, next) => {
             'articles.type',
             'articles.published_at',
             'articles.view_count',
+            'articles.read_time_min',
             'users.nickname as author_name',
             'author_media.thumbnail_path as author_avatar',
             'media.thumbnail_path as cover_thumb',
@@ -950,6 +1008,7 @@ router.get('/', async (req, res, next) => {
             'articles.type',
             'articles.published_at',
             'articles.view_count',
+            'articles.read_time_min',
             'users.nickname as author_name',
             'author_media.thumbnail_path as author_avatar',
             'media.thumbnail_path as cover_thumb',
@@ -982,6 +1041,7 @@ router.get('/', async (req, res, next) => {
           'articles.type',
           'articles.published_at',
           'articles.view_count',
+          'articles.read_time_min',
           'users.nickname as author_name',
           'author_media.thumbnail_path as author_avatar',
           'media.thumbnail_path as cover_thumb',
@@ -1072,7 +1132,7 @@ router.get('/', async (req, res, next) => {
           tags: tagMap.get(a.id) || [],
           category: catMap.get(a.id) || null,
           rubrics: rubMap.get(a.id) || [],
-          readTime: estimateReadTime(a.excerpt),
+          readTime: (a.read_time_min || 3) + ' min',
           viewsFormatted: formatViews(a.view_count),
           score: reviewScoreMap.get(Number(a.id)) ?? null,
         };
@@ -1405,6 +1465,7 @@ router.get('/ulozene', async (req, res, next) => {
           'articles.type',
           'articles.published_at',
           'articles.view_count',
+          'articles.read_time_min',
           'users.nickname as author_name',
           'media.thumbnail_path as cover_thumb',
           'media.medium_path as cover_medium',

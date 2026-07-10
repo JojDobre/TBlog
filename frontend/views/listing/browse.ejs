@@ -82,8 +82,13 @@
             <div class="ph ph-<%= (a.id % 9) + 1 %>"></div>
             <% } %>
             <div class="bento-overlay">
-              <span class="tag <%= a.type === 'review' ? 'tag-accent' : '' %> bento-tag-dark" style="align-self:flex-start;">
-                <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+              <span style="display:flex; gap:6px; align-self:flex-start;">
+                <span class="tag <%= a.type === 'review' ? 'tag-accent' : '' %> bento-tag-dark">
+                  <%= a.type === 'review' ? 'Recenzia' : 'Článok' %>
+                </span>
+                <% if (a.type !== 'review' && a.rubric) { %>
+                <span class="tag bento-tag-dark"><%= a.rubric.name %></span>
+                <% } %>
               </span>
               <% if (pattern === 0) { %>
               <h3 class="bento-main-title"><%= a.title %></h3>
@@ -97,7 +102,7 @@
             <% if (isTextOnly) { %>
             <div class="bento-text-card">
               <span class="eyebrow" style="color:var(--accent);">
-                <%= a.type === 'review' ? 'Recenzia' : (a.tags[0] ? a.tags[0].name : 'Článok') %>
+                <%= a.type === 'review' ? 'Recenzia' : 'Článok' %><% if (a.type !== 'review' && a.rubric) { %> · <%= a.rubric.name %><% } %>
               </span>
               <h3 class="bento-text-title"><%= a.title %></h3>
               <p class="bento-text-excerpt"><%= a.excerpt %></p>

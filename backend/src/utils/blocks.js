@@ -1576,7 +1576,51 @@ function extractFirstImageId(blocks) {
   return null;
 }
 
+/**
+ * Odhad času čítania (minúty) z content blokov — počíta slová vo všetkých
+ * textových poliach (text, title, excerpt, caption, items…), HTML tagy ignoruje.
+ */
+function estimateReadTimeMin(contentBlocks) {
+  let words = 0;
+  const countWords = (v) => {
+    words += String(v)
+      .replace(/<[^>]*>/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean).length;
+  };
+  const TEXT_KEYS = new Set([
+    'text',
+    'title',
+    'subtitle',
+    'excerpt',
+    'caption',
+    'eyebrow',
+    'quote',
+    'author',
+    'label',
+    'name',
+    'value',
+    'description',
+    'body',
+    'html',
+  ]);
+  const walk = (node) => {
+    if (node == null) return;
+    if (typeof node === 'string') return countWords(node);
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (typeof node === 'object') {
+      for (const [k, v] of Object.entries(node)) {
+        if (TEXT_KEYS.has(k)) walk(v);
+        else if (Array.isArray(v) || (v && typeof v === 'object')) walk(v);
+      }
+    }
+  };
+  walk(contentBlocks);
+  return Math.max(1, Math.round(words / 200));
+}
+
 module.exports = {
+  estimateReadTimeMin,
   BLOCK_TYPES,
   HEADING_LEVELS,
   sanitizeBlocks,

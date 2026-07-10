@@ -729,7 +729,7 @@ img {
   font-size: 58px;
   max-width: 580px;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
   overflow: hidden; /* bez tohto line-clamp neoreže a text sa prekrýval */
 }
@@ -1087,7 +1087,7 @@ img {
   color: var(--text-muted);
   line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 6;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -2077,6 +2077,18 @@ img {
   gap: 8px;
   margin-top: 16px;
 }
+.footer-actions .btn a {
+  display: inline-block;
+  width: 100%;
+  text-align: center; /* Newsletter/RSS text na stred */
+}
+/* Chipy tag filtra v listingu */
+.filterbar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
 .footer-bottom {
   border-top: 1px solid var(--border);
   padding: var(--s-5) 0;
@@ -2329,6 +2341,7 @@ img {
 .article-authorbar-actions {
   display: flex;
   gap: var(--s-2);
+  margin-left: auto; /* Uložiť/Zdieľať zarovnané doprava */
 }
 
 /* Content + sidebar layout */
