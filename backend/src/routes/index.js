@@ -934,28 +934,38 @@ router.get('/', async (req, res, next) => {
         trending.push(...extra);
       }
 
-      // 4. Editor's Pick — najčítanejší published článok
-      const editorsPick = await db('articles')
-        .leftJoin('users', 'articles.author_id', 'users.id')
-        .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
-        .leftJoin('media', 'articles.cover_media_id', 'media.id')
-        .where('articles.status', 'published')
-        .select(
-          'articles.id',
-          'articles.title',
-          'articles.slug',
-          'articles.excerpt',
-          'articles.type',
-          'articles.published_at',
-          'articles.view_count',
-          'users.nickname as author_name',
-          'author_media.thumbnail_path as author_avatar',
-          'media.thumbnail_path as cover_thumb',
-          'media.medium_path as cover_medium',
-          'media.original_path as cover_full'
-        )
-        .orderBy('articles.view_count', 'desc')
-        .first();
+      // 4. Editor's Pick — manuálne zvolený článok (nastavenie editors_pick_article_id),
+      // fallback: najčítanejší published článok
+      const pickQuery = () =>
+        db('articles')
+          .leftJoin('users', 'articles.author_id', 'users.id')
+          .leftJoin('media as author_media', 'users.avatar_media_id', 'author_media.id')
+          .leftJoin('media', 'articles.cover_media_id', 'media.id')
+          .where('articles.status', 'published')
+          .select(
+            'articles.id',
+            'articles.title',
+            'articles.slug',
+            'articles.excerpt',
+            'articles.type',
+            'articles.published_at',
+            'articles.view_count',
+            'users.nickname as author_name',
+            'author_media.thumbnail_path as author_avatar',
+            'media.thumbnail_path as cover_thumb',
+            'media.medium_path as cover_medium',
+            'media.original_path as cover_full'
+          );
+
+      let editorsPick = null;
+      const pickSetting = await db('settings').where('key', 'editors_pick_article_id').first();
+      const pickId = pickSetting ? Number(pickSetting.value) : 0;
+      if (pickId) {
+        editorsPick = await pickQuery().where('articles.id', pickId).first();
+      }
+      if (!editorsPick) {
+        editorsPick = await pickQuery().orderBy('articles.view_count', 'desc').first();
+      }
 
       // 5. Reviews — posledné published recenzie
       const reviews = await db('articles')

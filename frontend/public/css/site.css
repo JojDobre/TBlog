@@ -651,7 +651,9 @@ img {
   overflow: visible;
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
   min-height: 660px;
-  max-height: 840px;
+  /* Grid: slidy sa naskladajú do jednej bunky → výška slideru je vždy rovnaká
+     (podľa najvyššieho slidu), neskáče pri prepínaní. max-height odstránený. */
+  display: grid;
 }
 .hero-banner-bg {
   position: absolute;
@@ -689,15 +691,16 @@ img {
   gap: var(--s-12);
   align-items: center;
   min-height: 580px;
-  max-height: 760px;
 }
 
-/* Slider logic */
+/* Slider logic — všetky slidy zaberajú tú istú grid bunku, neaktívne sú
+   neviditeľné ale držia výšku → kontajner má stálu výšku. */
 .hero-slide {
-  display: none;
+  grid-area: 1 / 1;
+  visibility: hidden;
 }
 .hero-slide--active {
-  display: grid;
+  visibility: visible;
   animation: hero-fade-in 0.5s ease;
 }
 @keyframes hero-fade-in {
@@ -728,7 +731,7 @@ img {
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
-  /*overflow: hidden;*/
+  overflow: hidden; /* bez tohto line-clamp neoreže a text sa prekrýval */
 }
 
 .hero-banner-lead {
@@ -912,7 +915,7 @@ img {
 
 @media (max-width: 1100px) {
   .hero-banner-inner,
-  .hero-slide--active {
+  .hero-slide {
     grid-template-columns: 1fr;
   }
   .hero-banner-visual {
@@ -1009,6 +1012,10 @@ img {
   line-height: 1.15;
   margin: auto 0 8px;
   color: oklch(1 0 0);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .bento-sub-title {
   font-family: var(--font-display);
@@ -1018,6 +1025,10 @@ img {
   line-height: 1.2;
   margin: auto 0 4px;
   color: oklch(1 0 0);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .bento-sm-title {
   font-family: var(--font-display);
@@ -1027,6 +1038,10 @@ img {
   line-height: 1.25;
   margin: auto 0 0;
   color: oklch(1 0 0);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .bento-meta-line {
   font-family: var(--font-mono);
@@ -1054,6 +1069,10 @@ img {
   letter-spacing: -0.015em;
   line-height: 1.3;
   margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .bento-text-title-sm {
   font-family: var(--font-display);
@@ -1064,10 +1083,13 @@ img {
   margin: 0;
 }
 .bento-text-excerpt {
-  margin: auto 0 0;
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 6;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .bento > article .ph {
@@ -1212,6 +1234,21 @@ img {
 @media (max-width: 1100px) {
   .trending-list {
     grid-template-columns: 1fr;
+  }
+  /* V 1-stĺpcovom layoute chýbala čiara medzi položkou 1 a 2
+     (pravidlo :not(:nth-child(-n+2)) je stavané na 2 stĺpce) */
+  .trending-item:nth-child(2)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--s-5);
+    right: var(--s-5);
+    height: 1px;
+    background: var(--border);
+  }
+  /* Zvislý oddeľovač medzi stĺpcami v 1 stĺpci nedáva zmysel */
+  .trending-item:nth-child(2n)::after {
+    display: none;
   }
 }
 
@@ -2055,6 +2092,23 @@ img {
   .footer-grid {
     grid-template-columns: 1fr 1fr;
     gap: var(--s-6);
+    padding: var(--s-10) 0 var(--s-8);
+  }
+  /* Brand stĺpec na celú šírku, linky kompaktne vedľa seba */
+  .footer-col:first-child {
+    grid-column: 1 / -1;
+  }
+  .footer-col h6 {
+    margin-bottom: var(--s-2);
+  }
+  .footer-col a {
+    display: inline-block;
+    margin-right: 16px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .footer-desc {
+    font-size: 13px;
   }
 }
 

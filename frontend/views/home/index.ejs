@@ -131,7 +131,7 @@
             <div class="ph ph-<%= (latest[0].id % 9) + 1 %>"></div>
             <% } %>
             <div class="bento-overlay">
-              <span class="tag bento-tag-dark"> <%= latest[2].type === 'review' ? 'Recenzia' : (latest[2].tags[0] ? latest[2].tags[0].name : 'Článok') %> </span>
+              <span class="tag bento-tag-dark"> <%= latest[0].type === 'review' ? 'Recenzia' : 'Článok' %> </span>
 
               <h3 class="bento-main-title"><%= latest[0].title %></h3>
               <span class="bento-meta-line"><%= latest[0].author_name %> · <%= latest[0].readTime %></span>
@@ -149,7 +149,7 @@
             <div class="ph ph-<%= (latest[1].id % 9) + 1 %>"></div>
             <% } %>
             <div class="bento-overlay">
-              <span class="tag bento-tag-dark"> <%= latest[2].type === 'review' ? 'Recenzia' : (latest[2].tags[0] ? latest[2].tags[0].name : 'Článok') %> </span>
+              <span class="tag bento-tag-dark"> <%= latest[1].type === 'review' ? 'Recenzia' : 'Článok' %> </span>
               <h3 class="bento-sub-title"><%= latest[1].title %></h3>
               <span class="bento-meta-line"><%= latest[1].author_name %> · <%= latest[1].readTime %></span>
             </div>
@@ -160,7 +160,7 @@
         <% if (latest[2]) { %>
         <article class="card card-link bento-c">
           <a href="/clanok/<%= latest[2].slug %>" class="bento-text-card">
-            <span class="eyebrow" style="color:var(--accent);"><%= latest[2].type === 'review' ? 'Recenzia' : (latest[2].tags[0] ? latest[2].tags[0].name : 'Článok') %></span>
+            <span class="eyebrow" style="color:var(--accent);"><%= latest[2].type === 'review' ? 'Recenzia' : 'Článok' %></span>
             <h3 class="bento-text-title"><%= latest[2].title %></h3>
             <p class="bento-text-excerpt"><%= latest[2].excerpt %></p>
           </a>
@@ -176,7 +176,7 @@
             <div class="ph ph-<%= (latest[3].id % 9) + 1 %>"></div>
             <% } %>
             <div class="bento-overlay">
-              <span class="tag bento-tag-dark"> <%= latest[2].type === 'review' ? 'Recenzia' : (latest[2].tags[0] ? latest[2].tags[0].name : 'Článok') %> </span>
+              <span class="tag bento-tag-dark"> <%= latest[3].type === 'review' ? 'Recenzia' : 'Článok' %> </span>
 
               <h3 class="bento-sm-title"><%= latest[3].title %></h3>
               <span class="bento-meta-line"><%= latest[3].author_name %> · <%= latest[3].readTime %></span>
@@ -188,7 +188,7 @@
         <% if (latest[4]) { %>
         <article class="card card-link bento-c">
           <a href="/clanok/<%= latest[4].slug %>" class="bento-text-card">
-            <span class="eyebrow" style="color:var(--accent);"><%= latest[4].type === 'review' ? 'Recenzia' : (latest[4].tags[0] ? latest[4].tags[0].name : 'Článok') %></span>
+            <span class="eyebrow" style="color:var(--accent);"><%= latest[4].type === 'review' ? 'Recenzia' : 'Článok' %></span>
             <h3 class="bento-text-title"><%= latest[4].title %></h3>
             <p class="bento-text-excerpt"><%= latest[4].excerpt %></p>
           </a>
@@ -204,7 +204,7 @@
             <div class="ph ph-<%= (latest[5].id % 9) + 1 %>"></div>
             <% } %>
             <div class="bento-overlay">
-              <span class="tag bento-tag-dark"> <%= latest[2].type === 'review' ? 'Recenzia' : (latest[2].tags[0] ? latest[2].tags[0].name : 'Článok') %> </span>
+              <span class="tag bento-tag-dark"> <%= latest[5].type === 'review' ? 'Recenzia' : 'Článok' %> </span>
               <h3 class="bento-sub-title"><%= latest[5].title %></h3>
               <span class="bento-meta-line"><%= latest[5].author_name %> · <%= latest[5].readTime %></span>
             </div>
@@ -215,7 +215,7 @@
         <% if (latest[6]) { %>
         <article class="card card-link bento-c">
           <a href="/clanok/<%= latest[6].slug %>" class="bento-text-card">
-            <span class="eyebrow" style="color:var(--accent);"><%= latest[6].type === 'review' ? 'Recenzia' : (latest[6].tags[0] ? latest[6].tags[0].name : 'Článok') %></span>
+            <span class="eyebrow" style="color:var(--accent);"><%= latest[6].type === 'review' ? 'Recenzia' : 'Článok' %></span>
             <h3 class="bento-text-title"><%= latest[6].title %></h3>
             <p class="bento-text-excerpt"><%= latest[6].excerpt %></p>
           </a>
