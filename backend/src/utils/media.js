@@ -17,6 +17,14 @@ const ORIGINALS_DIR = path.join(config.paths.uploads, 'originals');
 const THUMBNAILS_DIR = path.join(config.paths.uploads, 'thumbnails');
 const MEDIUM_DIR = path.join(config.paths.uploads, 'medium');
 
+/** 'YYYY/MM' podpriečinok pre nové uploady — prehľadnosť na disku. */
+function datePrefix() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  return `${yyyy}/${mm}`;
+}
+
 const EXT_BY_MIME = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
@@ -33,12 +41,18 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
   const originalName = uuid + ext;
   const isSvg = file.mimetype === 'image/svg+xml';
 
-  await fs.mkdir(ORIGINALS_DIR, { recursive: true });
-  await fs.mkdir(THUMBNAILS_DIR, { recursive: true });
-  await fs.mkdir(MEDIUM_DIR, { recursive: true });
+  // YYYY/MM podpriečinky — nové uploady sa organizujú podľa mesiaca.
+  // Staré súbory ostávajú v koreni originals/ atď. (DB drží relatívne cesty).
+  const prefix = datePrefix();
+  const originalsDir = path.join(ORIGINALS_DIR, prefix);
+  const thumbnailsDir = path.join(THUMBNAILS_DIR, prefix);
+  const mediumDir = path.join(MEDIUM_DIR, prefix);
+  await fs.mkdir(originalsDir, { recursive: true });
+  await fs.mkdir(thumbnailsDir, { recursive: true });
+  await fs.mkdir(mediumDir, { recursive: true });
 
-  const originalAbs = path.join(ORIGINALS_DIR, originalName);
-  const originalRelative = 'originals/' + originalName;
+  const originalAbs = path.join(originalsDir, originalName);
+  const originalRelative = 'originals/' + prefix + '/' + originalName;
 
   // 1) Metadata (skip for SVG — Sharp can't read SVG metadata reliably)
   let metadata = {};
@@ -81,7 +95,8 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
 
   // 4) Generate thumbnail (400px WebP — menší súbor, zachová priehľadnosť)
   const thumbnailName = uuid + '.webp';
-  const thumbnailAbs = path.join(THUMBNAILS_DIR, thumbnailName);
+  const thumbnailAbs = path.join(thumbnailsDir, thumbnailName);
+  const thumbnailRelative = 'thumbnails/' + prefix + '/' + thumbnailName;
   try {
     await sharp(originalAbs)
       .rotate()
@@ -96,7 +111,7 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
 
   // 5) Generate medium (1200px WebP)
   const mediumName = uuid + '.webp';
-  const mediumAbs = path.join(MEDIUM_DIR, mediumName);
+  const mediumAbs = path.join(mediumDir, mediumName);
   let mediumPath = null;
   try {
     await sharp(originalAbs)
@@ -104,7 +119,7 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
       .resize(1200, null, { withoutEnlargement: true })
       .webp({ quality: 85 })
       .toFile(mediumAbs);
-    mediumPath = 'medium/' + mediumName;
+    mediumPath = 'medium/' + prefix + '/' + mediumName;
   } catch (err) {
     log.warn('medium generation failed (non-fatal)', { err: err.message });
   }
@@ -113,7 +128,7 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
   const inserted = await db('media').insert({
     type: 'image',
     original_path: originalRelative,
-    thumbnail_path: 'thumbnails/' + thumbnailName,
+    thumbnail_path: thumbnailRelative,
     medium_path: mediumPath,
     mime: file.mimetype,
     size_bytes: file.size,
@@ -129,7 +144,7 @@ async function processImageUpload({ file, uploaderId, altText, caption }) {
   return {
     id,
     originalPath: originalRelative,
-    thumbnailPath: 'thumbnails/' + thumbnailName,
+    thumbnailPath: thumbnailRelative,
   };
 }
 
