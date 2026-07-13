@@ -14,6 +14,8 @@ const express = require('express');
 const db = require('../db');
 const log = require('../logger');
 const bannerLoader = require('../utils/banner-loader');
+const config = require('../../../config');
+const seo = require('../utils/seo');
 
 const router = express.Router();
 
@@ -297,6 +299,12 @@ router.get('/rebricky', async (req, res, next) => {
     res.render('ranking/index', {
       title: 'Rebríčky',
       currentPath: '/rebricky',
+      description: 'Aktuálne rebríčky a porovnania produktov na ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/rebricky'),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Rebríčky' },
+      ]),
       rankingGroups,
       stats,
       banners,
@@ -342,8 +350,40 @@ router.get('/rebricky/:slug', async (req, res, next) => {
 
     const banners = await bannerLoader.getBannersForPositions(['ranking_top']);
 
+    // SEO — canonical + ItemList + BreadcrumbList JSON-LD
+    const rBaseUrl = seo.getBaseUrl(req);
+    const canonicalUrl = rBaseUrl + '/rebricky/' + ranking.slug;
+    const itemListLd = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: ranking.name,
+      url: canonicalUrl,
+      numberOfItems: items.length,
+      itemListElement: items.slice(0, 25).map((it, i) => {
+        const prod = {
+          '@type': 'Product',
+          name: (it.brand ? it.brand + ' ' : '') + it.name,
+        };
+        if (it.image) prod.image = rBaseUrl + it.image;
+        return { '@type': 'ListItem', position: it.rank || i + 1, item: prod };
+      }),
+    };
+    if (ranking.seo_description || ranking.description) {
+      itemListLd.description = ranking.seo_description || ranking.description;
+    }
+
     res.render('ranking/show', {
-      title: ranking.name,
+      title: ranking.seo_title || ranking.name,
+      description: ranking.seo_description || ranking.description || null,
+      canonicalUrl,
+      jsonLd: [
+        itemListLd,
+        seo.breadcrumbJsonLd(rBaseUrl, [
+          { name: 'Domov', path: '/' },
+          { name: 'Rebríčky', path: '/rebricky' },
+          { name: ranking.name },
+        ]),
+      ],
       currentPath: '/rebricky',
       ranking: templateRanking,
       items,
@@ -388,6 +428,8 @@ router.get('/rebricky/:slug/tabulka', async (req, res, next) => {
     res.render('ranking/table', {
       title: ranking.name + ' — Tabuľka',
       currentPath: '/rebricky',
+      canonicalUrl: seo.getBaseUrl(req) + '/rebricky/' + ranking.slug,
+      metaRobots: 'noindex, follow',
       ranking: templateRanking,
       items,
       criteria,

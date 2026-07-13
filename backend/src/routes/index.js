@@ -41,6 +41,7 @@ const healthRouter = require('./health');
 const { apiLimiter } = require('../middleware/rate-limits');
 const rateLimit = require('express-rate-limit');
 const config = require('../../../config');
+const seo = require('../utils/seo');
 const db = require('../db');
 const log = require('../logger');
 const cache = require('../utils/cache');
@@ -159,6 +160,9 @@ router.get('/hladaj', async (req, res, next) => {
     res.render('search/index', {
       title: q ? 'Hľadanie: ' + q : 'Vyhľadávanie',
       currentPath: '/hladaj',
+      description: 'Vyhľadávanie článkov, recenzií a noviniek na ' + config.app.name + '.',
+      canonicalUrl: seo.getBaseUrl(req) + '/hladaj',
+      metaRobots: 'noindex, follow',
       q,
       type,
       results,
@@ -292,6 +296,12 @@ router.get('/kategorie', async (req, res, next) => {
     res.render('listing/browse', {
       title: 'Kategórie & Články',
       currentPath: '/kategorie',
+      description: 'Prehľad všetkých kategórií a najnovších článkov na ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/kategorie'),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Kategórie & Články' },
+      ]),
       categories: cats.map((c) => ({
         name: c.name,
         href: '/kategorie/' + c.slug,
@@ -343,6 +353,15 @@ router.get('/kategorie/:slug', async (req, res, next) => {
     res.render('listing/index', {
       title: cat.name,
       currentPath: '/kategorie/' + cat.slug,
+      description:
+        cat.description ||
+        'Články a recenzie z kategórie ' + cat.name + ' na ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/kategorie/' + cat.slug),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Kategórie', path: '/kategorie' },
+        { name: cat.name },
+      ]),
       listingTitle: cat.name,
       listingName: cat.name,
       listingTypeLabel: 'Kategória',
@@ -382,6 +401,12 @@ router.get('/rubriky', async (req, res, next) => {
     res.render('listing/taxonomy', {
       title: 'Rubriky',
       currentPath: '/rubriky',
+      description: 'Obsahové sekcie magazínu ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/rubriky'),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Rubriky' },
+      ]),
       pageTitle: 'Rubriky',
       eyebrow: 'Prehľad',
       subtitle: 'Obsahové sekcie magazínu.',
@@ -439,6 +464,14 @@ router.get('/rubrika/:slug', async (req, res, next) => {
     res.render('listing/index', {
       title: rub.name,
       currentPath: '/rubrika/' + rub.slug,
+      description:
+        rub.description || 'Články z rubriky ' + rub.name + ' na ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/rubrika/' + rub.slug),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Rubriky', path: '/rubriky' },
+        { name: rub.name },
+      ]),
       listingTitle: rub.name,
       listingName: rub.name,
       listingTypeLabel: 'Rubrika',
@@ -485,6 +518,12 @@ router.get('/tagy', async (req, res, next) => {
     res.render('listing/taxonomy', {
       title: 'Tagy',
       currentPath: '/tagy',
+      description: 'Všetky tematické značky na ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/tagy'),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Tagy' },
+      ]),
       pageTitle: 'Tagy',
       eyebrow: 'Prehľad',
       subtitle: 'Všetky tematické značky.',
@@ -522,6 +561,14 @@ router.get('/tag/:slug', async (req, res, next) => {
     res.render('listing/index', {
       title: '#' + tag.name,
       currentPath: '/tag/' + tag.slug,
+      description:
+        tag.description || 'Články označené tagom ' + tag.name + ' na ' + config.app.name + '.',
+      ...seo.buildListingSeo(req, '/tag/' + tag.slug),
+      jsonLd: seo.breadcrumbJsonLd(seo.getBaseUrl(req), [
+        { name: 'Domov', path: '/' },
+        { name: 'Tagy', path: '/tagy' },
+        { name: '#' + tag.name },
+      ]),
       listingTitle: '#' + tag.name,
       listingName: '#' + tag.name,
       listingTypeLabel: 'Tag',
@@ -835,8 +882,13 @@ router.get('/clanok/:slug', async (req, res, next) => {
         ? new Date(article.published_at).toISOString()
         : undefined,
       dateModified: new Date(article.updated_at).toISOString(),
-      publisher: { '@type': 'Organization', name: config.app.name },
-      url: baseUrl + '/' + article.slug,
+      publisher: {
+        '@type': 'Organization',
+        name: config.app.name,
+        logo: { '@type': 'ImageObject', url: baseUrl + '/img/favicon.svg' },
+      },
+      url: baseUrl + '/clanok/' + article.slug,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': baseUrl + '/clanok/' + article.slug },
     };
     if (ogImage) jsonLd.image = ogImage.startsWith('http') ? ogImage : baseUrl + ogImage;
     if (article.type === 'review' && reviewData.score) {
@@ -852,7 +904,14 @@ router.get('/clanok/:slug', async (req, res, next) => {
       };
       if (reviewData.verdict_text) jsonLd.reviewBody = reviewData.verdict_text;
     }
-    const canonicalUrl = baseUrl + '/' + article.slug;
+    const canonicalUrl = baseUrl + '/clanok/' + article.slug;
+
+    // BreadcrumbList
+    const breadcrumbLd = seo.breadcrumbJsonLd(baseUrl, [
+      { name: 'Domov', path: '/' },
+      ...(catRow ? [{ name: catRow.name, path: '/kategorie/' + catRow.slug }] : []),
+      { name: article.title },
+    ]);
 
     // Make ogImage absolute
     const ogImageAbs = ogImage ? (ogImage.startsWith('http') ? ogImage : baseUrl + ogImage) : null;
@@ -871,11 +930,17 @@ router.get('/clanok/:slug', async (req, res, next) => {
       readTime,
       viewsFormatted,
       reviewData,
-      jsonLd,
+      jsonLd: [jsonLd, breadcrumbLd],
       canonicalUrl,
       ogType: 'article',
       ogTitle: article.seo_title || article.title,
       ogDescription: article.seo_description || article.excerpt || '',
+      articleMeta: {
+        publishedTime: article.published_at ? new Date(article.published_at).toISOString() : null,
+        modifiedTime: new Date(article.updated_at).toISOString(),
+        section: catRow ? catRow.name : null,
+        tags: tags.map((t) => t.name),
+      },
       banners,
     });
   } catch (err) {
@@ -1171,11 +1236,36 @@ router.get('/', async (req, res, next) => {
       'home_after_compact',
     ]);
 
+    const homeBaseUrl = seo.getBaseUrl(req);
     res.render('home/index', {
       title: null,
       currentPath: req.path,
       ...homeData,
-      canonicalUrl: config.baseUrl || '/',
+      description: 'Nezávislý tech magazín — novinky, recenzie a rebríčky zo sveta technológií.',
+      canonicalUrl: homeBaseUrl + '/',
+      jsonLd: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: config.app.name,
+          url: homeBaseUrl + '/',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: {
+              '@type': 'EntryPoint',
+              urlTemplate: homeBaseUrl + '/hladaj?q={search_term_string}',
+            },
+            'query-input': 'required name=search_term_string',
+          },
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: config.app.name,
+          url: homeBaseUrl + '/',
+          logo: homeBaseUrl + '/img/favicon.svg',
+        },
+      ],
       banners: banners,
     });
   } catch (err) {
@@ -1293,6 +1383,24 @@ router.get('/sitemap.xml', async (req, res, next) => {
     const cats = await db('categories').select('slug');
     for (const c of cats) {
       urls.push({ loc: baseUrl + '/kategorie/' + c.slug, priority: '0.6', changefreq: 'weekly' });
+    }
+
+    // Taxonomy index pages
+    urls.push({ loc: baseUrl + '/kategorie', priority: '0.5', changefreq: 'weekly' });
+    urls.push({ loc: baseUrl + '/tagy', priority: '0.4', changefreq: 'weekly' });
+    urls.push({ loc: baseUrl + '/rubriky', priority: '0.4', changefreq: 'weekly' });
+    urls.push({ loc: baseUrl + '/rebricky', priority: '0.7', changefreq: 'weekly' });
+
+    // Tags
+    const tagRows = await db('tags').select('slug');
+    for (const t of tagRows) {
+      urls.push({ loc: baseUrl + '/tag/' + t.slug, priority: '0.4', changefreq: 'weekly' });
+    }
+
+    // Rubrics
+    const rubricRows = await db('rubrics').select('slug');
+    for (const rb of rubricRows) {
+      urls.push({ loc: baseUrl + '/rubrika/' + rb.slug, priority: '0.5', changefreq: 'weekly' });
     }
 
     // Static pages
