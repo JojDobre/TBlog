@@ -874,7 +874,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
     const baseUrl = config.baseUrl || `${req.protocol}://${req.get('host')}`;
     const jsonLd = {
       '@context': 'https://schema.org',
-      '@type': article.type === 'review' ? 'Review' : 'Article',
+      '@type': 'Article',
       headline: article.title,
       description: article.excerpt || '',
       author: { '@type': 'Person', name: article.author_name || 'Redakcia' },
@@ -891,18 +891,57 @@ router.get('/clanok/:slug', async (req, res, next) => {
       mainEntityOfPage: { '@type': 'WebPage', '@id': baseUrl + '/clanok/' + article.slug },
     };
     if (ogImage) jsonLd.image = ogImage.startsWith('http') ? ogImage : baseUrl + ogImage;
+
+    // Product JSON-LD pre recenzie — Google vyžaduje, aby Product mal
+    // aspoň jedno z offers/review/aggregateRating, preto štruktúra
+    // Product -> review (nie Review -> itemReviewed).
+    let productLd = null;
     if (article.type === 'review' && reviewData.score) {
-      jsonLd.reviewRating = {
-        '@type': 'Rating',
-        ratingValue: reviewData.score,
-        bestRating: 10,
-        worstRating: 0,
+      const productName = article.title
+        .replace(/^\s*recenzia\s*[:\-–—]?\s*/i, '')
+        .replace(/[–—·|].*/, '')
+        .trim();
+      const reviewLd = {
+        '@type': 'Review',
+        author: { '@type': 'Person', name: article.author_name || 'Redakcia' },
+        datePublished: article.published_at
+          ? new Date(article.published_at).toISOString()
+          : undefined,
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: reviewData.score,
+          bestRating: 10,
+          worstRating: 0,
+        },
       };
-      jsonLd.itemReviewed = {
+      if (reviewData.verdict_text) reviewLd.reviewBody = reviewData.verdict_text;
+      if (reviewData.pros.length) {
+        reviewLd.positiveNotes = {
+          '@type': 'ItemList',
+          itemListElement: reviewData.pros.map((txt, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: txt,
+          })),
+        };
+      }
+      if (reviewData.cons.length) {
+        reviewLd.negativeNotes = {
+          '@type': 'ItemList',
+          itemListElement: reviewData.cons.map((txt, i) => ({
+            '@type': 'ListItem',
+            position: i + 1,
+            name: txt,
+          })),
+        };
+      }
+      productLd = {
+        '@context': 'https://schema.org',
         '@type': 'Product',
-        name: article.title.replace(/[–—·|].*/, '').trim(),
+        name: productName,
+        review: reviewLd,
       };
-      if (reviewData.verdict_text) jsonLd.reviewBody = reviewData.verdict_text;
+      if (jsonLd.image) productLd.image = jsonLd.image;
     }
     const canonicalUrl = baseUrl + '/clanok/' + article.slug;
 
@@ -930,7 +969,7 @@ router.get('/clanok/:slug', async (req, res, next) => {
       readTime,
       viewsFormatted,
       reviewData,
-      jsonLd: [jsonLd, breadcrumbLd],
+      jsonLd: productLd ? [jsonLd, breadcrumbLd, productLd] : [jsonLd, breadcrumbLd],
       canonicalUrl,
       ogType: 'article',
       ogTitle: article.seo_title || article.title,
