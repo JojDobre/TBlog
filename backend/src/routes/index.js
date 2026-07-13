@@ -1237,8 +1237,9 @@ router.get('/', async (req, res, next) => {
     ]);
 
     const homeBaseUrl = seo.getBaseUrl(req);
+    const brandAlternates = ['KukniTech', 'Kukni Tech', 'kukni.tech', 'kuknitech'];
     res.render('home/index', {
-      title: null,
+      title: 'Recenzie, novinky a rebríčky zo sveta technológií',
       currentPath: req.path,
       ...homeData,
       description: 'Nezávislý tech magazín — novinky, recenzie a rebríčky zo sveta technológií.',
@@ -1248,6 +1249,7 @@ router.get('/', async (req, res, next) => {
           '@context': 'https://schema.org',
           '@type': 'WebSite',
           name: config.app.name,
+          alternateName: brandAlternates,
           url: homeBaseUrl + '/',
           potentialAction: {
             '@type': 'SearchAction',
@@ -1262,6 +1264,7 @@ router.get('/', async (req, res, next) => {
           '@context': 'https://schema.org',
           '@type': 'Organization',
           name: config.app.name,
+          alternateName: brandAlternates,
           url: homeBaseUrl + '/',
           logo: homeBaseUrl + '/img/favicon.svg',
         },
