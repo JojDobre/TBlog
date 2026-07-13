@@ -37,7 +37,12 @@ function setCsrfToken(req, res, next) {
  * Wrapper okolo doubleCsrfProtection — skipuje multipart requesty.
  * Multipart endpointy musia validovať manuálne pomocou validateRequest.
  */
-const CSRF_SKIP_PATHS = ['/api/banners/track', '/api/newsletter/subscribe'];
+const CSRF_SKIP_PATHS = [
+  '/api/banners/track',
+  '/api/newsletter/subscribe',
+  '/api/pulse/e',
+  '/api/pulse/track',
+];
 
 function csrfProtection(req, res, next) {
   if (CSRF_SKIP_PATHS.includes(req.path)) {
